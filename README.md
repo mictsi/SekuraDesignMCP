@@ -10,7 +10,7 @@ interface without guessing at a single value.
 ```
 55 components · 15 foundations · 15 UX patterns · 9 layout recipes
 112 semantic tokens · 4 themes · 3 densities · 8 target frameworks
-292 contrast checks, verified on every build
+312 contrast checks · 63 behaviour tests · 0 axe violations
 ```
 
 The human-readable specification is [`DESIGN.md`](./DESIGN.md), and there is an
@@ -69,7 +69,7 @@ document.
 
 | | |
 |---|---|
-| `color.html` | Every ramp step with its contrast against white *and* black, all 112 semantic tokens in four themes, and the full 73-pairing contrast contract with measured ratios |
+| `color.html` | Every ramp step with its contrast against white *and* black, all 112 semantic tokens in four themes, and the full 78-pairing contrast contract with measured ratios |
 | `dark-mode.html` | The elevation inversion, demonstrated with the same markup under both themes side by side — plus the nine things that break silently |
 | `layout.html` | Flex-first, with **resizable** demos that reflow on container width |
 | `tokens.html` | Filterable reference for every token |
@@ -91,8 +91,8 @@ curl http://localhost:8080/health
 Or without compose:
 
 ```bash
-docker build -t sekura-design-mcp:1.0.0 .
-docker run -d -p 8080:8080 --name sekura sekura-design-mcp:1.0.0
+docker build -t sekura-design-mcp .
+docker run -d -p 8080:8080 --name sekura sekura-design-mcp
 ```
 
 The build runs the contrast audit and the full smoke test. **An image whose palette
@@ -129,6 +129,62 @@ npm run start:http     # HTTP on :8080
 ```bash
 claude mcp add --transport http sekura-design http://localhost:8080/mcp
 ```
+
+### OpenAI Codex
+
+Codex reads MCP servers from `~/.codex/config.toml`. Add a `[mcp_servers.<name>]`
+table:
+
+```toml
+# ~/.codex/config.toml
+
+[mcp_servers.sekura-design]
+command = "docker"
+args = ["run", "-i", "--rm", "-e", "SEKURA_MCP_TRANSPORT=stdio", "sekura-design-mcp:1.0.0"]
+
+# The first call builds a 5,900-line overview, so allow a little headroom.
+startup_timeout_sec = 30
+tool_timeout_sec = 60
+```
+
+Without Docker, point it at the built server directly:
+
+```toml
+[mcp_servers.sekura-design]
+command = "node"
+args = ["/absolute/path/to/SekuraDesignMCP/dist/index.js"]
+```
+
+Recent Codex versions can add it for you:
+
+```bash
+codex mcp add sekura-design -- docker run -i --rm \
+  -e SEKURA_MCP_TRANSPORT=stdio sekura-design-mcp:1.0.0
+
+codex mcp list          # confirm it registered
+```
+
+Then just ask for work in design-system terms — Codex will call the tools:
+
+```
+> Build a settings page using the Sekura design system. Check the dark mode
+> foundation before you write any CSS, and validate the markup when you're done.
+```
+
+**Note on transport.** stdio is the broadly supported path and is what the
+examples above use. Codex's support for remote `url`-based MCP servers is newer
+and has moved between releases — check `codex mcp --help` for your version before
+relying on the HTTP endpoint. Everything the server exposes is available over
+stdio, so nothing is lost.
+
+**Getting good results.** The server's `instructions` already tell a client where
+to start, but these help:
+
+- Ask it to call `get_overview` first on a new task.
+- For anything visual, `get_foundation({ id: "dark-mode" })` before writing CSS
+  prevents the nine most common dark-mode defects.
+- Ask it to finish with `validate_markup` — the linter catches missing accessible
+  names and hard-coded colours that a model will otherwise leave behind.
 
 ### stdio (client spawns the container)
 
@@ -272,12 +328,75 @@ two-column `sidebar-layout`, which stacks purely through flex wrapping.
 
 ---
 
+## CI and releases
+
+Two workflows in `.github/workflows/`.
+
+**`ci.yml`** runs on every push and pull request. Each step is a gate that exits
+non-zero, so a change that breaks a promise cannot merge green:
+
+| Gate | Checks |
+|---|---|
+| `check:version` | No version literal has drifted from `package.json` |
+| `audit:contrast` | 312 checks — 78 declared pairings across four themes |
+| `lint:css` | Structure, tokens only, no physical properties |
+| `smoke` | Every MCP tool, component, framework and export format |
+| `test:behaviours` | Real key presses in a browser: focus, ARIA, Escape, inert |
+| `verify:sample` | Dangling references, broken links, markup lint |
+| `test:a11y` | axe-core, WCAG 2.2 AA, both themes |
+| Docker | Image builds, `/health` re-runs the contrast audit inside it |
+
+**`release.yml`** runs on a `v*` tag and publishes artifacts.
+
+```bash
+npm version minor          # bumps package.json; everything else derives from it
+git push --follow-tags
+```
+
+The workflow **refuses to release if the tag disagrees with `package.json`** —
+otherwise you ship artifacts labelled one version and containing another. It then
+runs the full gate chain again (a release cannot skip checks) and publishes:
+
+| Artifact | Use |
+|---|---|
+| `sekura-<v>.css` | The whole stylesheet, one file |
+| `tokens-<v>.css` | Custom properties only, all themes and densities |
+| `tokens-<v>.dtcg.json` | W3C Design Tokens format |
+| `sekura-behaviours-<v>.iife.min.js` | Drop-in `<script>`, global `Sekura` |
+| `sekura-behaviours-<v>.esm.min.js` | ES module for bundlers |
+| `sekura-css-<v>.zip` | Per-component CSS, Tailwind, Swift, Android |
+| `sekura-docs-<v>.zip` | The documentation site, hostable anywhere |
+| `SHA256SUMS.txt` | Checksums |
+
+Plus a multi-arch image to GHCR, tagged `1.2.3`, `1.2`, `1` and `latest`:
+
+```bash
+docker run -d -p 8080:8080 ghcr.io/OWNER/SekuraDesignMCP:1.0.0
+```
+
+and the documentation site to GitHub Pages.
+
+### Versioning
+
+`package.json` is the single source of truth. The server, docs site, behaviours
+bundle and container tag all derive from it — `check:version` fails the build if
+a literal creeps back in.
+
+A **major** bump is required for anything that breaks consumers silently:
+renaming a semantic token or component class, changing a keyboard contract,
+removing an MCP tool, or changing the focus ring or spacing scale. Changing a
+*primitive* value is a minor bump, because the semantic layer absorbs it and the
+contrast audit proves nothing regressed. See [`CHANGELOG.md`](./CHANGELOG.md).
+
+---
+
 ## Development
 
 ```bash
 npm run verify          # everything below, in order
 npm run build           # compile
-npm run audit:contrast  # 292 contrast checks — build gate
+npm run check:version   # no version literal has drifted
+npm run audit:contrast  # 312 contrast checks — build gate
 npm run lint:css        # structural CSS lint over all 67 stylesheets
 npm run smoke           # 704 checks across every tool, component and export
 npm run emit:css        # write dist-css/ — 66 files, sekura.css is ~190 KB

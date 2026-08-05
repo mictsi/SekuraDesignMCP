@@ -33,7 +33,11 @@
  * you keep full control of your own DOM.
  */
 
-export const VERSION = '1.0.0';
+declare const __SEKURA_VERSION__: string | undefined;
+
+/** Replaced at build time from package.json. */
+export const VERSION: string =
+  typeof __SEKURA_VERSION__ === 'string' ? __SEKURA_VERSION__ : '0.0.0-dev'; // version-check-ignore: build-time fallback
 
 /* Core primitives — useful when building a component the system does not cover. */
 export {

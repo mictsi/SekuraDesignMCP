@@ -3,7 +3,8 @@ services:
     build:
       context: .
       target: runtime
-    image: sekura-design-mcp:1.0.0
+    # Tag follows package.json; override with SEKURA_VERSION.
+    image: sekura-design-mcp:${SEKURA_VERSION:-latest}
     container_name: sekura-design-mcp
     restart: unless-stopped
     ports:

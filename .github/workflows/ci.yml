@@ -1,0 +1,169 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  # A newer push supersedes an in-flight run on the same ref.
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  gates:
+    name: Build gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Compile
+        run: npm run build
+
+      # Every step below is a gate, not a report. Each exits non-zero on
+      # failure, so an artefact that breaks a promise is never produced.
+
+      - name: Version consistency
+        run: npm run check:version
+
+      - name: Contrast audit
+        # 78 declared pairings x 4 themes. The colour system's central claim.
+        run: npm run audit:contrast
+
+      - name: CSS structural lint
+        # Component CSS is a string to the compiler, so it gets its own check:
+        # balanced braces, no selector running into an at-rule, no hard-coded
+        # colours, no unknown tokens, no physical properties.
+        run: npm run lint:css
+
+      - name: MCP smoke test
+        # Exercises every tool, component, framework and export format through a
+        # real MCP client.
+        run: npm run smoke
+
+      - name: Build behaviour package
+        run: npm run build:behaviours
+
+      - name: Install Chromium
+        # Needed by the behaviour and accessibility checks below, which drive a
+        # real browser rather than a DOM emulation.
+        run: npx playwright install --with-deps chromium
+
+      - name: Behaviour contracts
+        # Real key presses against a real DOM: roving tabindex, focus trap and
+        # restore, aria-activedescendant, Escape handling, inert on close.
+        run: npm run test:behaviours
+
+      - name: Emit stylesheets
+        run: npm run emit:css
+
+      - name: Build documentation site
+        run: npm run site:build
+
+      - name: Verify documentation site
+        # Dangling ARIA references, missing icons, broken links, duplicate ids,
+        # hard-coded colours, then the design system's own markup linter.
+        run: npm run verify:sample
+
+      - name: Upload artefacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: |
+            dist-css/
+            dist-js/
+          retention-days: 7
+
+  accessibility:
+    name: Accessibility (axe-core)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: gates
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm run emit:css
+      - run: npm run site:build
+      - run: npx playwright install --with-deps chromium
+
+      - name: axe-core — WCAG 2.0/2.1/2.2 A + AA
+        # Both themes, because a dark-mode contrast failure is invisible to a
+        # light-mode-only scan.
+        run: npm run test:a11y
+
+  docker:
+    name: Docker image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: gates
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: sekura-design-mcp:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Health check
+        # /health re-runs the contrast audit inside the container, so this
+        # verifies the running image, not just that it starts.
+        run: |
+          docker run -d --name sekura -p 8080:8080 sekura-design-mcp:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8080/health > /tmp/health.json; then break; fi
+            sleep 1
+          done
+          cat /tmp/health.json
+          node -e "
+            const h = require('/tmp/health.json');
+            if (h.status !== 'ok') { console.error('unhealthy'); process.exit(1); }
+            if (!h.contrastAudit.passing) { console.error('contrast audit failing in image'); process.exit(1); }
+            console.log('Image healthy:', h.contentCounts.components, 'components');
+          "
+
+      - name: MCP protocol check
+        run: |
+          curl -fsS -X POST http://127.0.0.1:8080/mcp \
+            -H 'Content-Type: application/json' \
+            -H 'Accept: application/json, text/event-stream' \
+            -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' \
+            | node -e "
+              let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{
+                const n=JSON.parse(s).result.tools.length;
+                if(n<14){console.error('only '+n+' tools');process.exit(1);}
+                console.log(n+' tools exposed');
+              });"
+
+      - name: Container logs on failure
+        if: failure()
+        run: docker logs sekura || true

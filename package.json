@@ -1,7 +1,7 @@
 {
   "name": "sekura-design-mcp",
   "version": "1.0.0",
-  "description": "Sekura Design System \u2014 MCP server exposing the complete design, UX, accessibility and dark-mode specification as machine-readable tools.",
+  "description": "Sekura Design System — MCP server exposing the complete design, UX, accessibility and dark-mode specification as machine-readable tools.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -19,12 +19,14 @@
     "lint:css": "node dist/scripts/lint-css.js",
     "emit:css": "node dist/scripts/emit-css.js",
     "smoke": "node dist/scripts/smoke.js",
-    "verify": "npm run build && npm run audit:contrast && npm run lint:css && npm run smoke && npm run build:behaviours && npm run test:behaviours && npm run emit:css && npm run site:build && npm run verify:sample",
+    "verify": "npm run build && npm run check:version && npm run audit:contrast && npm run lint:css && npm run smoke && npm run build:behaviours && npm run test:behaviours && npm run emit:css && npm run site:build && npm run verify:sample",
     "sample": "node dist/scripts/serve-sample.js",
     "verify:sample": "node dist/scripts/verify-sample.js",
     "site:build": "node dist/scripts/build-site.js",
     "build:behaviours": "tsc -p tsconfig.behaviours.json && node dist/scripts/build-behaviours.js",
-    "test:behaviours": "node dist/scripts/test-behaviours.js"
+    "test:behaviours": "node dist/scripts/test-behaviours.js",
+    "check:version": "node dist/scripts/check-version.js",
+    "test:a11y": "node src/scripts/test-a11y.mjs"
   },
   "keywords": [
     "mcp",
@@ -44,8 +46,20 @@
   "devDependencies": {
     "@types/express": "^5.0.3",
     "@types/node": "^22.15.0",
+    "axe-core": "^4.12.1",
     "esbuild": "^0.28.1",
+    "playwright-core": "^1.62.1",
     "typescript": "^5.9.2"
   },
-  "files": []
+  "files": [
+    "dist",
+    "dist-css",
+    "dist-js",
+    "DESIGN.md",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OWNER/SekuraDesignMCP.git"
+  }
 }

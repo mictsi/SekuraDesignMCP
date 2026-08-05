@@ -141,12 +141,12 @@ async function main(): Promise<void> {
   const port = (server.address() as AddressInfo).port;
   const url = (name: string) => `http://127.0.0.1:${port}/${name}`;
 
-  const pw = await import(
-    /* @vite-ignore */ resolve(
-      process.env.SEKURA_PLAYWRIGHT ??
-        '/tmp/claude-1000/-home-ghost-github-SekuraDesignMCP/98c12359-2296-4a5b-967a-20d3071384cc/scratchpad/node_modules/playwright-core/index.mjs'
-    )
-  );
+  // playwright-core is a devDependency, so this resolves normally in CI.
+  // SEKURA_PLAYWRIGHT overrides it for unusual local setups.
+  const override = process.env.SEKURA_PLAYWRIGHT;
+  const pw = override
+    ? await import(resolve(override))
+    : ((await import('playwright-core')) as unknown as typeof import('playwright-core'));
   const browser = await pw.chromium.launch({ args: ['--no-sandbox', '--disable-dev-shm-usage'] });
   const ctx = await browser.newContext();
 

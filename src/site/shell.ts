@@ -8,8 +8,10 @@
 
 import { renderMarkdown, escapeHtml, slugify } from '../lib/markdown.js';
 
+import { VERSION } from '../lib/version.js';
+
 export const SITE_NAME = 'Sekura Design System';
-export const SITE_VERSION = '1.0.0';
+export const SITE_VERSION = VERSION;
 
 /* ------------------------------------------------------------------ *
  * Navigation

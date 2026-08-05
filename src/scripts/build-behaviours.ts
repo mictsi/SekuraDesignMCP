@@ -19,12 +19,13 @@ import { mkdirSync, statSync, writeFileSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { VERSION } from '../lib/version.js';
 
 const ENTRY = resolve(process.cwd(), 'src/behaviours/index.ts');
 const OUT = resolve(process.cwd(), 'dist-js');
 mkdirSync(OUT, { recursive: true });
 
-const banner = `/*! Sekura Design System — behaviours v1.0.0 | MIT
+const banner = `/*! Sekura Design System — behaviours v${VERSION} | MIT
  * Framework-agnostic keyboard and ARIA implementations.
  * Attaches to DOM you already render; never injects markup or CSS.
  */`;
@@ -59,6 +60,9 @@ for (const target of targets) {
     legalComments: 'none',
     banner: target.minify ? undefined : { js: banner },
     charset: 'utf8',
+    // The bundle cannot read package.json at runtime, so the version is
+    // substituted at build time from the same single source.
+    define: { __SEKURA_VERSION__: JSON.stringify(VERSION) },
   });
 
   const raw = readFileSync(join(OUT, target.file));
@@ -75,7 +79,7 @@ writeFileSync(
   JSON.stringify(
     {
       name: '@sekura/behaviours',
-      version: '1.0.0',
+      version: VERSION,
       description:
         'Framework-agnostic keyboard and ARIA behaviour for the Sekura Design System. Zero dependencies.',
       type: 'module',

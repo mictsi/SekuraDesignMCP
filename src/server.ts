@@ -44,8 +44,10 @@ import { search, type ResultKind } from './lib/search.js';
 import { safeForegroundsOn, suggestTokens } from './lib/suggest.js';
 import { summariseFindings, validateMarkup } from './lib/validate.js';
 
+import { VERSION } from './lib/version.js';
+
 export const SERVER_NAME = 'sekura-design';
-export const SERVER_VERSION = '1.0.0';
+export const SERVER_VERSION = VERSION;
 
 const themeEnum = z.enum(THEMES as unknown as [ThemeName, ...ThemeName[]]);
 

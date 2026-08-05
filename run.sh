@@ -22,7 +22,9 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 # ------------------------------------------------------------------ #
 # Configuration — override any of these from the environment.
 # ------------------------------------------------------------------ #
-IMAGE="${SEKURA_IMAGE:-sekura-design-mcp:1.0.0}"
+# Version comes from package.json so the tag cannot drift.
+SEKURA_VERSION="$(node -p "require('./package.json').version" 2>/dev/null || echo latest)"
+IMAGE="${SEKURA_IMAGE:-sekura-design-mcp:${SEKURA_VERSION}}"
 CONTAINER="${SEKURA_CONTAINER:-sekura-design-mcp}"
 MCP_PORT="${SEKURA_PORT:-8080}"
 SAMPLE_PORT="${SAMPLE_PORT:-4173}"
@@ -498,7 +500,7 @@ ${BOLD}OPTIONS${RESET}
 ${BOLD}ENVIRONMENT${RESET}
   SEKURA_PORT          MCP server port          ${DIM}(default 8080)${RESET}
   SAMPLE_PORT          Sample site port         ${DIM}(default 4173)${RESET}
-  SEKURA_IMAGE         Docker image tag         ${DIM}(default sekura-design-mcp:1.0.0)${RESET}
+  SEKURA_IMAGE         Docker image tag         ${DIM}(default sekura-design-mcp:<package.json version>)${RESET}
   SEKURA_CONTAINER     Container name           ${DIM}(default sekura-design-mcp)${RESET}
   NO_COLOR             Disable coloured output
 

@@ -17,6 +17,7 @@ import { patterns } from '../data/patterns.js';
 import { FRAMEWORKS } from '../lib/codegen.js';
 import { EXPORT_FORMATS } from '../lib/exporters.js';
 import { createServer } from '../server.js';
+import { VERSION } from '../lib/version.js';
 
 let passed = 0;
 let failed = 0;
@@ -42,7 +43,7 @@ function textOf(result: unknown): string {
 
 async function main(): Promise<void> {
   const server = createServer();
-  const client = new Client({ name: 'sekura-smoke', version: '1.0.0' });
+  const client = new Client({ name: 'sekura-smoke', version: VERSION });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
 
   await Promise.all([server.connect(serverTransport), client.connect(clientTransport)]);
