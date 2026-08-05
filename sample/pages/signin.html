@@ -1,0 +1,79 @@
+<main class="sk-auth__main" id="main">
+  <div class="sk-auth__brand">
+    <svg aria-hidden="true" focusable="false" width="32" height="32"><use href="#sk-icon-logo"></use></svg>
+    <p class="sk-auth__product">Sekura Console</p>
+  </div>
+
+  <div class="sk-card sk-auth__card">
+    <div class="sk-card__body sk-stack sk-stack--gap-16">
+      <h1 class="sk-auth__heading">Sign in</h1>
+
+      <!-- Deliberately vague: an authentication error must not reveal which of
+           the two values was wrong, or it becomes an account-enumeration
+           oracle. -->
+      <div class="sk-alert sk-alert--danger" role="alert" id="signin-error" hidden>
+        <svg class="sk-alert__icon" aria-hidden="true" focusable="false" width="20" height="20"><use href="#sk-icon-error"></use></svg>
+        <div class="sk-alert__content">
+          <p class="sk-alert__body">
+            That email address and password do not match an account.
+          </p>
+        </div>
+      </div>
+
+      <form class="sk-stack sk-stack--gap-16" onsubmit="event.preventDefault();document.getElementById('signin-error').hidden=false;document.getElementById('signin-error').focus()">
+        <div class="sk-field">
+          <label class="sk-field__label" for="email">Email address</label>
+          <!-- autocomplete is a WCAG 1.3.5 requirement on fields about the
+               user, not an optimisation. -->
+          <input class="sk-input" id="email" name="email" type="email"
+                 autocomplete="username" autofocus required />
+        </div>
+
+        <div class="sk-field">
+          <label class="sk-field__label" for="password">Password</label>
+          <div class="sk-input-group">
+            <!-- Paste is never blocked: it breaks password managers, and it is
+                 a security anti-pattern as well as a WCAG 3.3.8 failure. -->
+            <input class="sk-input" id="password" name="password" type="password"
+                   autocomplete="current-password" required />
+            <button type="button" class="sk-input-group__action" aria-pressed="false"
+                    onclick="var i=document.getElementById('password');var s=i.type==='password';i.type=s?'text':'password';this.setAttribute('aria-pressed',String(s));this.querySelector('.sk-visually-hidden').textContent=s?'Hide password':'Show password'">
+              <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-eye"></use></svg>
+              <span class="sk-visually-hidden">Show password</span>
+            </button>
+          </div>
+        </div>
+
+        <label class="sk-checkbox">
+          <input type="checkbox" class="sk-checkbox__input" name="remember" />
+          <span class="sk-checkbox__box" aria-hidden="true"></span>
+          <span class="sk-checkbox__content">
+            <span class="sk-checkbox__label">Keep me signed in on this device</span>
+          </span>
+        </label>
+
+        <button type="submit" class="sk-button sk-button--primary sk-button--lg sk-button--full-width">
+          <span class="sk-button__label">Sign in</span>
+        </button>
+      </form>
+
+      <div class="sk-divider sk-divider--labelled" aria-hidden="true">
+        <span class="sk-divider__label">or</span>
+      </div>
+
+      <a class="sk-button sk-button--secondary sk-button--lg sk-button--full-width" href="index.html">
+        <svg class="sk-button__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-shield"></use></svg>
+        <span class="sk-button__label">Continue with SSO</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="sk-cluster sk-cluster--center sk-cluster--gap-16 sk-auth__footer">
+    <a class="sk-link" href="?reset=1">Forgot your password?</a>
+    <a class="sk-link" href="index.html">Skip to the demo</a>
+  </div>
+
+  <p class="sk-auth__note">
+    This is a demonstration. No credentials are collected, transmitted or stored.
+  </p>
+</main>

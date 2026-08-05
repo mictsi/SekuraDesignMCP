@@ -1,0 +1,32 @@
+services:
+  sekura-design-mcp:
+    build:
+      context: .
+      target: runtime
+    image: sekura-design-mcp:1.0.0
+    container_name: sekura-design-mcp
+    restart: unless-stopped
+    ports:
+      - "${SEKURA_PORT:-8080}:8080"
+    environment:
+      SEKURA_MCP_TRANSPORT: http
+      SEKURA_MCP_PATH: /mcp
+      PORT: "8080"
+      NODE_ENV: production
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:8080/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    # The design system is read-only at runtime, so the container needs no
+    # writable filesystem and no extra capabilities.
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true

@@ -1,0 +1,51 @@
+{
+  "name": "sekura-design-mcp",
+  "version": "1.0.0",
+  "description": "Sekura Design System \u2014 MCP server exposing the complete design, UX, accessibility and dark-mode specification as machine-readable tools.",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "sekura-design-mcp": "dist/index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "start:http": "SEKURA_MCP_TRANSPORT=http node dist/index.js",
+    "dev": "tsc -p tsconfig.json --watch",
+    "audit:contrast": "node dist/scripts/audit-contrast.js",
+    "lint:css": "node dist/scripts/lint-css.js",
+    "emit:css": "node dist/scripts/emit-css.js",
+    "smoke": "node dist/scripts/smoke.js",
+    "verify": "npm run build && npm run audit:contrast && npm run lint:css && npm run smoke && npm run build:behaviours && npm run test:behaviours && npm run emit:css && npm run site:build && npm run verify:sample",
+    "sample": "node dist/scripts/serve-sample.js",
+    "verify:sample": "node dist/scripts/verify-sample.js",
+    "site:build": "node dist/scripts/build-site.js",
+    "build:behaviours": "tsc -p tsconfig.behaviours.json && node dist/scripts/build-behaviours.js",
+    "test:behaviours": "node dist/scripts/test-behaviours.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "design-system",
+    "design-tokens",
+    "accessibility",
+    "dark-mode",
+    "sekura"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.20.0",
+    "express": "^5.1.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^22.15.0",
+    "esbuild": "^0.28.1",
+    "typescript": "^5.9.2"
+  },
+  "files": []
+}

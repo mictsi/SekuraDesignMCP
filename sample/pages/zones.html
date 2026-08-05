@@ -1,0 +1,561 @@
+      <header class="sk-page-header">
+        <div class="sk-page-header__main">
+          <div class="sk-page-header__titles">
+            <h1 class="sk-page-header__title">Zones</h1>
+            <p class="sk-page-header__description">128 zones across 3 environments.</p>
+          </div>
+          <div class="sk-page-header__actions">
+            <button type="button" class="sk-button sk-button--secondary"
+                    data-sk-demo-toast="Export queued. You will get an email when it is ready."
+                    data-sk-demo-intent="info">
+              <svg class="sk-button__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-download"></use></svg>
+              <span class="sk-button__label">Export</span>
+            </button>
+            <a class="sk-button sk-button--primary" href="create-zone.html">
+              <svg class="sk-button__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-plus"></use></svg>
+              <span class="sk-button__label">Create zone</span>
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <!-- Cluster: wraps to as many rows as it needs rather than overflowing.
+           This is what stops a toolbar producing a horizontal scrollbar at
+           360px, with no media query involved. -->
+      <div class="sk-cluster sk-cluster--gap-8">
+        <form class="sk-search sk-search--sm" role="search" onsubmit="return false">
+          <label class="sk-visually-hidden" for="zone-q">Search zones</label>
+          <svg class="sk-search__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-search"></use></svg>
+          <input class="sk-search__input" id="zone-q" type="search" autocomplete="off"
+                 placeholder="Search zones and tags"
+                 aria-controls="zone-table"
+                 data-sk-filter-input="#zone-table" />
+        </form>
+
+        <button type="button" class="sk-button sk-button--secondary sk-button--sm"
+                data-sk-popover-target="zone-filters" aria-expanded="false" aria-controls="zone-filters">
+          <svg class="sk-button__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-filter"></use></svg>
+          <span class="sk-button__label">Filters</span>
+          <span class="sk-badge sk-badge--brand sk-badge--sm">2</span>
+        </button>
+
+        <!-- Active filters stay visible as removable chips. A filter the user
+             has forgotten about is how "where did my data go" tickets happen. -->
+        <span class="sk-badge sk-badge--neutral">
+          Environment: Production
+          <button type="button" class="sk-badge__remove sk-icon-button sk-icon-button--sm"
+                  onclick="this.closest('.sk-badge').remove()">
+            <svg aria-hidden="true" focusable="false" width="12" height="12"><use href="#sk-icon-close"></use></svg>
+            <span class="sk-visually-hidden">Remove environment filter Production</span>
+          </button>
+        </span>
+        <span class="sk-badge sk-badge--neutral">
+          Status: Applied
+          <button type="button" class="sk-badge__remove sk-icon-button sk-icon-button--sm"
+                  onclick="this.closest('.sk-badge').remove()">
+            <svg aria-hidden="true" focusable="false" width="12" height="12"><use href="#sk-icon-close"></use></svg>
+            <span class="sk-visually-hidden">Remove status filter Applied</span>
+          </button>
+        </span>
+
+        <span class="sk-cluster__push"></span>
+
+        <div class="sk-button-group sk-button-group--segmented" role="radiogroup" aria-label="Row density">
+          <button type="button" class="sk-button-group__segment" role="radio" data-sk-density-option="comfortable">Comfortable</button>
+          <button type="button" class="sk-button-group__segment" role="radio" data-sk-density-option="compact">Compact</button>
+          <button type="button" class="sk-button-group__segment" role="radio" data-sk-density-option="dense">Dense</button>
+        </div>
+      </div>
+
+      <div class="sk-popover sk-popover--arrow" id="zone-filters" hidden>
+        <header class="sk-popover__header">
+          <h2 class="sk-popover__title">Filter zones</h2>
+        </header>
+        <div class="sk-popover__body">
+          <fieldset class="sk-fieldset">
+            <legend class="sk-fieldset__legend">Environment</legend>
+            <div class="sk-fieldset__body">
+              <label class="sk-checkbox">
+                <input type="checkbox" class="sk-checkbox__input" checked />
+                <span class="sk-checkbox__box" aria-hidden="true"></span>
+                <span class="sk-checkbox__content"><span class="sk-checkbox__label">Production</span></span>
+              </label>
+              <label class="sk-checkbox">
+                <input type="checkbox" class="sk-checkbox__input" />
+                <span class="sk-checkbox__box" aria-hidden="true"></span>
+                <span class="sk-checkbox__content"><span class="sk-checkbox__label">Staging</span></span>
+              </label>
+              <label class="sk-checkbox">
+                <input type="checkbox" class="sk-checkbox__input" />
+                <span class="sk-checkbox__box" aria-hidden="true"></span>
+                <span class="sk-checkbox__content"><span class="sk-checkbox__label">Development</span></span>
+              </label>
+            </div>
+          </fieldset>
+        </div>
+        <footer class="sk-popover__footer">
+          <button type="button" class="sk-button sk-button--ghost sk-button--sm" data-sk-popover-close>Clear</button>
+          <button type="button" class="sk-button sk-button--primary sk-button--sm" data-sk-popover-close>Apply</button>
+        </footer>
+      </div>
+
+      <!-- Appears on first selection. The count is always visible, and the
+           destructive button names it — "Delete 3 zones", never "Delete". -->
+      <div class="sk-bulk-bar sk-cluster sk-cluster--gap-12" id="zone-bulk-bar"
+           role="region" aria-label="Bulk actions" hidden>
+        <span class="sk-bulk-bar__count" data-sk-selection-count>0 zones selected</span>
+        <button type="button" class="sk-button sk-button--secondary sk-button--sm"
+                data-sk-demo-toast="Tag added to selected zones." data-sk-demo-undo="true">Add tag</button>
+        <button type="button" class="sk-button sk-button--danger-ghost sk-button--sm"
+                data-sk-dialog-open="bulk-delete-dialog">
+          <span class="sk-button__label" data-sk-selection-label="Delete {n} zones">Delete 0 zones</span>
+        </button>
+        <button type="button" class="sk-button sk-button--ghost sk-button--sm sk-cluster__push"
+                data-sk-clear-selection>Clear selection</button>
+      </div>
+
+      <!-- The scroll container needs tabindex, role and a name, or keyboard
+           users cannot scroll it at all. The page never scrolls sideways;
+           the table does. That is WCAG 1.4.10 Reflow. -->
+      <div class="sk-table" id="zone-table" role="region" aria-labelledby="zones-caption" tabindex="0"
+           data-sk-table data-sk-bulk-bar="zone-bulk-bar">
+        <table>
+          <caption id="zones-caption" class="sk-table__caption">
+            DNS zones
+            <span class="sk-table__caption-detail">Showing 1 to 8 of 128, sorted by name</span>
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col" class="sk-table__select-col">
+                <label class="sk-checkbox">
+                  <input type="checkbox" class="sk-checkbox__input" data-sk-select-all />
+                  <span class="sk-checkbox__box" aria-hidden="true"></span>
+                  <span class="sk-checkbox__content">
+                    <span class="sk-visually-hidden">Select all zones on this page</span>
+                  </span>
+                </label>
+              </th>
+              <th scope="col" class="sk-table__column--sortable" aria-sort="ascending">
+                <button type="button" class="sk-table__sort" data-sk-sort>
+                  Zone name
+                  <svg aria-hidden="true" focusable="false" width="14" height="14"><use href="#sk-icon-sort-asc"></use></svg>
+                </button>
+              </th>
+              <th scope="col">Environment</th>
+              <th scope="col">Status</th>
+              <th scope="col" class="sk-table__column--sortable" aria-sort="none">
+                <button type="button" class="sk-table__sort" data-sk-sort>
+                  Records
+                  <svg aria-hidden="true" focusable="false" width="14" height="14"><use href="#sk-icon-sort-unsorted"></use></svg>
+                </button>
+              </th>
+              <th scope="col">Last change</th>
+              <th scope="col"><span class="sk-visually-hidden">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <label class="sk-checkbox">
+                  <input type="checkbox" class="sk-checkbox__input" data-sk-select-row />
+                  <span class="sk-checkbox__box" aria-hidden="true"></span>
+                  <span class="sk-checkbox__content"><span class="sk-visually-hidden">Select example.com</span></span>
+                </label>
+              </td>
+              <th scope="row"><a class="sk-link sk-link--quiet" href="zone.html">example.com</a></th>
+              <td>Production</td>
+              <td>
+                <span class="sk-status sk-status--success">
+                  <span class="sk-status__dot" aria-hidden="true"></span>
+                  <span class="sk-status__label">Applied</span>
+                </span>
+              </td>
+              <td class="sk-table__cell--numeric">128</td>
+              <td><time datetime="2026-08-04T09:12:00Z">4 Aug, 09:12</time></td>
+              <td>
+                <button type="button" class="sk-icon-button sk-icon-button--sm"
+                        aria-haspopup="menu" aria-expanded="false" aria-controls="row-menu-1">
+                  <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-more"></use></svg>
+                  <span class="sk-visually-hidden">Actions for example.com</span>
+                </button>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <label class="sk-checkbox">
+                  <input type="checkbox" class="sk-checkbox__input" data-sk-select-row />
+                  <span class="sk-checkbox__box" aria-hidden="true"></span>
+                  <span class="sk-checkbox__content"><span class="sk-visually-hidden">Select api.example.com</span></span>
+                </label>
+              </td>
+              <th scope="row"><a class="sk-link sk-link--quiet" href="zone.html">api.example.com</a></th>
+              <td>Production</td>
+              <td>
+                <span class="sk-status sk-status--success">
+                  <span class="sk-status__dot" aria-hidden="true"></span>
+                  <span class="sk-status__label">Applied</span>
+                </span>
+              </td>
+              <td class="sk-table__cell--numeric">64</td>
+              <td><time datetime="2026-08-03T14:02:00Z">3 Aug, 14:02</time></td>
+              <td>
+                <button type="button" class="sk-icon-button sk-icon-button--sm"
+                        aria-haspopup="menu" aria-expanded="false" aria-controls="row-menu-2">
+                  <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-more"></use></svg>
+                  <span class="sk-visually-hidden">Actions for api.example.com</span>
+                </button>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <label class="sk-checkbox">
+                  <input type="checkbox" class="sk-checkbox__input" data-sk-select-row />
+                  <span class="sk-checkbox__box" aria-hidden="true"></span>
+                  <span class="sk-checkbox__content"><span class="sk-visually-hidden">Select cdn.example.com</span></span>
+                </label>
+              </td>
+              <th scope="row"><a class="sk-link sk-link--quiet" href="zone.html">cdn.example.com</a></th>
+              <td>Production</td>
+              <td>
+                <span class="sk-status sk-status--danger">
+                  <span class="sk-status__dot" aria-hidden="true"></span>
+                  <span class="sk-status__label">Failed</span>
+                  <span class="sk-status__detail">2 records</span>
+                </span>
+              </td>
+              <td class="sk-table__cell--numeric">212</td>
+              <td><time datetime="2026-08-04T08:40:00Z">4 Aug, 08:40</time></td>
+              <td>
+                <button type="button" class="sk-icon-button sk-icon-button--sm"
+                        aria-haspopup="menu" aria-expanded="false" aria-controls="row-menu-3">
+                  <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-more"></use></svg>
+                  <span class="sk-visually-hidden">Actions for cdn.example.com</span>
+                </button>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <label class="sk-checkbox">
+                  <input type="checkbox" class="sk-checkbox__input" data-sk-select-row />
+                  <span class="sk-checkbox__box" aria-hidden="true"></span>
+                  <span class="sk-checkbox__content"><span class="sk-visually-hidden">Select eu.example.com</span></span>
+                </label>
+              </td>
+              <th scope="row"><a class="sk-link sk-link--quiet" href="zone.html">eu.example.com</a></th>
+              <td>Production</td>
+              <td>
+                <span class="sk-status sk-status--pending">
+                  <span class="sk-status__dot" aria-hidden="true"></span>
+                  <span class="sk-status__label">Awaiting delegation</span>
+                </span>
+              </td>
+              <td class="sk-table__cell--numeric">18</td>
+              <td><time datetime="2026-08-04T08:02:00Z">4 Aug, 08:02</time></td>
+              <td>
+                <button type="button" class="sk-icon-button sk-icon-button--sm"
+                        aria-haspopup="menu" aria-expanded="false" aria-controls="row-menu-4">
+                  <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-more"></use></svg>
+                  <span class="sk-visually-hidden">Actions for eu.example.com</span>
+                </button>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <label class="sk-checkbox">
+                  <input type="checkbox" class="sk-checkbox__input" data-sk-select-row />
+                  <span class="sk-checkbox__box" aria-hidden="true"></span>
+                  <span class="sk-checkbox__content"><span class="sk-visually-hidden">Select staging.example.com</span></span>
+                </label>
+              </td>
+              <th scope="row"><a class="sk-link sk-link--quiet" href="zone.html">staging.example.com</a></th>
+              <td>Staging</td>
+              <td>
+                <span class="sk-status sk-status--warning">
+                  <span class="sk-status__dot" aria-hidden="true"></span>
+                  <span class="sk-status__label">Degraded</span>
+                </span>
+              </td>
+              <td class="sk-table__cell--numeric">41</td>
+              <td><time datetime="2026-08-02T11:20:00Z">2 Aug, 11:20</time></td>
+              <td>
+                <button type="button" class="sk-icon-button sk-icon-button--sm"
+                        aria-haspopup="menu" aria-expanded="false" aria-controls="row-menu-5">
+                  <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-more"></use></svg>
+                  <span class="sk-visually-hidden">Actions for staging.example.com</span>
+                </button>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <label class="sk-checkbox">
+                  <input type="checkbox" class="sk-checkbox__input" data-sk-select-row />
+                  <span class="sk-checkbox__box" aria-hidden="true"></span>
+                  <span class="sk-checkbox__content"><span class="sk-visually-hidden">Select status.example.com</span></span>
+                </label>
+              </td>
+              <th scope="row"><a class="sk-link sk-link--quiet" href="zone.html">status.example.com</a></th>
+              <td>Production</td>
+              <td>
+                <span class="sk-status sk-status--success">
+                  <span class="sk-status__dot" aria-hidden="true"></span>
+                  <span class="sk-status__label">Applied</span>
+                </span>
+              </td>
+              <td class="sk-table__cell--numeric">9</td>
+              <td><time datetime="2026-08-03T16:45:00Z">3 Aug, 16:45</time></td>
+              <td>
+                <button type="button" class="sk-icon-button sk-icon-button--sm"
+                        aria-haspopup="menu" aria-expanded="false" aria-controls="row-menu-6">
+                  <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-more"></use></svg>
+                  <span class="sk-visually-hidden">Actions for status.example.com</span>
+                </button>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <label class="sk-checkbox">
+                  <input type="checkbox" class="sk-checkbox__input" data-sk-select-row />
+                  <span class="sk-checkbox__box" aria-hidden="true"></span>
+                  <span class="sk-checkbox__content"><span class="sk-visually-hidden">Select dev.example.com</span></span>
+                </label>
+              </td>
+              <th scope="row"><a class="sk-link sk-link--quiet" href="zone.html">dev.example.com</a></th>
+              <td>Development</td>
+              <td>
+                <span class="sk-status sk-status--neutral">
+                  <span class="sk-status__dot" aria-hidden="true"></span>
+                  <span class="sk-status__label">Draft</span>
+                </span>
+              </td>
+              <td class="sk-table__cell--numeric">3</td>
+              <td><time datetime="2026-07-28T09:00:00Z">28 Jul, 09:00</time></td>
+              <td>
+                <button type="button" class="sk-icon-button sk-icon-button--sm"
+                        aria-haspopup="menu" aria-expanded="false" aria-controls="row-menu-7">
+                  <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-more"></use></svg>
+                  <span class="sk-visually-hidden">Actions for dev.example.com</span>
+                </button>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <label class="sk-checkbox">
+                  <input type="checkbox" class="sk-checkbox__input" data-sk-select-row />
+                  <span class="sk-checkbox__box" aria-hidden="true"></span>
+                  <span class="sk-checkbox__content"><span class="sk-visually-hidden">Select mail.example.com</span></span>
+                </label>
+              </td>
+              <th scope="row"><a class="sk-link sk-link--quiet" href="zone.html">mail.example.com</a></th>
+              <td>Production</td>
+              <td>
+                <span class="sk-status sk-status--success">
+                  <span class="sk-status__dot" aria-hidden="true"></span>
+                  <span class="sk-status__label">Applied</span>
+                </span>
+              </td>
+              <td class="sk-table__cell--numeric">27</td>
+              <td><time datetime="2026-07-30T13:15:00Z">30 Jul, 13:15</time></td>
+              <td>
+                <button type="button" class="sk-icon-button sk-icon-button--sm"
+                        aria-haspopup="menu" aria-expanded="false" aria-controls="row-menu-8">
+                  <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-more"></use></svg>
+                  <span class="sk-visually-hidden">Actions for mail.example.com</span>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- No-results state. Names the filters that caused it and offers to
+           clear them, which is almost always what the user wants. Different
+           copy from the first-use state, deliberately. -->
+      <div class="sk-empty-state sk-empty-state--no-results" data-sk-filter-empty hidden>
+        <svg class="sk-empty-state__icon" aria-hidden="true" focusable="false" width="48" height="48"><use href="#sk-icon-search"></use></svg>
+        <h2 class="sk-empty-state__heading">No zones match your filters</h2>
+        <p class="sk-empty-state__body">
+          No zones match <strong>“<span data-sk-filter-term></span>”</strong> in the
+          <strong>Production</strong> environment. Try a different search term, or
+          clear the environment filter.
+        </p>
+        <div class="sk-empty-state__actions">
+          <button type="button" class="sk-button sk-button--secondary"
+                  onclick="var i=document.getElementById('zone-q');i.value='';i.dispatchEvent(new Event('input'));i.focus()">
+            Clear all filters
+          </button>
+        </div>
+      </div>
+
+      <nav class="sk-pagination" aria-label="Pagination">
+        <p class="sk-pagination__status" data-sk-filter-status>Showing 1 to 8 of 128 zones</p>
+        <ul class="sk-pagination__list">
+          <li>
+            <a class="sk-pagination__control" href="?page=1" aria-disabled="true" rel="prev">
+              <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-chevron-left"></use></svg>
+              Previous
+            </a>
+          </li>
+          <li><a class="sk-pagination__page" href="?page=1" aria-current="page"><span class="sk-visually-hidden">Current page, page </span>1</a></li>
+          <li><a class="sk-pagination__page" href="?page=2"><span class="sk-visually-hidden">Go to page </span>2</a></li>
+          <li><a class="sk-pagination__page" href="?page=3"><span class="sk-visually-hidden">Go to page </span>3</a></li>
+          <li><span class="sk-pagination__ellipsis" aria-hidden="true">…</span></li>
+          <li><a class="sk-pagination__page" href="?page=16"><span class="sk-visually-hidden">Go to page </span>16</a></li>
+          <li>
+            <a class="sk-pagination__control" href="?page=2" rel="next">
+              Next
+              <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-chevron-right"></use></svg>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Row action menus. Destructive item last, behind a separator. -->
+      <div class="sk-menu" id="row-menu-1" role="menu" hidden>
+        <a class="sk-menu__item" role="menuitem" href="zone.html" data-sk-demo="false">
+          <svg class="sk-menu__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-edit"></use></svg>
+          <span class="sk-menu__label">Edit zone</span>
+          <kbd class="sk-menu__shortcut">E</kbd>
+        </a>
+        <button type="button" class="sk-menu__item" role="menuitem">
+          <svg class="sk-menu__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-copy"></use></svg>
+          <span class="sk-menu__label">Duplicate zone</span>
+        </button>
+        <button type="button" class="sk-menu__item" role="menuitem">
+          <svg class="sk-menu__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-download"></use></svg>
+          <span class="sk-menu__label">Export as zone file</span>
+        </button>
+        <hr class="sk-menu__separator" role="separator" />
+        <button type="button" class="sk-menu__item sk-menu__item--danger" role="menuitem"
+                data-sk-demo="false" data-sk-dialog-open="delete-zone-dialog">
+          <svg class="sk-menu__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-trash"></use></svg>
+          <span class="sk-menu__label">Delete zone</span>
+        </button>
+      </div>
+
+      <div class="sk-menu" id="row-menu-2" role="menu" hidden>
+        <a class="sk-menu__item" role="menuitem" href="zone.html" data-sk-demo="false">
+          <svg class="sk-menu__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-edit"></use></svg>
+          <span class="sk-menu__label">Edit zone</span>
+        </a>
+        <hr class="sk-menu__separator" role="separator" />
+        <button type="button" class="sk-menu__item sk-menu__item--danger" role="menuitem"
+                data-sk-demo="false" data-sk-dialog-open="delete-zone-dialog">
+          <svg class="sk-menu__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-trash"></use></svg>
+          <span class="sk-menu__label">Delete zone</span>
+        </button>
+      </div>
+
+      <div class="sk-menu" id="row-menu-3" role="menu" hidden>
+        <button type="button" class="sk-menu__item" role="menuitem">
+          <svg class="sk-menu__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-refresh"></use></svg>
+          <span class="sk-menu__label">Retry failed records</span>
+        </button>
+        <a class="sk-menu__item" role="menuitem" href="zone.html" data-sk-demo="false">
+          <svg class="sk-menu__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-edit"></use></svg>
+          <span class="sk-menu__label">Edit zone</span>
+        </a>
+        <hr class="sk-menu__separator" role="separator" />
+        <button type="button" class="sk-menu__item sk-menu__item--danger" role="menuitem"
+                data-sk-demo="false" data-sk-dialog-open="delete-zone-dialog">
+          <svg class="sk-menu__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-trash"></use></svg>
+          <span class="sk-menu__label">Delete zone</span>
+        </button>
+      </div>
+
+      <div class="sk-menu" id="row-menu-4" role="menu" hidden>
+        <button type="button" class="sk-menu__item" role="menuitem">
+          <svg class="sk-menu__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-refresh"></use></svg>
+          <span class="sk-menu__label">Check delegation</span>
+        </button>
+        <hr class="sk-menu__separator" role="separator" />
+        <button type="button" class="sk-menu__item sk-menu__item--danger" role="menuitem"
+                data-sk-demo="false" data-sk-dialog-open="delete-zone-dialog">
+          <svg class="sk-menu__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-trash"></use></svg>
+          <span class="sk-menu__label">Delete zone</span>
+        </button>
+      </div>
+
+      <div class="sk-menu" id="row-menu-5" role="menu" hidden>
+        <a class="sk-menu__item" role="menuitem" href="zone.html" data-sk-demo="false">
+          <svg class="sk-menu__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-edit"></use></svg>
+          <span class="sk-menu__label">Edit zone</span>
+        </a>
+      </div>
+      <div class="sk-menu" id="row-menu-6" role="menu" hidden>
+        <a class="sk-menu__item" role="menuitem" href="zone.html" data-sk-demo="false">
+          <svg class="sk-menu__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-edit"></use></svg>
+          <span class="sk-menu__label">Edit zone</span>
+        </a>
+      </div>
+      <div class="sk-menu" id="row-menu-7" role="menu" hidden>
+        <a class="sk-menu__item" role="menuitem" href="zone.html" data-sk-demo="false">
+          <svg class="sk-menu__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-edit"></use></svg>
+          <span class="sk-menu__label">Edit zone</span>
+        </a>
+      </div>
+      <div class="sk-menu" id="row-menu-8" role="menu" hidden>
+        <a class="sk-menu__item" role="menuitem" href="zone.html" data-sk-demo="false">
+          <svg class="sk-menu__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-edit"></use></svg>
+          <span class="sk-menu__label">Edit zone</span>
+        </a>
+      </div>
+
+      <!-- Single-zone delete: irreversible and high impact, so it asks for the
+           zone name to be typed. Cancel is focused, never the destructive
+           option. -->
+      <dialog class="sk-dialog sk-dialog--destructive sk-dialog--sm" id="delete-zone-dialog"
+              aria-labelledby="dz-title" data-sk-confirm-message="Zone example.com deleted.">
+        <form method="dialog" class="sk-dialog__panel">
+          <header class="sk-dialog__header">
+            <h2 class="sk-dialog__title" id="dz-title">Delete zone example.com?</h2>
+            <button type="button" class="sk-icon-button sk-icon-button--sm" data-sk-dialog-close>
+              <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-close"></use></svg>
+              <span class="sk-visually-hidden">Close dialog</span>
+            </button>
+          </header>
+          <div class="sk-dialog__body">
+            <p>
+              This removes <strong>128 records</strong> and cannot be undone. Any service
+              resolving through this zone will stop resolving within the TTL window.
+            </p>
+            <div class="sk-field">
+              <label class="sk-field__label" for="dz-confirm">
+                Type <code class="sk-code">example.com</code> to confirm
+              </label>
+              <input class="sk-input sk-input--mono" id="dz-confirm" type="text" autocomplete="off"
+                     data-sk-confirm-phrase="example.com" />
+            </div>
+          </div>
+          <footer class="sk-dialog__footer">
+            <button type="submit" value="cancel" class="sk-button sk-button--secondary" autofocus>Cancel</button>
+            <button type="submit" value="confirm" class="sk-button sk-button--danger" disabled data-sk-confirm-button>
+              Delete zone
+            </button>
+          </footer>
+        </form>
+      </dialog>
+
+      <dialog class="sk-dialog sk-dialog--destructive sk-dialog--sm" id="bulk-delete-dialog"
+              aria-labelledby="bd-title" data-sk-confirm-message="Selected zones deleted.">
+        <form method="dialog" class="sk-dialog__panel">
+          <header class="sk-dialog__header">
+            <h2 class="sk-dialog__title" id="bd-title">Delete the selected zones?</h2>
+          </header>
+          <div class="sk-dialog__body">
+            <p>
+              Every record in each selected zone is removed. This cannot be undone.
+            </p>
+          </div>
+          <footer class="sk-dialog__footer">
+            <button type="submit" value="cancel" class="sk-button sk-button--secondary" autofocus>Cancel</button>
+            <button type="submit" value="confirm" class="sk-button sk-button--danger">Delete zones</button>
+          </footer>
+        </form>
+      </dialog>

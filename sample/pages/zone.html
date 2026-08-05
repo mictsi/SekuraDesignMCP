@@ -1,0 +1,412 @@
+      <header class="sk-page-header sk-page-header--detail">
+        <nav class="sk-breadcrumbs" aria-label="Breadcrumb">
+          <ol class="sk-breadcrumbs__list">
+            <li class="sk-breadcrumbs__item"><a class="sk-link sk-link--quiet" href="zones.html">Zones</a></li>
+            <li class="sk-breadcrumbs__item"><span aria-current="page">example.com</span></li>
+          </ol>
+        </nav>
+
+        <div class="sk-page-header__main">
+          <div class="sk-page-header__titles">
+            <div class="sk-page-header__title-row">
+              <h1 class="sk-page-header__title">example.com</h1>
+              <span class="sk-badge sk-badge--neutral">Production</span>
+              <span class="sk-status sk-status--success">
+                <span class="sk-status__dot" aria-hidden="true"></span>
+                <span class="sk-status__label">Applied</span>
+                <span class="sk-status__detail">2 hours ago</span>
+              </span>
+            </div>
+            <p class="sk-page-header__description">
+              128 records across 3 record sets. Owned by the Platform team.
+            </p>
+          </div>
+
+          <div class="sk-page-header__actions">
+            <!-- Split button: one click for the common case, one more for the
+                 rest. The trigger has its own name — "More" alone is
+                 meaningless in a list of controls. -->
+            <div class="sk-split-button sk-split-button--secondary" role="group" aria-label="Export options">
+              <button type="button" class="sk-split-button__action"
+                      data-sk-demo-toast="Export queued." data-sk-demo-intent="info">Export as CSV</button>
+              <button type="button" class="sk-split-button__trigger"
+                      aria-haspopup="menu" aria-expanded="false" aria-controls="export-menu">
+                <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-chevron-down"></use></svg>
+                <span class="sk-visually-hidden">More export options</span>
+              </button>
+            </div>
+            <button type="button" class="sk-button sk-button--primary">
+              <svg class="sk-button__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-plus"></use></svg>
+              <span class="sk-button__label">Add record</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="sk-tabs">
+          <div class="sk-tabs__list" role="tablist" aria-label="Zone views">
+            <button class="sk-tabs__tab" role="tab" id="tab-records"
+                    aria-selected="true" aria-controls="panel-records" tabindex="0">
+              Records <span class="sk-tabs__count">128</span>
+            </button>
+            <button class="sk-tabs__tab" role="tab" id="tab-metadata"
+                    aria-selected="false" aria-controls="panel-metadata" tabindex="-1">Metadata</button>
+            <button class="sk-tabs__tab" role="tab" id="tab-history"
+                    aria-selected="false" aria-controls="panel-history" tabindex="-1">History</button>
+            <button class="sk-tabs__tab" role="tab" id="tab-permissions"
+                    aria-selected="false" aria-controls="panel-permissions" tabindex="-1">Permissions</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="sk-tabs__panel" role="tabpanel" id="panel-records" aria-labelledby="tab-records" tabindex="0">
+        <div class="sk-stack sk-stack--gap-16">
+          <div class="sk-alert sk-alert--info">
+            <svg class="sk-alert__icon" aria-hidden="true" focusable="false" width="20" height="20"><use href="#sk-icon-info"></use></svg>
+            <div class="sk-alert__content">
+              <p class="sk-alert__body">
+                Changes are queued and applied by the provider. A record shows
+                <strong>Pending</strong> until the provider read-back confirms it — the
+                interface never claims success before that.
+              </p>
+            </div>
+          </div>
+
+          <div class="sk-table" role="region" aria-labelledby="records-caption" tabindex="0" data-sk-table>
+            <table>
+              <caption id="records-caption" class="sk-table__caption">
+                DNS records
+                <span class="sk-table__caption-detail">Showing 6 of 128</span>
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col" class="sk-table__column--sortable" aria-sort="ascending">
+                    <button type="button" class="sk-table__sort" data-sk-sort>
+                      Name
+                      <svg aria-hidden="true" focusable="false" width="14" height="14"><use href="#sk-icon-sort-asc"></use></svg>
+                    </button>
+                  </th>
+                  <th scope="col">Type</th>
+                  <th scope="col">Value</th>
+                  <th scope="col" class="sk-table__cell--numeric">TTL</th>
+                  <th scope="col">Status</th>
+                  <th scope="col"><span class="sk-visually-hidden">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row" class="sk-table__cell--mono">@</th>
+                  <td><span class="sk-badge sk-badge--neutral">A</span></td>
+                  <td class="sk-table__cell--mono">192.0.2.10</td>
+                  <td class="sk-table__cell--numeric">3600</td>
+                  <td>
+                    <span class="sk-status sk-status--success">
+                      <span class="sk-status__dot" aria-hidden="true"></span>
+                      <span class="sk-status__label">Applied</span>
+                    </span>
+                  </td>
+                  <td>
+                    <button type="button" class="sk-button sk-button--ghost sk-button--sm"
+                            data-sk-drawer-open="record-drawer">Inspect</button>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row" class="sk-table__cell--mono">www</th>
+                  <td><span class="sk-badge sk-badge--neutral">CNAME</span></td>
+                  <td class="sk-table__cell--mono">example.com.</td>
+                  <td class="sk-table__cell--numeric">3600</td>
+                  <td>
+                    <span class="sk-status sk-status--success">
+                      <span class="sk-status__dot" aria-hidden="true"></span>
+                      <span class="sk-status__label">Applied</span>
+                    </span>
+                  </td>
+                  <td>
+                    <button type="button" class="sk-button sk-button--ghost sk-button--sm"
+                            data-sk-drawer-open="record-drawer">Inspect</button>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row" class="sk-table__cell--mono">api</th>
+                  <td><span class="sk-badge sk-badge--neutral">A</span></td>
+                  <td class="sk-table__cell--mono">192.0.2.24</td>
+                  <td class="sk-table__cell--numeric">300</td>
+                  <td>
+                    <span class="sk-status sk-status--pending">
+                      <span class="sk-status__dot" aria-hidden="true"></span>
+                      <span class="sk-status__label">Pending</span>
+                    </span>
+                  </td>
+                  <td>
+                    <button type="button" class="sk-button sk-button--ghost sk-button--sm"
+                            data-sk-drawer-open="record-drawer">Inspect</button>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row" class="sk-table__cell--mono">mail</th>
+                  <td><span class="sk-badge sk-badge--neutral">MX</span></td>
+                  <td class="sk-table__cell--mono">10 mail.example.com.</td>
+                  <td class="sk-table__cell--numeric">3600</td>
+                  <td>
+                    <span class="sk-status sk-status--success">
+                      <span class="sk-status__dot" aria-hidden="true"></span>
+                      <span class="sk-status__label">Applied</span>
+                    </span>
+                  </td>
+                  <td>
+                    <button type="button" class="sk-button sk-button--ghost sk-button--sm"
+                            data-sk-drawer-open="record-drawer">Inspect</button>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row" class="sk-table__cell--mono">_dmarc</th>
+                  <td><span class="sk-badge sk-badge--neutral">TXT</span></td>
+                  <td class="sk-table__cell--mono sk-table__cell--truncate">v=DMARC1; p=quarantine; rua=mailto:dmarc@example.com</td>
+                  <td class="sk-table__cell--numeric">3600</td>
+                  <td>
+                    <span class="sk-status sk-status--success">
+                      <span class="sk-status__dot" aria-hidden="true"></span>
+                      <span class="sk-status__label">Applied</span>
+                    </span>
+                  </td>
+                  <td>
+                    <button type="button" class="sk-button sk-button--ghost sk-button--sm"
+                            data-sk-drawer-open="record-drawer">Inspect</button>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row" class="sk-table__cell--mono">legacy</th>
+                  <td><span class="sk-badge sk-badge--neutral">A</span></td>
+                  <td class="sk-table__cell--mono">192.0.2.99</td>
+                  <td class="sk-table__cell--numeric">60</td>
+                  <td>
+                    <span class="sk-status sk-status--danger">
+                      <span class="sk-status__dot" aria-hidden="true"></span>
+                      <span class="sk-status__label">Failed</span>
+                    </span>
+                  </td>
+                  <td>
+                    <button type="button" class="sk-button sk-button--ghost sk-button--sm"
+                            data-sk-drawer-open="record-drawer">Inspect</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="sk-tabs__panel" role="tabpanel" id="panel-metadata" aria-labelledby="tab-metadata" tabindex="0" hidden>
+        <dl class="sk-dl sk-dl--columns">
+          <div class="sk-dl__group">
+            <dt class="sk-dl__term">Zone name</dt>
+            <dd class="sk-dl__detail"><code class="sk-code">example.com</code></dd>
+          </div>
+          <div class="sk-dl__group">
+            <dt class="sk-dl__term">Environment</dt>
+            <dd class="sk-dl__detail">Production</dd>
+          </div>
+          <div class="sk-dl__group">
+            <dt class="sk-dl__term">Effective role</dt>
+            <dd class="sk-dl__detail">Owner <span class="sk-badge sk-badge--brand sk-badge--sm">via Platform team</span></dd>
+          </div>
+          <div class="sk-dl__group">
+            <dt class="sk-dl__term">Name servers</dt>
+            <dd class="sk-dl__detail">
+              <code class="sk-code">ns1.example.net</code>,
+              <code class="sk-code">ns2.example.net</code>
+            </dd>
+          </div>
+          <div class="sk-dl__group">
+            <dt class="sk-dl__term">Created</dt>
+            <dd class="sk-dl__detail">
+              <time datetime="2024-03-11T10:00:00Z">11 March 2024, 10:00 UTC</time>
+            </dd>
+          </div>
+          <div class="sk-dl__group">
+            <dt class="sk-dl__term">Last change</dt>
+            <dd class="sk-dl__detail">
+              <time datetime="2026-08-04T09:12:00Z">4 August 2026, 09:12 UTC</time>
+              <span style="color:var(--sk-color-text-tertiary)">(2 hours ago)</span>
+            </dd>
+          </div>
+          <!-- An em dash alone announces nothing, so the absence is spelled out. -->
+          <div class="sk-dl__group" data-empty>
+            <dt class="sk-dl__term">Description</dt>
+            <dd class="sk-dl__detail">
+              <span aria-hidden="true">—</span>
+              <span class="sk-visually-hidden">Not set</span>
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="sk-tabs__panel" role="tabpanel" id="panel-history" aria-labelledby="tab-history" tabindex="0" hidden>
+        <h2 class="sk-timeline__date-heading">Newest first</h2>
+        <ol class="sk-timeline">
+          <li class="sk-timeline__event" data-success>
+            <span class="sk-timeline__marker" aria-hidden="true"></span>
+            <div class="sk-timeline__content">
+              <p class="sk-timeline__summary">
+                <strong>Ana Silva</strong> changed the TTL of <code class="sk-code">www</code> from 300 to 3600.
+              </p>
+              <p class="sk-timeline__meta">
+                <time datetime="2026-08-04T09:12:00Z">4 August 2026, 09:12 UTC</time> · Applied
+              </p>
+            </div>
+          </li>
+          <li class="sk-timeline__event" data-pending>
+            <span class="sk-timeline__marker" aria-hidden="true"></span>
+            <div class="sk-timeline__content">
+              <p class="sk-timeline__summary">
+                <strong>Andre Kim</strong> added an A record for <code class="sk-code">api</code>.
+              </p>
+              <p class="sk-timeline__meta">
+                <time datetime="2026-08-04T08:55:00Z">4 August 2026, 08:55 UTC</time> · Pending provider read-back
+              </p>
+            </div>
+          </li>
+          <li class="sk-timeline__event" data-failed>
+            <span class="sk-timeline__marker" aria-hidden="true"></span>
+            <div class="sk-timeline__content">
+              <p class="sk-timeline__summary">
+                <strong>Automatic retry</strong> failed to apply <code class="sk-code">legacy</code>.
+                The provider rejected the TTL as below its minimum of 120 seconds.
+              </p>
+              <p class="sk-timeline__meta">
+                <time datetime="2026-08-04T08:40:00Z">4 August 2026, 08:40 UTC</time> · Failed
+                · Correlation ID <code class="sk-code">7f3a-91bc</code>
+              </p>
+            </div>
+          </li>
+          <li class="sk-timeline__event" data-success>
+            <span class="sk-timeline__marker" aria-hidden="true"></span>
+            <div class="sk-timeline__content">
+              <p class="sk-timeline__summary">
+                <strong>Ana Silva</strong> created zone <code class="sk-code">example.com</code>.
+              </p>
+              <p class="sk-timeline__meta">
+                <time datetime="2024-03-11T10:00:00Z">11 March 2024, 10:00 UTC</time> · Applied
+              </p>
+            </div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="sk-tabs__panel" role="tabpanel" id="panel-permissions" aria-labelledby="tab-permissions" tabindex="0" hidden>
+        <div class="sk-stack sk-stack--gap-16">
+          <div class="sk-alert sk-alert--info">
+            <svg class="sk-alert__icon" aria-hidden="true" focusable="false" width="20" height="20"><use href="#sk-icon-info"></use></svg>
+            <div class="sk-alert__content">
+              <p class="sk-alert__body">
+                Only principals you are permitted to see are listed. Counts never
+                include resources outside your access.
+              </p>
+            </div>
+          </div>
+
+          <div class="sk-table" role="region" aria-label="Zone permissions" tabindex="0">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Principal</th>
+                  <th scope="col">Role</th>
+                  <th scope="col">Source</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">
+                    <span class="sk-avatar-with-name">
+                      <span class="sk-avatar sk-avatar--sm" data-tint="2" aria-hidden="true">PT</span>
+                      <span class="sk-avatar-with-name__label">Platform team</span>
+                    </span>
+                  </th>
+                  <td>Owner</td>
+                  <td>Direct</td>
+                </tr>
+                <tr>
+                  <th scope="row">
+                    <span class="sk-avatar-with-name">
+                      <span class="sk-avatar sk-avatar--sm" data-tint="4" aria-hidden="true">AS</span>
+                      <span class="sk-avatar-with-name__label">Ana Silva</span>
+                    </span>
+                  </th>
+                  <td>Editor</td>
+                  <td>Inherited from Platform team</td>
+                </tr>
+                <tr>
+                  <th scope="row">
+                    <span class="sk-avatar-with-name">
+                      <span class="sk-avatar sk-avatar--sm" data-tint="6" aria-hidden="true">NW</span>
+                      <span class="sk-avatar-with-name__label">Networking team</span>
+                    </span>
+                  </th>
+                  <td>Viewer</td>
+                  <td>Direct</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inline drawer above lg (page stays interactive, focus not trapped, no
+           aria-modal), modal below it. app.js switches the ARIA as well as the
+           CSS — shipping only the CSS half is a real accessibility bug. -->
+      <aside class="sk-drawer sk-drawer--modal" id="record-drawer" aria-labelledby="record-drawer-title" hidden>
+        <header class="sk-drawer__header">
+          <h2 class="sk-drawer__title" id="record-drawer-title">www.example.com</h2>
+          <button type="button" class="sk-icon-button sk-icon-button--sm" data-sk-drawer-close>
+            <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-close"></use></svg>
+            <span class="sk-visually-hidden">Close record details</span>
+          </button>
+        </header>
+
+        <div class="sk-drawer__body sk-stack sk-stack--gap-20">
+          <dl class="sk-dl">
+            <div class="sk-dl__group">
+              <dt class="sk-dl__term">Type</dt>
+              <dd class="sk-dl__detail"><span class="sk-badge sk-badge--neutral">CNAME</span></dd>
+            </div>
+            <div class="sk-dl__group">
+              <dt class="sk-dl__term">Value</dt>
+              <dd class="sk-dl__detail"><code class="sk-code">example.com.</code></dd>
+            </div>
+            <div class="sk-dl__group">
+              <dt class="sk-dl__term">TTL</dt>
+              <dd class="sk-dl__detail">3600 seconds <span style="color:var(--sk-color-text-tertiary)">(1 hour)</span></dd>
+            </div>
+          </dl>
+
+          <figure class="sk-code-block">
+            <figcaption class="sk-code-block__header">
+              <span class="sk-code-block__language">zone file</span>
+              <button type="button" class="sk-button sk-button--ghost sk-button--sm"
+                      data-sk-copy="#record-snippet">
+                <svg class="sk-button__icon" aria-hidden="true" focusable="false" width="14" height="14"><use href="#sk-icon-copy"></use></svg>
+                <span class="sk-button__label" data-sk-copy-label>Copy</span>
+              </button>
+            </figcaption>
+            <div class="sk-code-block__scroll" tabindex="0" role="region" aria-label="Zone file record">
+<pre class="sk-code-block__pre" id="record-snippet"><code>www.example.com.  3600  IN  CNAME  example.com.</code></pre>
+            </div>
+          </figure>
+        </div>
+
+        <footer class="sk-drawer__footer">
+          <button type="button" class="sk-button sk-button--secondary">Edit record</button>
+          <button type="button" class="sk-button sk-button--danger-ghost">Delete record</button>
+        </footer>
+      </aside>
+
+      <div class="sk-menu" id="export-menu" role="menu" hidden>
+        <button type="button" class="sk-menu__item" role="menuitem">
+          <span class="sk-menu__label">Export as CSV</span>
+        </button>
+        <button type="button" class="sk-menu__item" role="menuitem">
+          <span class="sk-menu__label">Export as zone file</span>
+        </button>
+        <button type="button" class="sk-menu__item" role="menuitem">
+          <span class="sk-menu__label">Export as JSON</span>
+        </button>
+      </div>

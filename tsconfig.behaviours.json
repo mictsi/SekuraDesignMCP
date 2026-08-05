@@ -1,0 +1,19 @@
+{
+  "//": "Browser-targeted config for the behaviours package. Kept separate from the server build, which is Node-only and must not see DOM globals. esbuild does the bundling; tsc here typechecks and emits declarations.",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "rootDir": "src/behaviours",
+    "outDir": "dist-js/types",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": []
+  },
+  "include": ["src/behaviours/**/*.ts"]
+}

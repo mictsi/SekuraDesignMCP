@@ -1,0 +1,289 @@
+      <header class="sk-page-header">
+        <h1 class="sk-page-header__title">Settings</h1>
+        <p class="sk-page-header__description">
+          Preferences apply immediately and are stored on this device.
+        </p>
+      </header>
+
+      <div class="sk-sidebar-layout sk-sidebar-layout--narrow">
+
+        <nav class="sk-sidebar-layout__sidebar sk-side-nav" aria-label="Settings sections"
+             style="background:transparent;border:none;padding:0">
+          <ul class="sk-side-nav__list">
+            <li><a class="sk-side-nav__item" href="#appearance" aria-current="true"><span class="sk-side-nav__label">Appearance</span></a></li>
+            <li><a class="sk-side-nav__item" href="#notifications"><span class="sk-side-nav__label">Notifications</span></a></li>
+            <li><a class="sk-side-nav__item" href="#profile"><span class="sk-side-nav__label">Profile</span></a></li>
+            <li><a class="sk-side-nav__item" href="#danger"><span class="sk-side-nav__label">Delete account</span></a></li>
+          </ul>
+        </nav>
+
+        <div class="sk-sidebar-layout__content sk-stack sk-stack--gap-48">
+
+          <!-- =============== Appearance =============== -->
+          <section aria-labelledby="appearance-h" id="appearance" class="sk-stack sk-stack--gap-24">
+            <div>
+              <h2 class="sk-fieldset__legend" id="appearance-h">Appearance</h2>
+              <p class="sk-field__hint">
+                These are switches, not checkboxes, because they take effect the
+                moment they move — there is no Save button on this page.
+              </p>
+            </div>
+
+            <fieldset class="sk-fieldset">
+              <legend class="sk-fieldset__legend">Colour theme</legend>
+              <p class="sk-field__hint" id="theme-hint">
+                Three options, not two. <strong>System</strong> follows your operating
+                system and is the default — a two-state toggle would silently override
+                that preference the first time you touched it, with no way back.
+              </p>
+              <div class="sk-fieldset__body">
+                <div class="sk-button-group sk-button-group--segmented" role="radiogroup"
+                     aria-label="Colour theme" aria-describedby="theme-hint">
+                  <button type="button" class="sk-button-group__segment" role="radio" data-sk-theme-option="system">
+                    <svg aria-hidden="true" focusable="false" width="16" height="16" style="margin-inline-end:.4rem"><use href="#sk-icon-monitor"></use></svg>
+                    System
+                  </button>
+                  <button type="button" class="sk-button-group__segment" role="radio" data-sk-theme-option="light">
+                    <svg aria-hidden="true" focusable="false" width="16" height="16" style="margin-inline-end:.4rem"><use href="#sk-icon-sun"></use></svg>
+                    Light
+                  </button>
+                  <button type="button" class="sk-button-group__segment" role="radio" data-sk-theme-option="dark">
+                    <svg aria-hidden="true" focusable="false" width="16" height="16" style="margin-inline-end:.4rem"><use href="#sk-icon-moon"></use></svg>
+                    Dark
+                  </button>
+                </div>
+              </div>
+            </fieldset>
+
+            <!-- Both themes side by side. Forcing a theme on a subtree works
+                 because every token is a custom property inherited from the
+                 element carrying data-sk-theme — no separate stylesheet, no
+                 duplicated component code. -->
+            <div>
+              <h3 class="sk-fieldset__legend" style="font-size:var(--sk-font-size-heading-xs)">Both themes at once</h3>
+              <p class="sk-field__hint" style="margin-block-end:var(--sk-space-12)">
+                The same markup, rendered under two themes. Note that the card gets
+                <em>lighter</em> than its page in dark mode while the border does the
+                separating work — in light mode the shadow does it instead.
+              </p>
+              <div class="theme-preview">
+                <div class="theme-preview__pane" data-sk-theme="light">
+                  <p class="sk-field__hint" style="margin:0">Light</p>
+                  <div class="sk-card">
+                    <div class="sk-card__header"><h4 class="sk-card__title">example.com</h4></div>
+                    <div class="sk-card__body">
+                      <span class="sk-status sk-status--success">
+                        <span class="sk-status__dot" aria-hidden="true"></span>
+                        <span class="sk-status__label">Applied</span>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="sk-cluster sk-cluster--gap-8">
+                    <span class="sk-button sk-button--primary sk-button--sm" aria-hidden="true">Primary</span>
+                    <span class="sk-button sk-button--secondary sk-button--sm" aria-hidden="true">Secondary</span>
+                  </div>
+                  <div class="sk-alert sk-alert--warning sk-alert--compact">
+                    <svg class="sk-alert__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-warning"></use></svg>
+                    <div class="sk-alert__content"><p class="sk-alert__body">Delegation not verified.</p></div>
+                  </div>
+                </div>
+
+                <div class="theme-preview__pane" data-sk-theme="dark">
+                  <p class="sk-field__hint" style="margin:0">Dark</p>
+                  <div class="sk-card">
+                    <div class="sk-card__header"><h4 class="sk-card__title">example.com</h4></div>
+                    <div class="sk-card__body">
+                      <span class="sk-status sk-status--success">
+                        <span class="sk-status__dot" aria-hidden="true"></span>
+                        <span class="sk-status__label">Applied</span>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="sk-cluster sk-cluster--gap-8">
+                    <span class="sk-button sk-button--primary sk-button--sm" aria-hidden="true">Primary</span>
+                    <span class="sk-button sk-button--secondary sk-button--sm" aria-hidden="true">Secondary</span>
+                  </div>
+                  <div class="sk-alert sk-alert--warning sk-alert--compact">
+                    <svg class="sk-alert__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-warning"></use></svg>
+                    <div class="sk-alert__content"><p class="sk-alert__body">Delegation not verified.</p></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <fieldset class="sk-fieldset">
+              <legend class="sk-fieldset__legend">Density</legend>
+              <p class="sk-field__hint" id="density-hint">
+                Changes control padding and row height only. It never reduces text
+                below 14px or a hit target below 24 by 24 pixels.
+              </p>
+              <div class="sk-fieldset__body">
+                <div class="sk-button-group sk-button-group--segmented" role="radiogroup"
+                     aria-label="Density" aria-describedby="density-hint">
+                  <button type="button" class="sk-button-group__segment" role="radio" data-sk-density-option="comfortable">Comfortable</button>
+                  <button type="button" class="sk-button-group__segment" role="radio" data-sk-density-option="compact">Compact</button>
+                  <button type="button" class="sk-button-group__segment" role="radio" data-sk-density-option="dense">Dense</button>
+                </div>
+              </div>
+            </fieldset>
+
+            <ul class="sk-stack sk-stack--divided sk-stack--gap-0" role="list">
+              <li class="sk-switch">
+                <span class="sk-switch__content">
+                  <label class="sk-switch__label" for="reduce-motion">Reduce motion</label>
+                  <span class="sk-switch__description" id="reduce-motion-desc">
+                    Overrides your system setting for this application. Spinners keep
+                    turning, slowly — a frozen spinner communicates nothing.
+                  </span>
+                </span>
+                <input type="checkbox" role="switch" class="sk-switch__input" id="reduce-motion"
+                       aria-describedby="reduce-motion-desc" data-sk-async />
+                <span class="sk-switch__track" aria-hidden="true"><span class="sk-switch__thumb"></span></span>
+              </li>
+
+              <li class="sk-switch">
+                <span class="sk-switch__content">
+                  <label class="sk-switch__label" for="mono-ids">Monospace identifiers</label>
+                  <span class="sk-switch__description" id="mono-ids-desc">
+                    Render hostnames, keys and hashes in JetBrains Mono, so they can be
+                    compared character by character.
+                  </span>
+                </span>
+                <input type="checkbox" role="switch" class="sk-switch__input" id="mono-ids"
+                       aria-describedby="mono-ids-desc" checked data-sk-async />
+                <span class="sk-switch__track" aria-hidden="true"><span class="sk-switch__thumb"></span></span>
+              </li>
+            </ul>
+          </section>
+
+          <!-- =============== Notifications =============== -->
+          <section aria-labelledby="notifications-h" id="notifications" class="sk-stack sk-stack--gap-16">
+            <div>
+              <h2 class="sk-fieldset__legend" id="notifications-h">Notifications</h2>
+              <p class="sk-field__hint">
+                Each toggle saves on change. Watch the pending state — the switch shows
+                a spinner until the server confirms, rather than claiming a state it
+                has not reached.
+              </p>
+            </div>
+
+            <ul class="sk-stack sk-stack--divided sk-stack--gap-0" role="list">
+              <li class="sk-switch">
+                <span class="sk-switch__content">
+                  <label class="sk-switch__label" for="notify-failures">Failed operations</label>
+                  <span class="sk-switch__description" id="notify-failures-desc">
+                    Email whenever a change is rejected by a provider.
+                  </span>
+                </span>
+                <input type="checkbox" role="switch" class="sk-switch__input" id="notify-failures"
+                       aria-describedby="notify-failures-desc" checked data-sk-async />
+                <span class="sk-switch__track" aria-hidden="true"><span class="sk-switch__thumb"></span></span>
+              </li>
+
+              <li class="sk-switch">
+                <span class="sk-switch__content">
+                  <label class="sk-switch__label" for="notify-drift">Configuration drift</label>
+                  <span class="sk-switch__description" id="notify-drift-desc">
+                    When a provider's records stop matching what Sekura expects.
+                  </span>
+                </span>
+                <input type="checkbox" role="switch" class="sk-switch__input" id="notify-drift"
+                       aria-describedby="notify-drift-desc" data-sk-async />
+                <span class="sk-switch__track" aria-hidden="true"><span class="sk-switch__thumb"></span></span>
+              </li>
+
+              <li class="sk-switch">
+                <span class="sk-switch__content">
+                  <label class="sk-switch__label" for="notify-weekly">Weekly summary</label>
+                  <span class="sk-switch__description" id="notify-weekly-desc">
+                    Monday morning digest of every change in the past week.
+                  </span>
+                </span>
+                <input type="checkbox" role="switch" class="sk-switch__input" id="notify-weekly"
+                       aria-describedby="notify-weekly-desc" checked data-sk-async />
+                <span class="sk-switch__track" aria-hidden="true"><span class="sk-switch__thumb"></span></span>
+              </li>
+            </ul>
+          </section>
+
+          <!-- =============== Profile =============== -->
+          <section aria-labelledby="profile-h" id="profile" class="sk-stack sk-stack--gap-16">
+            <h2 class="sk-fieldset__legend" id="profile-h">Profile</h2>
+
+            <div class="sk-cluster sk-cluster--gap-16">
+              <span class="sk-avatar sk-avatar--lg" data-tint="1" aria-hidden="true">AK</span>
+              <div class="sk-stack sk-stack--gap-4 sk-cluster__grow">
+                <p style="margin:0;font-weight:var(--sk-font-weight-semibold)">Andre Kim</p>
+                <p style="margin:0;color:var(--sk-color-text-secondary);font-size:var(--sk-font-size-body-sm)">
+                  andre.kim@example.com · Networking team
+                </p>
+              </div>
+              <button type="button" class="sk-button sk-button--secondary sk-button--sm">Change photo</button>
+            </div>
+
+            <dl class="sk-dl sk-dl--columns">
+              <div class="sk-dl__group">
+                <dt class="sk-dl__term">Role</dt>
+                <dd class="sk-dl__detail">Editor</dd>
+              </div>
+              <div class="sk-dl__group">
+                <dt class="sk-dl__term">Member since</dt>
+                <dd class="sk-dl__detail"><time datetime="2024-01-08">8 January 2024</time></dd>
+              </div>
+              <div class="sk-dl__group">
+                <dt class="sk-dl__term">Last sign-in</dt>
+                <dd class="sk-dl__detail">
+                  <time datetime="2026-08-05T07:41:00Z">5 August 2026, 07:41 UTC</time>
+                </dd>
+              </div>
+            </dl>
+          </section>
+
+          <!-- =============== Danger zone =============== -->
+          <section class="sk-danger-zone" aria-labelledby="danger-h" id="danger">
+            <h2 class="sk-fieldset__legend" id="danger-h" style="color:inherit">Delete account</h2>
+            <p>
+              Permanently removes your account and transfers ownership of the 4 zones
+              you own to the Platform team. This cannot be undone.
+            </p>
+            <button type="button" class="sk-button sk-button--danger" data-sk-dialog-open="delete-account-dialog">
+              Delete account
+            </button>
+          </section>
+
+        </div>
+      </div>
+
+      <dialog class="sk-dialog sk-dialog--destructive sk-dialog--sm" id="delete-account-dialog"
+              aria-labelledby="da-title" data-sk-confirm-message="Account deletion requested. This is a demo, so nothing happened.">
+        <form method="dialog" class="sk-dialog__panel">
+          <header class="sk-dialog__header">
+            <h2 class="sk-dialog__title" id="da-title">Delete your account?</h2>
+            <button type="button" class="sk-icon-button sk-icon-button--sm" data-sk-dialog-close>
+              <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-close"></use></svg>
+              <span class="sk-visually-hidden">Close dialog</span>
+            </button>
+          </header>
+          <div class="sk-dialog__body">
+            <p>
+              This removes your account and transfers <strong>4 zones</strong> to the
+              Platform team. You will lose access immediately. This cannot be undone.
+            </p>
+            <div class="sk-field">
+              <label class="sk-field__label" for="da-confirm">
+                Type <code class="sk-code">andre.kim@example.com</code> to confirm
+              </label>
+              <input class="sk-input sk-input--mono" id="da-confirm" type="text" autocomplete="off"
+                     data-sk-confirm-phrase="andre.kim@example.com" />
+            </div>
+          </div>
+          <footer class="sk-dialog__footer">
+            <!-- The safe option is focused. A user pressing Enter reflexively
+                 must not destroy anything. -->
+            <button type="submit" value="cancel" class="sk-button sk-button--secondary" autofocus>Cancel</button>
+            <button type="submit" value="confirm" class="sk-button sk-button--danger" disabled data-sk-confirm-button>
+              Delete account
+            </button>
+          </footer>
+        </form>
+      </dialog>

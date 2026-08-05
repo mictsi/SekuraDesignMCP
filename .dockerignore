@@ -1,0 +1,15 @@
+node_modules
+dist
+dist-css
+dist-js
+.git
+.gitignore
+*.log
+.env
+.env.*
+.DS_Store
+README.md
+DESIGN.md
+.run
+run.sh
+sample
