@@ -51,6 +51,27 @@ the contrast audit proves nothing regressed.
 
 ### Added
 
+- **The container can be published under a path.** `SEKURA_BASE_PATH` sets where
+  the process listens; `SEKURA_EXTERNAL_URL` sets the base that generated links
+  are built from. Two settings rather than one because a proxy configured with
+  `proxy_pass http://app:8080/` **strips** the prefix — the app must keep
+  listening at the root while every link it emits carries `/design-system`, and
+  one variable cannot express that. With Traefik or ingress-nginx neither is
+  needed: `X-Forwarded-Prefix` is honoured. `SEKURA_TRUST_PROXY=false` refuses
+  forwarded headers when the container is directly exposed.
+- **The image now publishes the artefacts it describes**: `/css/` (the complete
+  stylesheet and per-component files), `/js/` (the behaviours bundles) and
+  `/docs/` (the 85-page documentation site) join `/tokens.css` and
+  `/tokens.json`. Previously only the token files were reachable over HTTP.
+- **`/manifest.json` and the `get_endpoints` tool** — the URL of every published
+  artefact, resolved for the deployment actually serving the request. A consumer
+  behind a proxy cannot compute these, because only the server knows the prefix
+  it is reachable on.
+- **`npm run test:urls`** — 54 checks over the four deployment shapes: root,
+  TLS-terminated, prefix passed through, prefix stripped. Plus forged
+  `X-Forwarded-Host` being ignored when the proxy is untrusted. CI additionally
+  runs the real image mounted at `/design-system` and asserts no artefact URL
+  loses the prefix and no internal host leaks.
 - **8 `chart-N-on-solid` tokens** and 32 contrast checks covering them. 120
   tokens, 344 checks.
 - **`npm run check:deps`** — a build gate enforcing two rules a dependency bot

@@ -343,6 +343,7 @@ non-zero, so a change that breaks a promise cannot merge green:
 | `lint:css` | Structure, tokens only, no physical properties |
 | `smoke` | Every MCP tool, component, framework and export format |
 | `test:color` | Colour maths against WCAG reference values |
+| `test:urls` | Path prefixes and proxy headers resolve to reachable URLs |
 | `test:behaviours` | Real key presses in a browser: focus, ARIA, Escape, inert |
 | `test:rtl` | Nothing clipped in either direction, at three widths, 12 pages |
 | `verify:sample` | Dangling references, broken links, markup lint |
@@ -401,6 +402,7 @@ npm run build           # compile
 npm run check:version   # no version literal has drifted
 npm run check:deps      # dependency policy: stable releases, Node LTS only
 npm run test:color      # colour maths vs WCAG reference values
+npm run test:urls       # URL generation under prefixes and reverse proxies
 npm run audit:contrast  # 344 contrast checks — build gate
 npm run lint:css        # structural CSS lint over all 67 stylesheets
 npm run smoke           # 704 checks across every tool, component and export
@@ -475,6 +477,83 @@ support. The container builds on 24; CI runs every gate on both, so
 Odd-numbered Node majors are never promoted to LTS, so a dependency bot
 offering `node:25-alpine` is offering a runtime that reaches end-of-life in
 months. `npm run check:deps` fails the build if one lands.
+
+## Publishing under a path
+
+The image serves at the root by default. To publish it under a path on an
+existing web server — `https://example.com/design-system/` — you need to know
+which of two things your proxy does, because they need different settings.
+
+| Variable | Answers |
+|---|---|
+| `SEKURA_BASE_PATH` | *Where does this process listen?* |
+| `SEKURA_EXTERNAL_URL` | *What does the outside world see?* |
+
+They are equal in the simple case and different in the common one, which is why
+they are two variables rather than one.
+
+**If the proxy passes the prefix through**, the app has to answer on
+`/design-system/health`:
+
+```nginx
+location /design-system/ {
+    proxy_pass http://app:8080/design-system/;   # prefix kept
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+```
+```bash
+docker run -d -p 8080:8080 -e SEKURA_BASE_PATH=/design-system sekura-design-mcp:1.0.0
+```
+
+**If the proxy strips the prefix**, the app still listens at the root but has no
+way to discover what was removed, so it must be told:
+
+```nginx
+location /design-system/ {
+    proxy_pass http://app:8080/;                 # prefix stripped
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+```
+```bash
+docker run -d -p 8080:8080 \
+  -e SEKURA_EXTERNAL_URL=https://example.com/design-system \
+  sekura-design-mcp:1.0.0
+```
+
+**With Traefik or ingress-nginx, neither is needed.** `X-Forwarded-Prefix` is
+honoured automatically. Set `SEKURA_TRUST_PROXY=false` if the container is
+exposed directly to the internet, so a forged `X-Forwarded-Host` cannot rewrite
+the links it hands out.
+
+### What gets published
+
+Every path below is relative to the mount point.
+
+| Path | What |
+|---|---|
+| `/mcp` | MCP endpoint (POST). Rename with `SEKURA_MCP_PATH` |
+| `/health` | Liveness, and the contrast audit re-run inside the container |
+| `/manifest.json` | **Every URL above and below, as JSON** |
+| `/tokens.css` | Custom properties, all themes and densities |
+| `/tokens.json` | W3C DTCG format |
+| `/css/sekura.css` | The complete stylesheet; `/css/` also has per-component files |
+| `/js/sekura.iife.min.js` | Behaviours, drop-in `<script>`; `.esm.min.js` alongside |
+| `/docs/` | The 85-page documentation site |
+
+Do not assemble those paths by hand from a base you assume. Fetch
+`/manifest.json`, or call the `get_endpoints` MCP tool — only the server knows
+what prefix it is actually reachable on, and both report the real URLs including
+anything a proxy rewrote.
+
+```bash
+curl -s https://example.com/design-system/manifest.json | jq .artefacts.stylesheet.url
+# "https://example.com/design-system/css/sekura.css"
+```
+
+The documentation site uses relative links throughout, so it is portable to any
+prefix with no rebuild.
 
 ## Licence
 

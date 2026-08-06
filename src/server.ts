@@ -42,6 +42,7 @@ import { FRAMEWORKS, frameworkDescriptions, generateCode, type Framework } from 
 import { EXPORT_FORMATS, exportTokens, formatDescriptions, type ExportFormat } from './lib/exporters.js';
 import { search, type ResultKind } from './lib/search.js';
 import { safeForegroundsOn, suggestTokens } from './lib/suggest.js';
+import type { PublishedUrls } from './lib/urls.js';
 import { summariseFindings, validateMarkup } from './lib/validate.js';
 
 import { VERSION } from './lib/version.js';
@@ -258,7 +259,26 @@ ${l.css}
  * Server
  * ------------------------------------------------------------------ */
 
-export function createServer(): McpServer {
+export interface ServerOptions {
+  /**
+   * Absolute, externally-reachable URLs for the artefacts this server publishes.
+   *
+   * Supplied by the HTTP transport, which is the only place that can know them:
+   * the prefix depends on where the container was mounted and what the proxy in
+   * front of it rewrites. Absent over stdio, where there is no origin at all, so
+   * every use of this must degrade to describing the artefact rather than
+   * linking to it.
+   */
+  urls?: PublishedUrls;
+}
+
+export function createServer(options: ServerOptions = {}): McpServer {
+  const urls = options.urls;
+
+  /** A "fetch it from here" line, or nothing when running over stdio. */
+  const fetchHint = (url: string | undefined, what: string): string =>
+    url ? `\n\nAlready built and served at \`${url}\` — fetch ${what} rather than pasting it into a file.` : '';
+
   const server = new McpServer(
     { name: SERVER_NAME, version: SERVER_VERSION },
     {
@@ -996,7 +1016,10 @@ Get the token stylesheet with \`export_tokens({ format: "css" })\`, and per-comp
 
       return text(`# Sekura stylesheet
 
-${want.size} layer(s), ${components.length} components, ~${kb} KB uncompressed.
+${want.size} layer(s), ${components.length} components, ~${kb} KB uncompressed.${fetchHint(
+        urls ? `${urls.css}sekura.css` : undefined,
+        'it'
+      )}
 
 Cascade layers are declared in order \`sk-reset, sk-base, sk-components, sk-utilities\`,
 so application styles outside those layers always win without needing \`!important\`.
@@ -1004,6 +1027,70 @@ so application styles outside those layers always win without needing \`!importa
 \`\`\`css
 ${css}
 \`\`\``);
+    }
+  );
+
+  /* ---------------- Deployment ---------------- */
+
+  server.registerTool(
+    'get_endpoints',
+    {
+      title: 'Where the published artefacts live',
+      description:
+        'Absolute URLs for the stylesheet, token files, behaviours bundle and documentation site served by this instance. Use this instead of assuming paths: the server may be mounted under a path prefix, and only it knows what that prefix is.',
+      annotations: { readOnlyHint: true, openWorldHint: false },
+    },
+    async () => {
+      if (!urls) {
+        return text(`# No published URLs
+
+This server is running over **stdio**, so there is no origin to build URLs from
+and nothing is being served over HTTP.
+
+Run the container to publish the artefacts:
+
+\`\`\`bash
+docker run -d -p 8080:8080 ghcr.io/mictsi/sekuradesignmcp:${VERSION}
+\`\`\`
+
+To publish it under a path on an existing web server, set both of:
+
+| Variable | Meaning |
+|---|---|
+| \`SEKURA_BASE_PATH\` | the path this process listens under, e.g. \`/design-system\` |
+| \`SEKURA_EXTERNAL_URL\` | the public base URL links are generated against |
+
+They are the same when the proxy passes the prefix through, and different when
+it strips it. In the meantime, \`get_stylesheet\` and \`export_tokens\` return the
+same content inline.`);
+      }
+
+      return text(`# Published endpoints
+
+Base: \`${urls.base}\`
+
+| Object | URL |
+|---|---|
+| MCP endpoint (POST) | \`${urls.mcp}\` |
+| Health | \`${urls.health}\` |
+| Manifest (JSON) | \`${urls.manifest}\` |
+| Complete stylesheet | \`${urls.css}sekura.css\` |
+| Tokens, CSS custom properties | \`${urls.tokensCss}\` |
+| Tokens, W3C DTCG JSON | \`${urls.tokensJson}\` |
+| Behaviours, drop-in script | \`${urls.js}sekura.iife.min.js\` |
+| Behaviours, ES module | \`${urls.js}sekura.esm.min.js\` |
+| Documentation site | \`${urls.docs}\` |
+
+Link the stylesheet and the behaviours directly:
+
+\`\`\`html
+<link rel="stylesheet" href="${urls.css}sekura.css" />
+<script src="${urls.js}sekura.iife.min.js" defer></script>
+\`\`\`
+
+These URLs already account for any path prefix and reverse proxy in front of
+this server. Fetch \`${urls.manifest}\` for the same information as JSON, including
+which artefacts are actually present in this deployment.`);
     }
   );
 

@@ -27,6 +27,13 @@ SEKURA_VERSION="$(node -p "require('./package.json').version" 2>/dev/null || ech
 IMAGE="${SEKURA_IMAGE:-sekura-design-mcp:${SEKURA_VERSION}}"
 CONTAINER="${SEKURA_CONTAINER:-sekura-design-mcp}"
 MCP_PORT="${SEKURA_PORT:-8080}"
+# Publishing under a path. BASE_PATH is where the server listens; EXTERNAL_URL is
+# what it puts in generated links. See README, "Publishing under a path".
+BASE_PATH="${SEKURA_BASE_PATH:-}"
+EXTERNAL_URL="${SEKURA_EXTERNAL_URL:-}"
+# Normalised once: leading slash, no trailing slash, empty for the root.
+BASE_PATH="$(printf '%s' "$BASE_PATH" | sed -E 's#/+$##; s#^([^/])#/\1#')"
+[[ "$BASE_PATH" == "/" ]] && BASE_PATH=""
 SAMPLE_PORT="${SAMPLE_PORT:-4173}"
 
 RUN_DIR=".run"
@@ -217,10 +224,12 @@ start_mcp_docker() {
     --name "$CONTAINER" \
     --restart unless-stopped \
     -p "${MCP_PORT}:8080" \
+    -e SEKURA_BASE_PATH="${BASE_PATH:-/}" \
+    -e SEKURA_EXTERNAL_URL="$EXTERNAL_URL" \
     "$IMAGE" >/dev/null
 
-  if wait_for_http "http://127.0.0.1:${MCP_PORT}/health" "MCP server"; then
-    ok "MCP server  http://localhost:${MCP_PORT}/mcp   (Docker)"
+  if wait_for_http "http://127.0.0.1:${MCP_PORT}${BASE_PATH}/health" "MCP server"; then
+    ok "MCP server  http://localhost:${MCP_PORT}${BASE_PATH}/mcp   (Docker)"
   else
     printf '\n%s\n' "${RED}MCP server did not become healthy. Recent logs:${RESET}"
     docker logs --tail 30 "$CONTAINER" 2>&1 | sed 's/^/    /'
@@ -238,10 +247,11 @@ start_mcp_local() {
 
   mkdir -p "$RUN_DIR"
   SEKURA_MCP_TRANSPORT=http PORT="$MCP_PORT" \
+  SEKURA_BASE_PATH="${BASE_PATH:-/}" SEKURA_EXTERNAL_URL="$EXTERNAL_URL" \
     spawn_detached "$LOCAL_PID" "$LOCAL_LOG" node dist/index.js
 
-  if wait_for_http "http://127.0.0.1:${MCP_PORT}/health" "MCP server"; then
-    ok "MCP server  http://localhost:${MCP_PORT}/mcp   (Node, pid $(cat "$LOCAL_PID"))"
+  if wait_for_http "http://127.0.0.1:${MCP_PORT}${BASE_PATH}/health" "MCP server"; then
+    ok "MCP server  http://localhost:${MCP_PORT}${BASE_PATH}/mcp   (Node, pid $(cat "$LOCAL_PID"))"
   else
     printf '\n%s\n' "${RED}MCP server did not become healthy. Recent logs:${RESET}"
     tail -n 30 "$LOCAL_LOG" 2>/dev/null | sed 's/^/    /'
@@ -295,13 +305,19 @@ cmd_start() {
 
 ${BOLD}Ready.${RESET}
 
-  MCP endpoint   ${BOLD}http://localhost:${MCP_PORT}/mcp${RESET}
-  Health         http://localhost:${MCP_PORT}/health
-  Tokens (CSS)   http://localhost:${MCP_PORT}/tokens.css
+  MCP endpoint   ${BOLD}http://localhost:${MCP_PORT}${BASE_PATH}/mcp${RESET}
+  Health         http://localhost:${MCP_PORT}${BASE_PATH}/health
+  Manifest       http://localhost:${MCP_PORT}${BASE_PATH}/manifest.json
+  Tokens (CSS)   http://localhost:${MCP_PORT}${BASE_PATH}/tokens.css
+  Stylesheet     http://localhost:${MCP_PORT}${BASE_PATH}/css/sekura.css
+  Documentation  http://localhost:${MCP_PORT}${BASE_PATH}/docs/
   Sample site    ${BOLD}http://localhost:${SAMPLE_PORT}/${RESET}
 
   Connect a client:
-    ${DIM}claude mcp add --transport http sekura-design http://localhost:${MCP_PORT}/mcp${RESET}
+    ${DIM}claude mcp add --transport http sekura-design http://localhost:${MCP_PORT}${BASE_PATH}/mcp${RESET}
+
+  Publish under a path:
+    ${DIM}SEKURA_BASE_PATH=/design-system ./run.sh start${RESET}
 
   ${DIM}./run.sh logs${RESET}    follow logs
   ${DIM}./run.sh status${RESET}  check health
@@ -373,7 +389,7 @@ cmd_status() {
   if [[ "$running" == "yes" ]]; then
     ok "MCP server   running — $where"
     local health
-    health="$(curl -fsS --max-time 3 "http://127.0.0.1:${MCP_PORT}/health" 2>/dev/null || true)"
+    health="$(curl -fsS --max-time 3 "http://127.0.0.1:${MCP_PORT}${BASE_PATH}/health" 2>/dev/null || true)"
     if [[ -n "$health" ]]; then
       # /health re-runs the contrast audit, so this is a real check rather than
       # just "the process is up".

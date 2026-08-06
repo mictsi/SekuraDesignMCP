@@ -54,6 +54,11 @@ jobs:
         # well-meaning bot moving the runtime to a major that never gets LTS.
         run: npm run check:deps
 
+      - name: URL resolution
+        # Path prefixes, stripped prefixes and forwarded headers, which are the
+        # deployments that cannot be tried by hand.
+        run: npm run test:urls
+
       - name: Colour maths reference test
         # The whole system rests on contrastRatio being right, so it is checked
         # against WCAG reference values rather than trusted.
@@ -191,6 +196,61 @@ jobs:
                 console.log(n+' tools exposed');
               });"
 
+      - name: Published under a path prefix
+        # The same image mounted at /design-system. Everything must move with
+        # the prefix, and generated links must carry it.
+        run: |
+          docker run -d --name sekura-prefixed -p 8081:8080 \
+            -e SEKURA_BASE_PATH=/design-system sekura-design-mcp:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8081/design-system/health > /dev/null; then break; fi
+            sleep 1
+          done
+          for p in /design-system/health /design-system/manifest.json \
+                   /design-system/tokens.css /design-system/css/sekura.css \
+                   /design-system/js/sekura.iife.min.js /design-system/docs/; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:8081$p")
+            echo "$p -> $code"
+            [ "$code" = "200" ] || { echo "::error::$p returned $code under the prefix"; exit 1; }
+          done
+          # The old root paths must be gone, not silently still served.
+          code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8081/health)
+          [ "$code" = "404" ] || { echo "::error::/health still answers at the root ($code)"; exit 1; }
+          curl -fsS http://127.0.0.1:8081/design-system/manifest.json | node -e "
+            let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{
+              const m=JSON.parse(s);
+              for(const [k,v] of Object.entries(m.artefacts)){
+                if(!String(v.url).includes('/design-system')){
+                  console.error('artefact '+k+' lost the prefix: '+v.url); process.exit(1);
+                }
+              }
+              console.log('all '+Object.keys(m.artefacts).length+' artefact URLs carry the prefix');
+            });"
+
+      - name: External URL overrides a stripped prefix
+        # The proxy_pass-strips-the-prefix case: the app listens at the root but
+        # every link it generates must be the public one.
+        run: |
+          docker run -d --name sekura-external -p 8082:8080 \
+            -e SEKURA_EXTERNAL_URL=https://example.com/design-system sekura-design-mcp:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8082/health > /dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:8082/manifest.json | node -e "
+            let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{
+              const m=JSON.parse(s);
+              if(m.base!=='https://example.com/design-system'){
+                console.error('base is '+m.base); process.exit(1);
+              }
+              const leaked=Object.entries(m.artefacts).filter(([,v])=>/127\.0\.0\.1|localhost/.test(v.url));
+              if(leaked.length){console.error('internal host leaked: '+JSON.stringify(leaked));process.exit(1);}
+              console.log('links are public; no internal host leaked');
+            });"
+
       - name: Container logs on failure
         if: failure()
-        run: docker logs sekura || true
+        run: |
+          docker logs sekura || true
+          docker logs sekura-prefixed || true
+          docker logs sekura-external || true

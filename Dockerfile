@@ -12,8 +12,9 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
 
-COPY tsconfig.json ./
+COPY tsconfig.json tsconfig.behaviours.json ./
 COPY src ./src
+COPY sample ./sample
 RUN npm run build
 
 # The contrast audit is a build gate, not a report. An image whose palette breaks
@@ -31,6 +32,10 @@ RUN node dist/scripts/smoke.js
 # Emit the standalone CSS artefacts so they can be served over plain HTTP.
 RUN node dist/scripts/emit-css.js
 
+# The behaviours bundle and the documentation site are published by the running
+# container too, so they are built here rather than expected from the host.
+RUN npm run build:behaviours && node dist/scripts/build-site.js
+
 # Drop dev dependencies from the tree we are about to copy forward.
 RUN npm prune --omit=dev
 
@@ -42,11 +47,20 @@ FROM node:24-alpine AS runtime
 # graceful shutdown handler actually runs.
 RUN apk add --no-cache dumb-init
 
+# SEKURA_BASE_PATH  — path prefix this process listens under, e.g. /design-system.
+#                     Set it when the proxy passes the prefix through.
+# SEKURA_EXTERNAL_URL — public base URL used to generate links, e.g.
+#                     https://example.com/design-system. Set it when the proxy
+#                     strips the prefix, because the container cannot infer what
+#                     it was. Left unset, links are derived from X-Forwarded-*.
 ENV NODE_ENV=production \
     SEKURA_MCP_TRANSPORT=http \
     PORT=8080 \
     HOST=0.0.0.0 \
-    SEKURA_MCP_PATH=/mcp
+    SEKURA_MCP_PATH=/mcp \
+    SEKURA_BASE_PATH=/ \
+    SEKURA_EXTERNAL_URL= \
+    SEKURA_TRUST_PROXY=true
 
 WORKDIR /app
 
@@ -54,6 +68,8 @@ WORKDIR /app
 COPY --from=build --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/dist ./dist
 COPY --from=build --chown=node:node /app/dist-css ./dist-css
+COPY --from=build --chown=node:node /app/dist-js ./dist-js
+COPY --from=build --chown=node:node /app/sample ./sample
 COPY --from=build --chown=node:node /app/package.json ./package.json
 
 USER node
@@ -63,7 +79,7 @@ EXPOSE 8080
 # /health re-runs the contrast audit, so a container serving a broken palette
 # reports unhealthy rather than quietly serving it.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||8080)+'/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+  CMD node -e "const b=(process.env.SEKURA_BASE_PATH||'').replace(/\/+$/,'');fetch('http://127.0.0.1:'+(process.env.PORT||8080)+b+'/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
 # One image, both transports. HTTP is the default so the container is useful with
 # `docker run -p`; clients that spawn the server directly override the env var:

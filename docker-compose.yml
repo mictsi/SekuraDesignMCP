@@ -14,12 +14,34 @@ services:
       SEKURA_MCP_PATH: /mcp
       PORT: "8080"
       NODE_ENV: production
+
+      # --- Publishing under a path on an existing web server ---
+      #
+      # These answer two different questions and are not interchangeable.
+      #
+      # SEKURA_BASE_PATH is where THIS PROCESS listens. Set it when the proxy
+      # passes the prefix through:
+      #     location /design-system/ { proxy_pass http://app:8080/design-system/; }
+      #     SEKURA_BASE_PATH: /design-system
+      #
+      # SEKURA_EXTERNAL_URL is what the WORLD sees, used to generate links. Set
+      # it when the proxy strips the prefix, because the container has no way to
+      # discover what was removed:
+      #     location /design-system/ { proxy_pass http://app:8080/; }
+      #     SEKURA_EXTERNAL_URL: https://example.com/design-system
+      #
+      # With Traefik or ingress-nginx, neither is needed: X-Forwarded-Prefix is
+      # honoured automatically. Set SEKURA_TRUST_PROXY=false if the container is
+      # exposed directly, so a forged X-Forwarded-Host cannot rewrite links.
+      SEKURA_BASE_PATH: ${SEKURA_BASE_PATH:-/}
+      SEKURA_EXTERNAL_URL: ${SEKURA_EXTERNAL_URL:-}
+      SEKURA_TRUST_PROXY: ${SEKURA_TRUST_PROXY:-true}
     healthcheck:
       test:
         - CMD
         - node
         - -e
-        - "fetch('http://127.0.0.1:8080/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+        - "const b=(process.env.SEKURA_BASE_PATH||'').replace(/\\/+$/,'');fetch('http://127.0.0.1:8080'+b+'/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
       interval: 30s
       timeout: 5s
       retries: 3

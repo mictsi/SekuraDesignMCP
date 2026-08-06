@@ -12,4 +12,9 @@ README.md
 DESIGN.md
 .run
 run.sh
-sample
+
+# The documentation site is built inside the image and served by it, so the
+# sources are needed — but the generated pages are not: they would be stale
+# copies of what the build is about to produce.
+sample/*.html
+sample/assets/sekura.css
