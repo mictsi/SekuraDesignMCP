@@ -51,6 +51,20 @@ the contrast audit proves nothing regressed.
 
 ### Added
 
+- **Disclosure and Accordion** — 57 components. The behaviours package has
+  shipped `createDisclosure` and `createAccordion` since 1.0.0, `enhance()`
+  already wired them, and the behaviour tests already covered them, but neither
+  existed as a component: the system shipped the hard part and left the easy
+  part to you. Both now carry CSS, markup, the full ARIA contract and
+  controller-backed codegen in all eight frameworks.
+
+  The accordion is headings wrapping buttons with a roving tabindex, so a
+  ten-item accordion is one tab stop and appears in the document outline. The
+  disclosure has a `findable` variant using `hidden="until-found"`, so
+  find-in-page can still reach collapsed reference content.
+
+  The marketing example's FAQ now uses the real accordion rather than the
+  `.sk-details` styling that had been standing in for it.
 - **The container can be published under a path.** `SEKURA_BASE_PATH` sets where
   the process listens; `SEKURA_EXTERNAL_URL` sets the base that generated links
   are built from. Two settings rather than one because a proxy configured with

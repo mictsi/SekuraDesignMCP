@@ -243,32 +243,52 @@
   <section class="mk__section" aria-labelledby="faq-h">
     <h2 class="mk__section-title" id="faq-h">Questions people actually ask</h2>
 
-    <div class="sk-stack sk-stack--gap-8">
-      <!-- Native details/summary. It works before JavaScript loads, it is
-           findable by the browser's own find-in-page, and it needs no ARIA. -->
-      <details class="sk-details">
-        <summary>What happens to my data if I stop paying?</summary>
-        <div class="sk-details__body">
+    <!-- The real Accordion component. Native <details> would work and needs no
+         JavaScript, but it makes every summary its own tab stop; the accordion
+         gives the whole group one, with arrow keys between the headers. Each
+         header is a real heading, so the FAQ appears in the document outline. -->
+    <div class="sk-accordion sk-accordion--separated" data-sk-accordion>
+      <div class="sk-accordion__item">
+        <h3 class="sk-accordion__heading">
+          <button type="button" class="sk-accordion__trigger" id="faq-1"
+                  data-sk-accordion-trigger aria-expanded="true" aria-controls="faq-1-panel">
+            <svg class="sk-accordion__marker" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-chevron-right"></use></svg>
+            <span class="sk-accordion__label">What happens to my data if I stop paying?</span>
+          </button>
+        </h3>
+        <div class="sk-accordion__panel" id="faq-1-panel" aria-labelledby="faq-1">
           <p>
             The workspace becomes read-only and export stays enabled indefinitely.
             Nothing is deleted for 12 months, and we email before anything is.
           </p>
         </div>
-      </details>
+      </div>
 
-      <details class="sk-details">
-        <summary>Do you charge per seat?</summary>
-        <div class="sk-details__body">
+      <div class="sk-accordion__item">
+        <h3 class="sk-accordion__heading">
+          <button type="button" class="sk-accordion__trigger" id="faq-2"
+                  data-sk-accordion-trigger aria-expanded="false" aria-controls="faq-2-panel">
+            <svg class="sk-accordion__marker" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-chevron-right"></use></svg>
+            <span class="sk-accordion__label">Do you charge per seat?</span>
+          </button>
+        </h3>
+        <div class="sk-accordion__panel" id="faq-2-panel" aria-labelledby="faq-2" hidden>
           <p>
             No. The price is per workspace, so inviting a reviewer, a contractor or
             a stakeholder costs nothing extra.
           </p>
         </div>
-      </details>
+      </div>
 
-      <details class="sk-details">
-        <summary>Is there a dark mode?</summary>
-        <div class="sk-details__body">
+      <div class="sk-accordion__item">
+        <h3 class="sk-accordion__heading">
+          <button type="button" class="sk-accordion__trigger" id="faq-3"
+                  data-sk-accordion-trigger aria-expanded="false" aria-controls="faq-3-panel">
+            <svg class="sk-accordion__marker" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-chevron-right"></use></svg>
+            <span class="sk-accordion__label">Is there a dark mode?</span>
+          </button>
+        </h3>
+        <div class="sk-accordion__panel" id="faq-3-panel" aria-labelledby="faq-3" hidden>
           <p>
             Yes, and it follows your operating system by default. This page is in it
             right now if your system is — including the pricing cards, where the
@@ -276,11 +296,17 @@
             survives the theme change.
           </p>
         </div>
-      </details>
+      </div>
 
-      <details class="sk-details">
-        <summary>How accessible is it, really?</summary>
-        <div class="sk-details__body">
+      <div class="sk-accordion__item">
+        <h3 class="sk-accordion__heading">
+          <button type="button" class="sk-accordion__trigger" id="faq-4"
+                  data-sk-accordion-trigger aria-expanded="false" aria-controls="faq-4-panel">
+            <svg class="sk-accordion__marker" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-chevron-right"></use></svg>
+            <span class="sk-accordion__label">How accessible is it, really?</span>
+          </button>
+        </h3>
+        <div class="sk-accordion__panel" id="faq-4-panel" aria-labelledby="faq-4" hidden>
           <p>
             Every colour pairing is contrast-audited in four themes as a build gate,
             keyboard behaviour is tested against a real browser, and the build fails
@@ -289,7 +315,7 @@
             what is verified and what is not.
           </p>
         </div>
-      </details>
+      </div>
     </div>
   </section>
 

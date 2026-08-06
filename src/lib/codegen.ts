@@ -70,6 +70,18 @@ const CONTROLLERS: Record<string, ControllerBinding> = {
     handles:
       'roving tabindex so the list is one tab stop, arrow navigation mirrored for RTL, automatic or manual activation, and panel visibility',
   },
+  disclosure: {
+    factory: 'createDisclosure',
+    refs: ['trigger', 'panel'],
+    handles:
+      'aria-expanded, aria-controls, labelling the panel from its trigger, and hiding the panel with `hidden` so collapsed content leaves the tab order rather than lingering in it invisibly',
+  },
+  accordion: {
+    factory: 'createAccordion',
+    refs: ['container'],
+    handles:
+      'a roving tabindex so the whole group is one tab stop rather than one per header, arrow navigation between headers, and optional single-open behaviour',
+  },
   'button-group': {
     factory: 'createSegmented',
     refs: ['group'],

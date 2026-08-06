@@ -25,6 +25,7 @@ const PAGES = [
   'component-button.html', 'component-table.html', 'component-combobox.html',
   'component-dialog.html', 'component-form-field.html',
   'example-dashboard.html', 'example-list.html', 'example-detail.html',
+  'component-accordion.html', 'component-disclosure.html',
   'example-form.html', 'example-states.html', 'example-onboarding.html',
   'example-settings.html', 'example-marketing.html', 'example-signin.html',
 ];

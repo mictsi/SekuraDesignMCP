@@ -1476,4 +1476,408 @@ export const dataDisplayComponents: ComponentSpec[] = [
 @media (prefers-reduced-motion: reduce) { .sk-tree__chevron { transition: none; } }`,
     related: ['side-nav', 'menu', 'checkbox'],
   },
+
+  /* ------------------------------------------------------------------ *
+   * Disclosure
+   * ------------------------------------------------------------------ */
+  {
+    id: 'disclosure',
+    name: 'Disclosure',
+    category: 'data-display',
+    status: 'stable',
+    summary:
+      'A single trigger that shows and hides one region of content. The simplest interactive pattern in the system, and the one most often built wrong.',
+    whenToUse: [
+      'Secondary detail that most readers do not need: advanced options, a long changelog entry, raw output.',
+      'Shortening a page whose full content is genuinely optional.',
+      'A "show more" affordance on truncated content.',
+    ],
+    whenNotToUse: [
+      'Content most readers do need. Hiding the main thing to make a page look tidy trades a scroll for a click and a guess.',
+      'Required form fields. A field nobody expands is a field nobody fills, and validation then fails on something invisible.',
+      'Several related sections at one level — use an Accordion, which gives them arrow-key navigation and one tab stop.',
+      'Anything that must be found by the browser\'s find-in-page. Collapsed content is only searchable where `hidden="until-found"` is supported.',
+    ],
+    anatomy: [
+      { part: 'Trigger', required: true, description: 'A real <button> carrying aria-expanded and aria-controls.' },
+      { part: 'Marker', required: true, description: 'A chevron that rotates. Decorative — the state is carried by aria-expanded, not by the icon.' },
+      { part: 'Panel', required: true, description: 'The region, labelled by its trigger and removed from the tree with `hidden` when closed.' },
+    ],
+    variants: [
+      { name: 'Bordered', className: 'sk-disclosure', description: 'Boxed, with a border and a hover surface on the trigger.', use: 'Default. A distinct object on the page.' },
+      { name: 'Plain', className: 'sk-disclosure--plain', description: 'No border or background; the trigger is a line of text with a marker.', use: 'Inline inside prose, or nested in a card that already has a border.' },
+      { name: 'Findable', className: 'sk-disclosure--findable', description: 'Uses `hidden="until-found"`, so the browser can reveal the panel when the user searches the page.', use: 'Long reference content, FAQs and documentation, where find-in-page is how people navigate.' },
+    ],
+    sizes: [
+      { name: 'Small', className: 'sk-disclosure--sm', height: '2rem', typeStyle: 'body-sm', description: 'Inside a card or a dense panel.' },
+      { name: 'Medium', className: '', height: '2.75rem', typeStyle: 'body-md', description: 'Default.' },
+    ],
+    states: [
+      { name: 'Collapsed', description: 'Marker points to the inline end. Panel is `hidden`, so it is out of the tab order and the accessibility tree.', trigger: '[aria-expanded="false"]' },
+      { name: 'Expanded', description: 'Marker points down. Panel is in flow.', trigger: '[aria-expanded="true"]' },
+      { name: 'Hover', description: 'Trigger takes surface-hover.', trigger: ':hover' },
+      { name: 'Focus visible', description: 'Focus ring on the trigger, inset so it is not clipped by the border.', trigger: ':focus-visible' },
+      { name: 'Found', description: 'Revealed by find-in-page on the findable variant. The browser fires `beforematch` and opens it.', trigger: '[hidden="until-found"]' },
+    ],
+    props: [
+      { name: 'label', type: 'string', required: true, description: 'Trigger text. A noun phrase naming the content, not an instruction.' },
+      { name: 'expanded', type: 'boolean', default: 'false', description: 'Initial state.' },
+      { name: 'findable', type: 'boolean', default: 'false', description: 'Render the panel with hidden="until-found".' },
+      { name: 'onToggle', type: '(expanded: boolean) => void', description: 'Fired after the state changes.' },
+    ],
+    tokensUsed: ['color-surface-base', 'color-surface-hover', 'color-border-subtle', 'color-text-primary', 'color-text-secondary', 'color-focus-ring'],
+    darkMode:
+      'The border does the work that the light-mode border and shadow share. border-subtle steps darker (neutral-800) rather than lighter, so the box reads as a boundary and not as a highlight. The hover surface is surface-hover, which on dark is a *lighter* step than the page — the opposite direction from light mode, where hover darkens.',
+    accessibility: {
+      role: 'A native <button> plus a region. No ARIA role on the panel is needed or wanted; the button carries the state.',
+      keyboard: [
+        { keys: 'Tab', action: 'Moves to the trigger. The collapsed panel contains no tab stops.' },
+        { keys: 'Enter / Space', action: 'Toggles. Free with a real <button>; hand-rolled on a <div>, Space is what everyone forgets.' },
+      ],
+      aria: [
+        'aria-expanded on the trigger, always present and always accurate. This is the state; the chevron is decoration.',
+        'aria-controls on the trigger, pointing at the panel id.',
+        'aria-labelledby on the panel, pointing back at the trigger, so a user landing in the content knows what it belongs to.',
+        'The chevron is aria-hidden. Announcing "chevron" adds nothing to "expanded".',
+      ],
+      wcag: [
+        '2.1.1 Keyboard — a <div> with a click handler is the classic failure.',
+        '4.1.2 Name, Role, Value — aria-expanded is the value.',
+        '2.4.7 Focus Visible',
+        '1.4.13 Content on Hover or Focus — a disclosure opens on click, never on hover. Hover-opened content cannot be dismissed or reached.',
+      ],
+      screenReader:
+        'Announced as "Advanced options, button, collapsed". After activation, "expanded". Because the panel is `hidden` when closed, its content is genuinely absent rather than silently focusable.',
+      targetSize: 'The trigger is full width and at least 2.75rem tall, well past the 24x24 minimum of 2.5.8.',
+    },
+    content: [
+      'The trigger names the content, it does not describe the action: "Delivery options", not "Click to see delivery options".',
+      'It does not change when the state does. A label that flips between "Show" and "Hide" is read at the moment aria-expanded already said which it is, so it says the same thing twice and contradicts itself in the gap.',
+      'If a count is useful, put it in the trigger: "Attachments (3)".',
+    ],
+    dos: [
+      'Use a real <button>.',
+      'Keep the label stable across states.',
+      'Use `hidden` on the panel, so collapsed content leaves the tab order.',
+      'Reach for `hidden="until-found"` on reference content, so find-in-page still works.',
+    ],
+    donts: [
+      'Never hide required form fields behind one.',
+      'Never open on hover.',
+      'Never animate the panel height with a transition on `height: auto` — it does not animate. Use a grid-rows transition, or none.',
+      'Never rely on the chevron alone to convey state.',
+    ],
+    html: `<div class="sk-disclosure">
+  <button type="button" class="sk-disclosure__trigger" id="adv-trigger"
+          aria-expanded="false" aria-controls="adv-panel">
+    <svg class="sk-disclosure__marker" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-chevron-right" /></svg>
+    <span class="sk-disclosure__label">Advanced options</span>
+  </button>
+  <div class="sk-disclosure__panel" id="adv-panel" aria-labelledby="adv-trigger" hidden>
+    <p>Applies to every task in this project.</p>
+  </div>
+</div>
+
+<!-- Findable: the browser can open this one from find-in-page. -->
+<div class="sk-disclosure sk-disclosure--findable">
+  <button type="button" class="sk-disclosure__trigger" id="ref-trigger"
+          aria-expanded="false" aria-controls="ref-panel">
+    <svg class="sk-disclosure__marker" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-chevron-right" /></svg>
+    <span class="sk-disclosure__label">Field reference</span>
+  </button>
+  <div class="sk-disclosure__panel" id="ref-panel" aria-labelledby="ref-trigger" hidden="until-found">
+    <p>Every field, its type and its default.</p>
+  </div>
+</div>`,
+    css: `.sk-disclosure {
+  background-color: var(--sk-color-surface-base);
+  border: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle);
+  border-radius: var(--sk-radius-md);
+}
+.sk-disclosure + .sk-disclosure { margin-block-start: var(--sk-space-8); }
+
+.sk-disclosure__trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--sk-space-8);
+  inline-size: 100%;
+  min-block-size: var(--sk-control-height-md);
+  padding: var(--sk-space-8) var(--sk-space-16);
+  background: none;
+  border: none;
+  border-radius: inherit;
+  font: inherit;
+  font-weight: var(--sk-font-weight-medium);
+  color: var(--sk-color-text-primary);
+  text-align: start;
+  cursor: pointer;
+}
+.sk-disclosure__trigger:hover { background-color: var(--sk-color-surface-hover); }
+.sk-disclosure__trigger:focus-visible {
+  outline: var(--sk-focus-ring-width) solid var(--sk-color-focus-ring);
+  /* Inset, so the ring is not clipped by the container's own border. */
+  outline-offset: calc(var(--sk-focus-ring-offset) * -1);
+}
+
+/* The marker rotates from the inline-end direction to down. Using a logical
+   start rotation would point the wrong way in RTL; the icon itself is mirrored
+   by the sheet's dir-scale, so this stays a single rule. */
+.sk-disclosure__marker {
+  flex: 0 0 auto;
+  color: var(--sk-color-text-secondary);
+  transition: transform var(--sk-duration-fast) var(--sk-easing-standard);
+  transform: rotate(0deg);
+}
+.sk-disclosure__trigger[aria-expanded="true"] .sk-disclosure__marker { transform: rotate(90deg); }
+
+.sk-disclosure__label { flex: 1 1 auto; min-inline-size: 0; }
+
+.sk-disclosure__panel {
+  padding: 0 var(--sk-space-16) var(--sk-space-16);
+  color: var(--sk-color-text-secondary);
+}
+.sk-disclosure__panel > :first-child { margin-block-start: 0; }
+.sk-disclosure__panel > :last-child { margin-block-end: 0; }
+
+.sk-disclosure--plain {
+  background: none;
+  border: none;
+  border-radius: 0;
+}
+.sk-disclosure--plain .sk-disclosure__trigger { padding-inline: 0; }
+.sk-disclosure--plain .sk-disclosure__panel { padding-inline: 0; }
+
+.sk-disclosure--sm .sk-disclosure__trigger {
+  min-block-size: var(--sk-control-height-sm);
+  font-size: var(--sk-font-size-body-sm);
+}
+
+/* Windows High Contrast Mode discards background colours, so the boundary and
+   the focus ring have to be redrawn from system colours. */
+@media (forced-colors: active) {
+  .sk-disclosure { border-color: CanvasText; }
+  .sk-disclosure__marker { color: CanvasText; }
+  .sk-disclosure__trigger:focus-visible { outline-color: Highlight; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-disclosure__marker { transition: none; }
+}`,
+    related: ['accordion', 'tabs', 'card'],
+  },
+
+  /* ------------------------------------------------------------------ *
+   * Accordion
+   * ------------------------------------------------------------------ */
+  {
+    id: 'accordion',
+    name: 'Accordion',
+    category: 'data-display',
+    status: 'stable',
+    summary:
+      'A vertical group of disclosures sharing one tab stop and arrow-key navigation. Use it for peer sections at one level of a hierarchy.',
+    whenToUse: [
+      'Three or more peer sections a reader consults selectively: an FAQ, a settings group, a specification broken into parts.',
+      'Long reference content where a full page of prose would bury the structure.',
+      'Small screens, where content that sits side by side on a wide viewport has to stack.',
+    ],
+    whenNotToUse: [
+      'Two sections. Two disclosures cost less and imply less structure.',
+      'Content a reader compares across sections — they will fight the collapse. Show it all, or use a Table.',
+      'Alternate views of one subject — use Tabs. An accordion says "these are parts of a whole"; tabs say "these are views of one thing".',
+      'Sequential steps — use a Stepper.',
+      'A single section — use a Disclosure.',
+    ],
+    anatomy: [
+      { part: 'Container', required: true, description: 'Owns the roving tabindex, so the whole group is one tab stop.' },
+      { part: 'Headers', required: true, description: 'A heading element wrapping a real <button>. The heading level must match the surrounding outline.' },
+      { part: 'Panels', required: true, description: 'One region per header, labelled by it, `hidden` when collapsed.' },
+      { part: 'Expand all', required: false, description: 'A single control for long accordions. Also a strong hint the content should not have been collapsed.' },
+    ],
+    variants: [
+      { name: 'Multiple', className: 'sk-accordion', description: 'Any number of panels open at once.', use: 'Default. Closing something the reader opened is a surprise.' },
+      { name: 'Single', className: 'sk-accordion--single', description: 'Opening one closes the others.', use: 'Only when panels are tall enough that two open at once cause real disorientation.' },
+      { name: 'Separated', className: 'sk-accordion--separated', description: 'Each item is its own bordered card with a gap between.', use: 'Items that are objects in their own right, such as a list of policies.' },
+    ],
+    sizes: [
+      { name: 'Small', className: 'sk-accordion--sm', height: '2rem', typeStyle: 'body-sm', description: 'Inside a card or a drawer.' },
+      { name: 'Medium', className: '', height: '2.75rem', typeStyle: 'body-md', description: 'Default.' },
+    ],
+    states: [
+      { name: 'Collapsed', description: 'Panel `hidden`, marker at rest.', trigger: '[aria-expanded="false"]' },
+      { name: 'Expanded', description: 'Panel in flow, marker rotated.', trigger: '[aria-expanded="true"]' },
+      { name: 'Hover', description: 'Header takes surface-hover.', trigger: ':hover' },
+      { name: 'Focus visible', description: 'Focus ring on the header button.', trigger: ':focus-visible' },
+      { name: 'Roving', description: 'Exactly one header has tabindex="0"; the rest are -1.', trigger: '[tabindex="0"]' },
+    ],
+    props: [
+      { name: 'items', type: 'Array<{id, label, content, expanded?}>', required: true, description: 'The sections.' },
+      { name: 'single', type: 'boolean', default: 'false', description: 'Only one panel open at a time.' },
+      { name: 'collapsible', type: 'boolean', default: 'true', description: 'With single, whether the last open panel may be closed.' },
+      { name: 'headingLevel', type: '2 | 3 | 4 | 5 | 6', default: '3', description: 'Heading level for the headers. Must fit the page outline, not be chosen for its size.' },
+      { name: 'onChange', type: '(openIds: string[]) => void', description: 'Fired with the ids currently open.' },
+    ],
+    tokensUsed: ['color-surface-base', 'color-surface-hover', 'color-border-subtle', 'color-text-primary', 'color-text-secondary', 'color-focus-ring'],
+    darkMode:
+      'Dividers between items use border-subtle, which steps *darker* on dark rather than lighter. Reusing the light-mode neutral-200 here produces a set of bright rules that read as more important than the headers they separate — the same rule the Table row divider follows.',
+    accessibility: {
+      role: 'Headings wrapping native buttons, plus regions. There is no `role="accordion"`; inventing one is a common and harmful mistake.',
+      keyboard: [
+        { keys: 'Tab', action: 'Moves into the accordion, landing on one header, then straight out to the next control. A ten-item accordion is one tab stop, not ten.' },
+        { keys: 'Arrow Down / Up', action: 'Move between headers, wrapping.' },
+        { keys: 'Home / End', action: 'First or last header.' },
+        { keys: 'Enter / Space', action: 'Toggles the focused section.' },
+      ],
+      aria: [
+        'Each header button carries aria-expanded and aria-controls.',
+        'Each panel carries aria-labelledby pointing at its header button.',
+        'Header buttons are wrapped in a heading element of the correct level, so the accordion appears in the document outline and a screen reader user can jump between sections by heading.',
+        'Roving tabindex across the headers: exactly one is 0, the rest are -1.',
+      ],
+      wcag: [
+        '2.1.1 Keyboard',
+        '2.4.3 Focus Order — the roving tabindex must follow visual order.',
+        '2.4.6 Headings and Labels — the header text has to describe the section, because it becomes a heading in the outline.',
+        '4.1.2 Name, Role, Value',
+        '1.3.1 Info and Relationships — headings are what carry the structure to assistive technology.',
+      ],
+      screenReader:
+        'Each header is announced as a heading and a button with its expanded state, so the accordion can be navigated by heading shortcut as well as by arrow key. Collapsed panels are absent from the tree entirely.',
+      targetSize: 'Headers are full width and at least 2.75rem tall.',
+    },
+    content: [
+      'Header text describes the section as a heading would, because it is one: "Billing and invoices", not "Click here for billing".',
+      'Front-load the distinguishing word. "Delivery options" and "Delivery restrictions" scan badly as a pair; "Options for delivery" and "Restrictions on delivery" scan worse.',
+      'Do not number the headers unless the order matters — numbering implies sequence, which is a Stepper.',
+    ],
+    dos: [
+      'Wrap each header button in a heading of the right level.',
+      'Default to allowing several panels open.',
+      'Keep the group to one tab stop with a roving tabindex.',
+      'Open the first panel by default when one section is clearly the common case.',
+    ],
+    donts: [
+      'Never put an accordion inside an accordion. Two levels of collapse is a navigation problem wearing a component.',
+      'Never use `role="accordion"` or `role="tablist"` — an accordion is headings and buttons.',
+      'Never make every header a tab stop.',
+      'Never collapse the only section that matters to make the page look shorter.',
+    ],
+    html: `<div class="sk-accordion" data-sk-accordion>
+  <div class="sk-accordion__item">
+    <h3 class="sk-accordion__heading">
+      <button type="button" class="sk-accordion__trigger" id="acc-1"
+              data-sk-accordion-trigger aria-expanded="true" aria-controls="acc-1-panel">
+        <svg class="sk-accordion__marker" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-chevron-right" /></svg>
+        <span class="sk-accordion__label">What happens to my data if I stop paying?</span>
+      </button>
+    </h3>
+    <div class="sk-accordion__panel" id="acc-1-panel" aria-labelledby="acc-1">
+      <p>The workspace becomes read-only and export stays enabled indefinitely.</p>
+    </div>
+  </div>
+
+  <div class="sk-accordion__item">
+    <h3 class="sk-accordion__heading">
+      <button type="button" class="sk-accordion__trigger" id="acc-2"
+              data-sk-accordion-trigger aria-expanded="false" aria-controls="acc-2-panel">
+        <svg class="sk-accordion__marker" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-chevron-right" /></svg>
+        <span class="sk-accordion__label">Do you charge per seat?</span>
+      </button>
+    </h3>
+    <div class="sk-accordion__panel" id="acc-2-panel" aria-labelledby="acc-2" hidden>
+      <p>No. The price is per workspace.</p>
+    </div>
+  </div>
+</div>`,
+    css: `.sk-accordion {
+  background-color: var(--sk-color-surface-base);
+  border: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle);
+  border-radius: var(--sk-radius-md);
+}
+
+/* A rule between items, not around each one: adjacent borders would double. */
+.sk-accordion__item + .sk-accordion__item {
+  border-block-start: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle);
+}
+
+/* The heading carries the outline; it must contribute no size of its own, or
+   an h3 accordion looks different from an h4 one. */
+.sk-accordion__heading {
+  margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
+
+.sk-accordion__trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--sk-space-8);
+  inline-size: 100%;
+  min-block-size: var(--sk-control-height-md);
+  padding: var(--sk-space-8) var(--sk-space-16);
+  background: none;
+  border: none;
+  font: inherit;
+  font-weight: var(--sk-font-weight-medium);
+  color: var(--sk-color-text-primary);
+  text-align: start;
+  cursor: pointer;
+}
+.sk-accordion__trigger:hover { background-color: var(--sk-color-surface-hover); }
+.sk-accordion__trigger:focus-visible {
+  outline: var(--sk-focus-ring-width) solid var(--sk-color-focus-ring);
+  outline-offset: calc(var(--sk-focus-ring-offset) * -1);
+}
+
+.sk-accordion__marker {
+  flex: 0 0 auto;
+  color: var(--sk-color-text-secondary);
+  transition: transform var(--sk-duration-fast) var(--sk-easing-standard);
+  transform: rotate(0deg);
+}
+.sk-accordion__trigger[aria-expanded="true"] .sk-accordion__marker { transform: rotate(90deg); }
+
+.sk-accordion__label { flex: 1 1 auto; min-inline-size: 0; }
+
+.sk-accordion__panel {
+  padding: 0 var(--sk-space-16) var(--sk-space-16);
+  color: var(--sk-color-text-secondary);
+}
+.sk-accordion__panel > :first-child { margin-block-start: 0; }
+.sk-accordion__panel > :last-child { margin-block-end: 0; }
+
+/* Separated: each item is its own object, so the container border goes away. */
+.sk-accordion--separated {
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-8);
+}
+.sk-accordion--separated .sk-accordion__item {
+  background-color: var(--sk-color-surface-base);
+  border: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle);
+  border-radius: var(--sk-radius-md);
+}
+.sk-accordion--separated .sk-accordion__item + .sk-accordion__item { border-block-start-width: var(--sk-border-width-hairline); }
+
+.sk-accordion--sm .sk-accordion__trigger {
+  min-block-size: var(--sk-control-height-sm);
+  font-size: var(--sk-font-size-body-sm);
+}
+
+@media (forced-colors: active) {
+  .sk-accordion,
+  .sk-accordion--separated .sk-accordion__item { border-color: CanvasText; }
+  .sk-accordion__item + .sk-accordion__item { border-block-start-color: CanvasText; }
+  .sk-accordion__marker { color: CanvasText; }
+  .sk-accordion__trigger:focus-visible { outline-color: Highlight; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-accordion__marker { transition: none; }
+}`,
+    related: ['disclosure', 'tabs', 'stepper', 'card'],
+  },
 ];
