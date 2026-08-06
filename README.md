@@ -10,7 +10,7 @@ interface without guessing at a single value.
 ```
 55 components · 15 foundations · 15 UX patterns · 9 layout recipes
 112 semantic tokens · 4 themes · 3 densities · 8 target frameworks
-312 contrast checks · 63 behaviour tests · 0 axe violations
+312 contrast checks · 45 colour · 63 behaviour · 55 RTL · 0 axe violations
 ```
 
 The human-readable specification is [`DESIGN.md`](./DESIGN.md), and there is an
@@ -341,7 +341,9 @@ non-zero, so a change that breaks a promise cannot merge green:
 | `audit:contrast` | 312 checks — 78 declared pairings across four themes |
 | `lint:css` | Structure, tokens only, no physical properties |
 | `smoke` | Every MCP tool, component, framework and export format |
+| `test:color` | Colour maths against WCAG reference values |
 | `test:behaviours` | Real key presses in a browser: focus, ARIA, Escape, inert |
+| `test:rtl` | Nothing clipped in either direction, at three widths |
 | `verify:sample` | Dangling references, broken links, markup lint |
 | `test:a11y` | axe-core, WCAG 2.2 AA, both themes |
 | Docker | Image builds, `/health` re-runs the contrast audit inside it |
@@ -396,6 +398,7 @@ contrast audit proves nothing regressed. See [`CHANGELOG.md`](./CHANGELOG.md).
 npm run verify          # everything below, in order
 npm run build           # compile
 npm run check:version   # no version literal has drifted
+npm run test:color      # colour maths vs WCAG reference values
 npm run audit:contrast  # 312 contrast checks — build gate
 npm run lint:css        # structural CSS lint over all 67 stylesheets
 npm run smoke           # 704 checks across every tool, component and export
@@ -463,4 +466,6 @@ read-only filesystem and all capabilities dropped.
 
 ## Licence
 
-MIT
+MIT — see [`LICENSE`](./LICENSE).
+
+Contributing: [`CONTRIBUTING.md`](./CONTRIBUTING.md) · Security: [`SECURITY.md`](./SECURITY.md) · Changes: [`CHANGELOG.md`](./CHANGELOG.md)

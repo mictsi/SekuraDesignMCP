@@ -40,6 +40,11 @@ jobs:
       - name: Version consistency
         run: npm run check:version
 
+      - name: Colour maths reference test
+        # The whole system rests on contrastRatio being right, so it is checked
+        # against WCAG reference values rather than trusted.
+        run: npm run test:color
+
       - name: Contrast audit
         # 78 declared pairings x 4 themes. The colour system's central claim.
         run: npm run audit:contrast
@@ -67,6 +72,11 @@ jobs:
         # Real key presses against a real DOM: roving tabindex, focus trap and
         # restore, aria-activedescendant, Escape handling, inert on close.
         run: npm run test:behaviours
+
+      - name: RTL regression
+        # Logical properties are claimed to make RTL work with no extra CSS.
+        # This verifies the claim at three widths in both directions.
+        run: npm run test:rtl
 
       - name: Emit stylesheets
         run: npm run emit:css

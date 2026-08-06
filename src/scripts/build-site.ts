@@ -157,6 +157,7 @@ function main(): void {
     pages.overviewPage(),
     pages.structurePage(),
     pages.developPage(),
+    pages.behavioursPage(),
     pages.principlesPage(),
     pages.colorPage(),
     pages.darkModePage(),

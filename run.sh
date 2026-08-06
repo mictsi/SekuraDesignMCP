@@ -156,6 +156,7 @@ cmd_build() {
   # Gates, not reports: a palette that breaks a declared WCAG pairing, or a
   # stylesheet with a structural error, must not produce an artefact. Both
   # scripts exit non-zero on failure, and `set -e` stops the build.
+  node dist/scripts/test-color.js | grep -E 'passed|✗' | sed 's/^/    /'
   node dist/scripts/audit-contrast.js \
     | grep -E '^(PASS|FAIL)|^All |pairings failed' | sed 's/^/    /'
   node dist/scripts/lint-css.js \
@@ -180,6 +181,7 @@ cmd_build() {
   # copy.
   node dist/scripts/build-site.js | grep -E '^Built ' | sed 's/^/    /'
   node dist/scripts/verify-sample.js | grep -E '^All |error\(s\)|^  ✗' | sed 's/^/    /'
+  node dist/scripts/test-rtl.js | grep -E 'passed|✗' | sed 's/^/    /'
 
   if have_docker; then
     step "Building the Docker image"

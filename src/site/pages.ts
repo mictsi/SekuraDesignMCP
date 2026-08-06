@@ -1314,7 +1314,7 @@ export function layoutPage(): Page {
       `<div class="docs-minsize">
         <div class="docs-minsize__case">
           <p class="docs-minsize__label">${icon('error', 14)} Without <code>min-inline-size: 0</code></p>
-          <div class="docs-minsize__row docs-minsize__row--broken">
+          <div class="docs-minsize__row docs-minsize__row--broken" data-sk-overflow-demo>
             <span class="docs-minsize__icon">${icon('globe', 16)}</span>
             <span class="docs-minsize__text">a-very-long-hostname-that-will-not-shrink.example.com</span>
             <span class="sk-badge sk-badge--neutral">Applied</span>
@@ -2211,4 +2211,222 @@ function renderSimpleTable(block: string): string {
         .join('')}</tbody>
     </table>
   </div>`;
+}
+
+/* ================================================================== *
+ * Behaviours package
+ * ================================================================== */
+
+export function behavioursPage(): Page {
+  const p = new Page({
+    file: 'behaviours.html',
+    title: 'Behaviours package',
+    eyebrow: 'Get started',
+    lead:
+      'Framework-agnostic implementations of every keyboard and ARIA contract in ' +
+      'this system. 9.1 KB gzipped, zero dependencies, and the same code runs in ' +
+      'React, Vue, Svelte, Angular, Blazor, htmx and plain HTML.',
+  });
+
+  p.add(
+    `<div class="docs-stats">
+      ${[
+        ['9.1 KB', 'gzipped'],
+        ['0', 'dependencies'],
+        ['14', 'controllers'],
+        ['63', 'behaviour assertions'],
+      ]
+        .map(
+          ([v, l]) =>
+            `<div class="docs-stat"><span class="docs-stat__value">${v}</span><span class="docs-stat__label">${l}</span></div>`
+        )
+        .join('')}
+    </div>`
+  );
+
+  p.section(
+    'Why this exists',
+    `<p class="docs-para">
+      Every component page in this documentation states an exact keyboard model —
+      which key moves focus where, what Escape does, when focus is restored. A
+      specification that states a contract but ships no implementation leaves every
+      consumer to build it themselves, and the ARIA 1.2 combobox pattern is not
+      something most teams get right from prose.
+    </p>
+    ${callout(
+      'info',
+      'Why DOM-based rather than state-based',
+      `<p>A "headless" library built on framework state — hooks, composables, stores —
+      still needs a separate binding per framework, and every binding is somewhere
+      behaviour can diverge. These controllers attach to elements your framework has
+      <em>already rendered</em>, so every stack drives identical code covered by
+      identical tests.</p>`
+    )}
+    ${doDont(
+      [
+        'Let the controller own <code class="sk-code">aria-expanded</code>, focus and dismissal.',
+        'Call <code class="sk-code">destroy</code> on unmount — controllers register document-level listeners.',
+        'Re-run <code class="sk-code">enhance()</code> after your server swaps markup in.',
+      ],
+      [
+        'Never mirror controller state in framework state; you will fight it and lose at the wrong moment.',
+        'Never wrap a surface in a shadow root — theming, positioning and focus all break at the boundary.',
+        'Never reimplement the keyboard model "just for this one case".',
+      ]
+    )}`
+  );
+
+  p.section(
+    'Three ways to use it',
+    `<h3 id="way-markup">1. Markup only — no framework, no build step</h3>
+    <p class="docs-para">
+      Add <code class="sk-code">data-sk-*</code> attributes and call
+      <code class="sk-code">enhance()</code>. That is the entire integration.
+    </p>
+    ${demo('', `<script src="/sekura.iife.min.js"></script>
+<script>Sekura.enhance()</script>
+
+<button data-sk-menu-trigger="row-menu">Actions</button>
+<div id="row-menu" class="sk-menu">
+  <button role="menuitem">Edit zone</button>
+  <button role="menuitem">Delete zone</button>
+</div>`, { lang: 'html' })}
+    ${callout(
+      'success',
+      'enhance() is idempotent',
+      `<p>Every wired element is tagged, so calling it again only wires what is new.
+      That is deliberate: htmx, Turbo, Blazor Server and Livewire have no component
+      lifecycle to hook, and they are precisely the stacks least able to reimplement
+      a combobox correctly.</p>`
+    )}
+    ${demo('', `document.body.addEventListener('htmx:afterSwap', () => Sekura.enhance())
+document.addEventListener('turbo:load', () => Sekura.enhance())
+
+// Or let it watch for you — MutationObserver, debounced to a microtask.
+Sekura.autoEnhance()`, { lang: 'js' })}
+
+    <h3 id="way-controllers">2. Controllers directly</h3>
+    ${demo('', `import { createMenu } from '@sekura/behaviours';
+
+const menu = createMenu(triggerEl, menuEl, {
+  onSelect: (item, value) => applyAction(value),
+});
+
+menu.openMenu();
+menu.closeMenu();
+menu.destroy();   // always`, { lang: 'ts' })}
+
+    <h3 id="way-adapters">3. Framework adapters</h3>
+    <p class="docs-para">
+      All of these are short, which is the point — the hard work is already done.
+    </p>
+    ${demo('', `// React
+useEffect(() => {
+  const c = createMenu(trigger.current, menu.current);
+  return c.destroy;
+}, []);
+
+// Svelte — an action already has the shape a controller returns
+function menu(node) {
+  const c = createMenu(node, menuEl);
+  return { destroy: c.destroy };
+}
+
+// Angular — a directive, for the same reason
+ngOnInit()    { this.c = createMenu(this.host.nativeElement, menu); }
+ngOnDestroy() { this.c?.destroy(); }
+
+// Blazor — no DOM abstraction to fight
+await JS.InvokeVoidAsync("Sekura.enhance");`, { lang: 'ts' })}
+    <p class="docs-para">
+      The MCP server generates these for you:
+      <code class="sk-code">get_component_code({ id: "combobox", framework: "vue" })</code>.
+    </p>`
+  );
+
+  p.section(
+    'Controllers',
+    `<div class="sk-table" role="region" aria-label="Controllers" tabindex="0">
+      <table>
+        <thead><tr><th scope="col">Factory</th><th scope="col">What it takes care of</th></tr></thead>
+        <tbody>
+          ${[
+            ['createMenu', 'Real focus movement between items, wrap, Home/End, type-ahead, skipping disabled items, Escape restoring focus to the trigger, Tab closing rather than trapping.'],
+            ['createCombobox', 'The ARIA 1.2 pattern: DOM focus <strong>stays in the input</strong> while <code class="sk-code">aria-activedescendant</code> moves. Debounced search, result-count announcement, two-stage Escape.'],
+            ['createTabs', 'Roving tabindex so the list is one tab stop, RTL-aware arrows, automatic or manual activation, panel visibility.'],
+            ['createSegmented', 'Radiogroup semantics with a roving tabindex.'],
+            ['createDisclosure / createAccordion', 'Correct <code class="sk-code">aria-expanded</code>, content removed from the tab order when collapsed, arrow navigation between headers.'],
+            ['createDialog', 'Native <code class="sk-code">showModal()</code>, focus to the safe option, focus restore, and a veto hook so a dirty dialog confirms rather than discarding work.'],
+            ['createDrawer', 'Switches between modal and inline on a media query — <strong>including the ARIA</strong>, not just the CSS — and sets <code class="sk-code">inert</code> when closed so no invisible tab stops remain.'],
+            ['createPopover', 'Anchored positioning with flip, light dismiss, focus restore.'],
+            ['createTooltip', 'WCAG 1.4.13: dismissible with Escape, hoverable without vanishing, persistent until focus moves.'],
+            ['createSelection', 'Tri-state header checkbox scoped to the <strong>current page</strong>, with announcements.'],
+            ['createAsyncSwitch', 'A pending state until the server confirms, rather than claiming a state it has not reached.'],
+            ['createToaster', 'Auto-dismiss that pauses on hover and focus, with a manual close always available.'],
+            ['createThemeManager', 'Three options with System as the default; high contrast as a separate axis.'],
+          ]
+            .map(([f, d]) => `<tr><th scope="row"><code class="sk-code">${f}</code></th><td>${d}</td></tr>`)
+            .join('')}
+        </tbody>
+      </table>
+    </div>
+    <p class="docs-para">
+      Plus the primitives they are built on — <code class="sk-code">trapFocus</code>,
+      <code class="sk-code">saveFocus</code>, <code class="sk-code">rovingTabindex</code>,
+      <code class="sk-code">dismissable</code>, <code class="sk-code">announce</code>,
+      <code class="sk-code">position</code>, <code class="sk-code">createTypeahead</code> —
+      exported for building something the system does not cover.
+    </p>`
+  );
+
+  p.section(
+    'Menu and combobox are not the same shape',
+    `<p class="docs-para">
+      This is the distinction most implementations get wrong, and the reason both
+      exist as separate controllers rather than one configurable one.
+    </p>
+    <div class="sk-table" role="region" aria-label="Menu versus combobox" tabindex="0">
+      <table>
+        <thead><tr><th scope="col"></th><th scope="col">Menu</th><th scope="col">Combobox</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">DOM focus</th><td>Moves to each item</td><td><strong>Never leaves the input</strong></td></tr>
+          <tr><th scope="row">Cursor</th><td>Focus itself</td><td><code class="sk-code">aria-activedescendant</code></td></tr>
+          <tr><th scope="row">Typing</th><td>Type-ahead jumps to an item</td><td>Filters the list</td></tr>
+          <tr><th scope="row">Escape</th><td>Close, restore focus</td><td>Close keeping text; again to clear</td></tr>
+          <tr><th scope="row">Contains</th><td>Commands</td><td>Values</td></tr>
+        </tbody>
+      </table>
+    </div>
+    ${callout(
+      'warning',
+      '',
+      `<p>A menu with a virtual cursor cannot be operated by users who navigate by
+      focus. A combobox that moves real focus cannot be typed into. Both failures
+      are silent in a mouse-only test.</p>`
+    )}`
+  );
+
+  p.section(
+    'How it is verified',
+    `<p class="docs-para">
+      63 assertions drive a real browser and press real keys. Not a DOM emulation —
+      focus behaviour is exactly the thing emulators get wrong.
+    </p>
+    ${demo('', `menu: skips aria-disabled item
+menu: Escape restores focus to trigger
+menu: Tab closes rather than trapping
+combobox: focus STAYS on input
+combobox: Escape keeps typed text
+tabs: RTL ArrowLeft moves forward
+dialog: focuses [autofocus], the SAFE option
+dialog: focus returns to opener
+drawer: closed drawer is inert (no invisible tab stops)
+enhance: idempotent — re-running wires nothing new`, { lang: 'bash', label: 'A sample of what is asserted' })}
+    <p class="docs-para">
+      These run on every build and in CI. A change that breaks a keyboard contract
+      fails the build rather than reaching a user.
+    </p>`
+  );
+
+  return p;
 }

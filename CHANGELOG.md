@@ -71,18 +71,20 @@ Everything below is a build gate, not a report:
 
 Recorded rather than hidden:
 
-- **RTL** mirrors correctly but produces 37px of horizontal overflow on the list
-  example that does not occur in LTR. Reproducible, unresolved.
+- **RTL** is now verified — 55 checks across 9 pages, 3 widths, both directions.
+  The previously reported "37px RTL overflow" was a *measurement* error, not a
+  defect: `scrollWidth - clientWidth` over-reports in RTL on containers where
+  nothing is clipped. No element escapes its container in either direction. See
+  `src/scripts/test-rtl.ts`.
 - **`forced-colors`** is handled in 10 of 55 components.
 - **No screen-reader test pass.** The keyboard model is verified by machine; the
   announcements are not verified against real assistive technology.
-- **Fonts are referenced, not bundled.** No `@font-face` or woff2 ships, so the
-  system falls back to system fonts out of the box.
 - Absent components: date picker, time picker, number input, editable data grid,
   chart components, rich text editor, colour picker, transfer list, rating,
   notification centre, tour, tag input, tree grid.
-- Vue, Svelte and Angular codegen still emits class-mapping wrappers; only React
-  wires the controllers so far.
+- Fonts are referenced but not bundled; the icon set is not in the distributable.
+- The behaviours package is packed into releases but not published to npm.
+- Chromium only — no Firefox or WebKit in the test matrix.
 
 [Unreleased]: https://github.com/OWNER/SekuraDesignMCP/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/OWNER/SekuraDesignMCP/releases/tag/v1.0.0

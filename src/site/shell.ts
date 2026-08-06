@@ -35,6 +35,7 @@ export const NAV: NavGroup[] = [
       { file: 'index.html', label: 'Overview' },
       { file: 'structure.html', label: 'How it is structured' },
       { file: 'develop.html', label: 'For developers' },
+      { file: 'behaviours.html', label: 'Behaviours package' },
     ],
   },
   {

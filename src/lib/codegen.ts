@@ -24,10 +24,10 @@ export type Framework = (typeof FRAMEWORKS)[number];
 export const frameworkDescriptions: Record<Framework, string> = {
   html: 'Reference markup with the required ARIA wiring in place.',
   css: 'The production stylesheet for this component, written against semantic tokens.',
-  react: 'TypeScript React component with forwardRef and typed variant props.',
-  vue: 'Vue 3 single-file component using the composition API.',
-  svelte: 'Svelte 5 component using runes.',
-  angular: 'Angular standalone component.',
+  react: 'TypeScript React component. Interactive components wire the real @sekura/behaviours controller rather than only mapping classes.',
+  vue: 'Vue 3 single-file component. Interactive components wire the real controller.',
+  svelte: 'Svelte 5 component. Interactive components use an action wrapping the real controller.',
+  angular: 'Angular standalone directive wiring the real controller.',
   blazor: 'Blazor Razor component with typed parameters.',
   'web-component': 'Framework-free custom element wrapping the same classes.',
 };
@@ -207,6 +207,125 @@ ${refDecls}
   return (
 ${refs.map((r) => `    <div ref={${r}Ref as never} className="sk-${spec.id}${refs.length > 1 ? `__${r}` : ''}" />`).join('\n')}
   );
+}
+`;
+}
+
+
+/* ------------------------------------------------------------------ *
+ * Controller-backed wrappers for the remaining frameworks.
+ *
+ * All three are short for the same reason React's is: the keyboard model, the
+ * ARIA bookkeeping and focus restore live in the controller, so a binding only
+ * hands over an element and calls destroy on teardown. Svelte and Angular are
+ * shortest of all, because an action and a directive already have exactly the
+ * shape a controller returns.
+ * ------------------------------------------------------------------ */
+
+function controllerNote(binding: ControllerBinding): string {
+  return `The controller handles ${binding.handles}.
+
+  Do not also manage those attributes from framework state — you would be
+  fighting the controller, and one of you would lose at the wrong moment.`;
+}
+
+function vueWithController(spec: ComponentSpec, binding: ControllerBinding): string {
+  const Name = pascal(spec.id);
+  const refs = binding.refs;
+  return `<!--
+  Sekura ${spec.name} — Vue 3
+
+  ${controllerNote(binding)}
+-->
+<script setup lang="ts">
+import { onMounted, onUnmounted, ref } from 'vue';
+import { ${binding.factory} } from '@sekura/behaviours';
+
+${refs.map((r) => `const ${r} = ref<HTMLElement>();`).join('\n')}
+let controller: { destroy: () => void } | undefined;
+
+onMounted(() => {
+  if (${refs.map((r) => `${r}.value`).join(' && ')}) {
+    controller = ${binding.factory}(${refs.map((r) => `${r}.value as never`).join(', ')});
+  }
+});
+
+// Controllers register document-level listeners for light dismiss; skipping
+// this leaks them on every unmount.
+onUnmounted(() => controller?.destroy());
+</script>
+
+<template>
+${refs.map((r) => `  <div ref="${r}" class="sk-${spec.id}${refs.length > 1 ? `__${r}` : ''}"><slot name="${r}" /></div>`).join('\n')}
+</template>
+`;
+}
+
+function svelteWithController(spec: ComponentSpec, binding: ControllerBinding): string {
+  const refs = binding.refs;
+  const primary = refs[0]!;
+  const rest = refs.slice(1);
+
+  return `<!--
+  Sekura ${spec.name} — Svelte 5
+
+  ${controllerNote(binding)}
+
+  Implemented as an action: \`use:\` receives the node and expects an object
+  with \`destroy\` — which is exactly what a controller returns.
+-->
+<script lang="ts">
+  import { ${binding.factory} } from '@sekura/behaviours';
+
+${rest.map((r) => `  let ${r}El: HTMLElement;`).join('\n')}
+  let { children } = $props();
+
+  function ${spec.id.replace(/-([a-z])/g, (_m, c) => c.toUpperCase())}(node: HTMLElement) {
+    const controller = ${binding.factory}(${['node', ...rest.map((r) => `${r}El as never`)].join(', ')});
+    return { destroy: controller.destroy };
+  }
+</script>
+
+<div use:${spec.id.replace(/-([a-z])/g, (_m, c) => c.toUpperCase())} class="sk-${spec.id}${refs.length > 1 ? `__${primary}` : ''}">
+  {@render children?.()}
+</div>
+${rest.map((r) => `<div bind:this={${r}El} class="sk-${spec.id}__${r}"></div>`).join('\n')}
+`;
+}
+
+function angularWithController(spec: ComponentSpec, binding: ControllerBinding): string {
+  const Name = pascal(spec.id);
+  const refs = binding.refs;
+  const extra = refs.slice(1);
+
+  return `${header(spec, 'Angular (standalone directive)')}
+import {
+  Directive, ElementRef, Input, OnDestroy, OnInit, inject,
+} from '@angular/core';
+import { ${binding.factory} } from '@sekura/behaviours';
+
+/**
+ * ${controllerNote(binding).split('\n')[0]}
+ *
+ * A directive rather than a component: the controller attaches to an element
+ * the template already renders, so there is no markup for it to own.
+ */
+@Directive({ selector: '[sk${Name}]', standalone: true })
+export class Sk${Name}Directive implements OnInit, OnDestroy {
+${extra.map((r) => `  /** Element id of the ${r}. */\n  @Input() sk${pascal(r)}Id?: string;`).join('\n')}
+
+  private readonly host = inject(ElementRef<HTMLElement>);
+  private controller?: { destroy: () => void };
+
+  ngOnInit(): void {
+${extra.map((r) => `    const ${r} = this.sk${pascal(r)}Id ? document.getElementById(this.sk${pascal(r)}Id) : null;`).join('\n')}
+${extra.length ? `    if (${extra.map((r) => r).join(' && ')}) {\n      this.controller = ${binding.factory}(${['this.host.nativeElement', ...extra.map((r) => `${r} as never`)].join(', ')});\n    }` : `    this.controller = ${binding.factory}(this.host.nativeElement as never);`}
+  }
+
+  ngOnDestroy(): void {
+    // Controllers register document-level listeners; destroy releases them.
+    this.controller?.destroy();
+  }
 }
 `;
 }
@@ -615,12 +734,18 @@ export function generateCode(spec: ComponentSpec, framework: Framework): string 
       // presentational ones only need class mapping.
       return binding ? reactWithController(spec, binding) : reactComponent(spec);
     }
-    case 'vue':
-      return vueComponent(spec);
-    case 'svelte':
-      return svelteComponent(spec);
-    case 'angular':
-      return angularComponent(spec);
+    case 'vue': {
+      const binding = CONTROLLERS[spec.id];
+      return binding ? vueWithController(spec, binding) : vueComponent(spec);
+    }
+    case 'svelte': {
+      const binding = CONTROLLERS[spec.id];
+      return binding ? svelteWithController(spec, binding) : svelteComponent(spec);
+    }
+    case 'angular': {
+      const binding = CONTROLLERS[spec.id];
+      return binding ? angularWithController(spec, binding) : angularComponent(spec);
+    }
     case 'blazor':
       return blazorComponent(spec);
     case 'web-component':
