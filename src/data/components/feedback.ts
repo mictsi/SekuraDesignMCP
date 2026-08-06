@@ -99,14 +99,14 @@ export const feedbackComponents: ComponentSpec[] = [
 <div class="sk-alert sk-alert--warning">
   <svg class="sk-alert__icon" aria-hidden="true" focusable="false" width="20" height="20"><use href="#sk-icon-warning" /></svg>
   <div class="sk-alert__content">
-    <h2 class="sk-alert__title">Delegation not yet verified</h2>
+    <h2 class="sk-alert__title">Invitations not yet accepted</h2>
     <p class="sk-alert__body">
-      The parent zone has not published the new name servers. Resolution may be
+      Two members have not accepted their invitation yet. They cannot be assigned work
       inconsistent for up to 24 hours.
     </p>
     <div class="sk-alert__actions">
       <button type="button" class="sk-button sk-button--secondary sk-button--sm">Check again</button>
-      <a class="sk-link" href="/docs/delegation">How delegation works</a>
+      <a class="sk-link" href="/docs/invitations">How invitations work</a>
     </div>
   </div>
 </div>
@@ -244,11 +244,11 @@ export const feedbackComponents: ComponentSpec[] = [
         '4.1.3 Status Messages.',
         '1.4.13 Content on Hover or Focus — dismissible, hoverable, persistent.',
       ],
-      screenReader: 'Announced politely at the next pause. The message must be complete on its own: "Zone example.com deleted. Undo available."',
+      screenReader: 'Announced politely at the next pause. The message must be complete on its own: "Project Website redesign deleted. Undo available."',
       targetSize: 'Action and dismiss buttons meet minimums.',
     },
     content: [
-      'State the outcome in the past tense with the specific object: "Zone example.com deleted".',
+      'State the outcome in the past tense with the specific object: "Project Website redesign deleted".',
       'Keep it to one line where possible.',
       'Pair destructive actions with Undo rather than a confirmation dialog wherever the action is genuinely reversible — it is faster and less annoying.',
     ],
@@ -267,7 +267,7 @@ export const feedbackComponents: ComponentSpec[] = [
 <div class="sk-toast-region" role="status" aria-live="polite" aria-label="Notifications">
   <div class="sk-toast sk-toast--success" data-state="visible">
     <svg class="sk-toast__icon" aria-hidden="true" focusable="false" width="20" height="20"><use href="#sk-icon-check-circle" /></svg>
-    <p class="sk-toast__message">Zone example.com deleted.</p>
+    <p class="sk-toast__message">Project Website redesign deleted.</p>
     <button type="button" class="sk-button sk-button--ghost sk-button--sm sk-toast__action">Undo</button>
     <button type="button" class="sk-icon-button sk-icon-button--sm sk-toast__dismiss">
       <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-close" /></svg>
@@ -385,11 +385,11 @@ export const feedbackComponents: ComponentSpec[] = [
       screenReader: 'Read with the control it describes, via aria-describedby.',
       targetSize: 'Not interactive.',
     },
-    content: ['One sentence.', 'Explain the cause, not just the state: "Read-only because you have Viewer access on this zone."'],
+    content: ['One sentence.', 'Explain the cause, not just the state: "Read-only because you have Viewer access on this project."'],
     dos: ['Attach it with aria-describedby.', 'Keep it adjacent to what it describes.'],
     donts: ['Do not use it for page-level status.', 'Do not stack several in a row — that is an Alert.'],
     html: `<button type="button" class="sk-button sk-button--primary" aria-disabled="true" aria-describedby="publish-why">
-  Publish zone
+  Publish project
 </button>
 <p class="sk-inline-message sk-inline-message--info" id="publish-why">
   <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-info" /></svg>
@@ -600,16 +600,16 @@ export const feedbackComponents: ComponentSpec[] = [
       screenReader: 'Announced once as "Loading" when it appears, and the result is announced when it resolves.',
       targetSize: 'Not interactive.',
     },
-    content: ['Say what is loading where you can: "Loading zones", not just "Loading".', 'Announce the result, not just the start.'],
+    content: ['Say what is loading where you can: "Loading projects", not just "Loading".', 'Announce the result, not just the start.'],
     dos: ['Delay appearance by ~400ms.', 'Always include a label.', 'Announce completion.'],
     donts: ['Do not use a spinner for content whose shape you know — use a skeleton.', 'Do not stop the animation entirely for reduced motion.', 'Do not stack multiple spinners in one view.'],
     html: `<span class="sk-spinner" role="status">
-  <span class="sk-visually-hidden">Loading zones</span>
+  <span class="sk-visually-hidden">Loading projects</span>
 </span>
 
 <div class="sk-spinner-region sk-spinner--centred" aria-busy="true">
   <span class="sk-spinner sk-spinner--lg" role="status"></span>
-  <p class="sk-spinner__label">Loading zones…</p>
+  <p class="sk-spinner__label">Loading projects…</p>
 </div>`,
     css: `.sk-spinner {
   display: inline-block;
@@ -687,19 +687,19 @@ export const feedbackComponents: ComponentSpec[] = [
       keyboard: [{ keys: 'n/a', action: 'Not interactive.' }],
       aria: [
         'The skeleton shapes are aria-hidden — they are meaningless to a screen reader.',
-        'A single visually hidden role="status" saying "Loading zones" carries the meaning.',
+        'A single visually hidden role="status" saying "Loading projects" carries the meaning.',
         'aria-busy="true" on the container until content arrives.',
         'Announce completion, or the user is left wondering.',
       ],
       wcag: ['2.2.2 Pause, Stop, Hide.', '4.1.3 Status Messages.', '2.3.3 Animation from Interactions.'],
-      screenReader: 'Hears "Loading zones" once, then the real content when it arrives.',
+      screenReader: 'Hears "Loading projects" once, then the real content when it arrives.',
       targetSize: 'Not interactive.',
     },
     content: ['The hidden status names what is loading.', 'Do not put placeholder text like "Lorem ipsum" in a skeleton.'],
     dos: ['Match the real content’s dimensions exactly.', 'Show the same number of rows you expect to render.', 'Announce loading once and completion once.'],
     donts: ['Do not shimmer under reduced motion.', 'Do not use skeletons for loads under 300ms.', 'Do not let the skeleton differ in size from the real content.'],
     html: `<div class="sk-skeleton-group" aria-busy="true">
-  <p class="sk-visually-hidden" role="status">Loading zones</p>
+  <p class="sk-visually-hidden" role="status">Loading projects</p>
   <div class="sk-skeleton sk-skeleton--text" aria-hidden="true"></div>
   <div class="sk-skeleton sk-skeleton--text" aria-hidden="true"></div>
   <div class="sk-skeleton sk-skeleton--text sk-skeleton--short" aria-hidden="true"></div>
@@ -800,8 +800,8 @@ export const feedbackComponents: ComponentSpec[] = [
       targetSize: 'Actions meet minimums.',
     },
     content: [
-      'The heading states the situation, not the feeling: "No zones yet", not "Nothing to see here".',
-      'The body says why and what next: "Zones group the records for one domain. Create your first zone to get started."',
+      'The heading states the situation, not the feeling: "No projects yet", not "Nothing to see here".',
+      'The body says why and what next: "Projects group the tasks for one piece of work. Create your first project to get started."',
       'No-results copy names the filters that caused it and offers to clear them.',
       'No-access copy says how to get access without revealing what exists.',
       'Avoid jokes. A user who hits an empty state repeatedly stops finding them funny.',
@@ -819,9 +819,9 @@ export const feedbackComponents: ComponentSpec[] = [
     ],
     html: `<div class="sk-empty-state sk-empty-state--no-results">
   <svg class="sk-empty-state__icon" aria-hidden="true" focusable="false" width="48" height="48"><use href="#sk-illus-search" /></svg>
-  <h2 class="sk-empty-state__heading">No zones match your filters</h2>
+  <h2 class="sk-empty-state__heading">No projects match your filters</h2>
   <p class="sk-empty-state__body">
-    No zones match <strong>“cdn”</strong> in the <strong>Staging</strong> environment.
+    No projects match <strong>“roadmap”</strong> in the <strong>Product</strong> team.
     Try a different search term, or clear the environment filter.
   </p>
   <div class="sk-empty-state__actions">
@@ -931,7 +931,7 @@ export const feedbackComponents: ComponentSpec[] = [
       targetSize: 'Not interactive. When placed inside a link or button, that control owns the target size.',
     },
     content: [
-      'One or two words in sentence case: "Applied", "Awaiting delegation".',
+      'One or two words in sentence case: "Applied", "Awaiting approval".',
       'Use a consistent vocabulary across the product; do not say "Running" in one place and "In progress" in another.',
       'Add a timestamp for states that change.',
     ],
@@ -945,7 +945,7 @@ export const feedbackComponents: ComponentSpec[] = [
 
 <span class="sk-status sk-status--pending">
   <span class="sk-status__dot" aria-hidden="true"></span>
-  <span class="sk-status__label">Awaiting delegation</span>
+  <span class="sk-status__label">Awaiting approval</span>
 </span>`,
     css: `.sk-status {
   display: inline-flex;

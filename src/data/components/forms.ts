@@ -72,10 +72,10 @@ export const formComponents: ComponentSpec[] = [
       targetSize: 'The label is a click target that focuses the control, which materially enlarges the effective hit area of checkboxes and radios.',
     },
     content: [
-      'Labels are nouns, sentence case, no trailing colon: "Time to live", not "Time To Live:".',
+      'Labels are nouns, sentence case, no trailing colon: "Reminder lead time", not "Time To Live:".',
       'Mark optional fields, not required ones — in most forms the required fields are the majority, and marking the majority is noise.',
       'Hints state the format positively: "Use lowercase letters, digits and hyphens", not "Must not contain uppercase".',
-      'Errors say what is wrong and how to fix it: "Enter a TTL between 60 and 86400 seconds", not "Invalid value".',
+      'Errors say what is wrong and how to fix it: "Enter a number of days between 1 and 30", not "Invalid value".',
       'Never put the error in the placeholder — it disappears the moment the user types.',
     ],
     dos: [
@@ -91,13 +91,13 @@ export const formComponents: ComponentSpec[] = [
       'Do not clear a password field on a failed submit.',
     ],
     html: `<div class="sk-field">
-  <label class="sk-field__label" for="ttl">
-    Time to live
+  <label class="sk-field__label" for="reminder">
+    Reminder lead time
     <span class="sk-field__optional">Optional</span>
   </label>
-  <p class="sk-field__hint" id="ttl-hint">Seconds before resolvers refresh this record. Between 60 and 86400.</p>
-  <input class="sk-input" id="ttl" name="ttl" type="number" inputmode="numeric"
-         aria-describedby="ttl-hint" />
+  <p class="sk-field__hint" id="reminder-hint">Days before the due date to send a reminder. Between 1 and 30.</p>
+  <input class="sk-input" id="reminder" name="reminder" type="number" inputmode="numeric"
+         aria-describedby="reminder-hint" />
 </div>
 
 <!-- Invalid: error id appended to aria-describedby, aria-invalid set -->
@@ -287,8 +287,8 @@ export const formComponents: ComponentSpec[] = [
       targetSize: 'Height at every size exceeds 24px. Adornment buttons inside the field carry their own 24px hit area.',
     },
     content: [
-      'Placeholders show an example, never an instruction: "api.example.com", not "Enter hostname".',
-      'Put units in a suffix adornment rather than the label: "TTL" with a "seconds" suffix beats "TTL (seconds)".',
+      'Placeholders show an example, never an instruction: "website-redesign", not "Enter hostname".',
+      'Put units in a suffix adornment rather than the label: "Reminder" with a "days" suffix beats "Reminder (days)".',
       'Do not pre-fill a field with a value the user must change.',
     ],
     dos: [
@@ -305,12 +305,12 @@ export const formComponents: ComponentSpec[] = [
     html: `<div class="sk-field">
   <label class="sk-field__label" for="host">Hostname</label>
   <input class="sk-input sk-input--mono" id="host" name="host" type="text"
-         placeholder="api.example.com" autocomplete="off" spellcheck="false" />
+         placeholder="website-redesign" autocomplete="off" spellcheck="false" />
 </div>
 
 <!-- With adornments -->
 <div class="sk-field">
-  <label class="sk-field__label" for="ttl2">Time to live</label>
+  <label class="sk-field__label" for="ttl2">Reminder lead time</label>
   <div class="sk-input-group">
     <input class="sk-input" id="ttl2" type="text" inputmode="numeric" pattern="[0-9]*" value="3600" />
     <span class="sk-input-group__suffix" aria-hidden="true">seconds</span>
@@ -468,7 +468,7 @@ export const formComponents: ComponentSpec[] = [
     variants: [
       { name: 'Default', className: 'sk-textarea', description: 'Fixed rows, user-resizable vertically.', use: 'Most cases.' },
       { name: 'Auto-grow', className: 'sk-textarea--auto', description: 'Grows to fit content up to a max height.', use: 'Comment boxes and chat composers.' },
-      { name: 'Monospace', className: 'sk-textarea--mono', description: 'Monospace, no spellcheck, no autocapitalise.', use: 'Configuration, zone files, certificates, JSON.' },
+      { name: 'Monospace', className: 'sk-textarea--mono', description: 'Monospace, no spellcheck, no autocapitalise.', use: 'Configuration, task exports, certificates, JSON.' },
     ],
     sizes: [
       { name: 'Small', className: 'sk-textarea--sm', height: '3 rows', typeStyle: 'body-sm', description: 'Inline notes.' },
@@ -679,9 +679,9 @@ export const formComponents: ComponentSpec[] = [
         <option value="A">A — IPv4 address</option>
         <option value="AAAA">AAAA — IPv6 address</option>
       </optgroup>
-      <optgroup label="Delegation">
+      <optgroup label="Recurring">
         <option value="NS">NS — Name server</option>
-        <option value="CNAME">CNAME — Canonical name</option>
+        <option value="weekly">Weekly — every Monday</option>
       </optgroup>
     </select>
   </div>
@@ -1440,11 +1440,11 @@ export const formComponents: ComponentSpec[] = [
            aria-activedescendant="owner-opt-1" autocomplete="off" />
     <ul class="sk-combobox__list" id="owner-list" role="listbox" aria-label="Owner suggestions">
       <li class="sk-combobox__option" id="owner-opt-0" role="option" aria-selected="false">
-        <span class="sk-combobox__option-label">ana.silva@example.com</span>
+        <span class="sk-combobox__option-label">ana.silva@Website redesign</span>
         <span class="sk-combobox__option-meta">Platform team</span>
       </li>
       <li class="sk-combobox__option" id="owner-opt-1" role="option" aria-selected="true" data-active>
-        <span class="sk-combobox__option-label">andre.kim@example.com</span>
+        <span class="sk-combobox__option-label">andre.kim@Website redesign</span>
         <span class="sk-combobox__option-meta">Networking team</span>
       </li>
     </ul>
@@ -1606,9 +1606,9 @@ export const formComponents: ComponentSpec[] = [
       targetSize: 'The clear and submit buttons each carry a 24px hit area.',
     },
     content: [
-      'Placeholder shows what can be searched: "Search zones, records and tags".',
+      'Placeholder shows what can be searched: "Search projects, tasks and people".',
       'Announce counts with the query: "24 results for cdn".',
-      'The empty state suggests broadening: "No zones match \\"cdnn\\". Check the spelling or clear the environment filter."',
+      'The empty state suggests broadening: "No projects match \\"cdnn\\". Check the spelling or clear the environment filter."',
     ],
     dos: [
       'Keep the query visible after searching.',
@@ -1620,18 +1620,24 @@ export const formComponents: ComponentSpec[] = [
       'Do not search on every keystroke without debouncing.',
       'Do not hide the search behind an icon on desktop where there is room for the field.',
     ],
-    html: `<form class="sk-search" role="search" action="/zones">
-  <label class="sk-visually-hidden" for="q">Search zones</label>
+    html: `<form class="sk-search" role="search" action="/projects">
+  <label class="sk-visually-hidden" for="q">Search projects</label>
   <svg class="sk-search__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-search" /></svg>
   <input class="sk-search__input" id="q" name="q" type="search"
-         placeholder="Search zones, records and tags"
-         autocomplete="off" aria-controls="zone-results" />
+         placeholder="Search projects, tasks and people"
+         autocomplete="off" aria-controls="search-results" />
   <button type="button" class="sk-search__clear" hidden>
     <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-close" /></svg>
     <span class="sk-visually-hidden">Clear search</span>
   </button>
 </form>
-<p class="sk-visually-hidden" role="status" id="zone-results-status">24 results for cdn.</p>`,
+
+<!-- aria-controls must resolve to something. The region it names is part of
+     the pattern, not an afterthought — a search field that controls nothing
+     is just a text input. -->
+<div id="search-results" role="region" aria-label="Search results">
+  <p class="sk-visually-hidden" role="status">24 results for redesign.</p>
+</div>`,
     css: `.sk-search {
   display: flex;
   align-items: center;
@@ -1755,7 +1761,7 @@ export const formComponents: ComponentSpec[] = [
       aria: [
         'aria-valuenow, aria-valuemin and aria-valuemax are supplied by the native input.',
         'aria-valuetext is essential whenever the raw number is not self-explanatory: "3600 seconds (1 hour)", not "3600".',
-        'Each thumb of a range slider needs its own accessible name: "Minimum TTL", "Maximum TTL".',
+        'Each thumb of a range slider needs its own accessible name: "Earliest due date", "Latest due date".',
         'Announce on release, not during drag — continuous announcement floods the screen reader.',
       ],
       wcag: ['1.4.11 Non-text Contrast.', '2.1.1 Keyboard.', '2.5.1 Pointer Gestures — dragging must have a keyboard equivalent, which the native input provides.', '2.5.8 Target Size.', '4.1.2 Name, Role, Value.'],
@@ -1778,12 +1784,12 @@ export const formComponents: ComponentSpec[] = [
       'Do not use a slider for fewer than five options.',
     ],
     html: `<div class="sk-field">
-  <label class="sk-field__label" for="ttl-slider">Time to live</label>
+  <label class="sk-field__label" for="reminder-slider">Reminder lead time</label>
   <div class="sk-slider sk-slider--with-input">
-    <input class="sk-slider__input" id="ttl-slider" type="range"
+    <input class="sk-slider__input" id="reminder-slider" type="range"
            min="60" max="86400" step="60" value="3600"
            aria-valuetext="3600 seconds, 1 hour" />
-    <output class="sk-slider__output" for="ttl-slider">1 hour</output>
+    <output class="sk-slider__output" for="reminder-slider">1 hour</output>
   </div>
 </div>`,
     css: `.sk-slider {
@@ -1885,7 +1891,7 @@ export const formComponents: ComponentSpec[] = [
     status: 'beta',
     summary:
       'Accepts one or more files by click or drag. The drop zone is a convenience; the button is the real control, because drag and drop is not keyboard-operable.',
-    whenToUse: ['Importing zone files, certificates, CSVs.', 'Attaching evidence to a change request.'],
+    whenToUse: ['Importing task exports, certificates, CSVs.', 'Attaching evidence to a change request.'],
     whenNotToUse: ['Pasted text — offer a Textarea instead, which is faster for small content.', 'A single well-known file the system can fetch itself.'],
     anatomy: [
       { part: 'File input', required: true, description: 'A real <input type="file">, visually hidden but focusable and in the accessibility tree.' },
@@ -1928,7 +1934,7 @@ export const formComponents: ComponentSpec[] = [
         'A <label> wraps or points at the input; the "Browse" button is that label styled as a button.',
         'Constraints are linked with aria-describedby so they are announced before the picker opens.',
         'Upload progress goes in an aria-live="polite" region, announced at milestones, not continuously.',
-        'Each remove button names its file: "Remove zone-export.csv".',
+        'Each remove button names its file: "Remove tasks-export.csv".',
         'Drag and drop must never be the only way to add a file (WCAG 2.5.7).',
       ],
       wcag: ['1.3.1 Info and Relationships.', '2.1.1 Keyboard.', '2.5.7 Dragging Movements — a single-pointer alternative is required.', '3.3.1 Error Identification.', '4.1.3 Status Messages.'],
@@ -1936,8 +1942,8 @@ export const formComponents: ComponentSpec[] = [
       targetSize: 'The browse button and each remove button meet minimums; the drop zone is large by construction.',
     },
     content: [
-      'State constraints up front: "CSV or zone file, up to 10 MB".',
-      'Rejection messages name the file and the reason: "records.pdf was not added. Only CSV and zone files are accepted."',
+      'State constraints up front: "CSV or task export, up to 10 MB".',
+      'Rejection messages name the file and the reason: "records.pdf was not added. Only CSV and task exports are accepted."',
       'Show file sizes in human units.',
     ],
     dos: [
@@ -1952,23 +1958,23 @@ export const formComponents: ComponentSpec[] = [
     ],
     html: `<div class="sk-upload">
   <input class="sk-upload__input sk-visually-hidden" id="import" type="file"
-         accept=".csv,.zone" multiple aria-describedby="import-constraints" />
+         accept=".csv,.json" multiple aria-describedby="import-constraints" />
   <div class="sk-upload__zone">
     <svg class="sk-upload__icon" aria-hidden="true" focusable="false" width="32" height="32"><use href="#sk-icon-upload" /></svg>
     <p class="sk-upload__prompt">
       <label class="sk-button sk-button--secondary" for="import">Choose files</label>
       <span class="sk-upload__hint-drag">or drag them here</span>
     </p>
-    <p class="sk-upload__constraints" id="import-constraints">CSV or zone file, up to 10 MB each.</p>
+    <p class="sk-upload__constraints" id="import-constraints">CSV or task export, up to 10 MB each.</p>
   </div>
 
   <ul class="sk-upload__list">
     <li class="sk-upload__file">
-      <span class="sk-upload__file-name">zone-export.csv</span>
+      <span class="sk-upload__file-name">tasks-export.csv</span>
       <span class="sk-upload__file-meta">2.4 MB</span>
       <button type="button" class="sk-icon-button sk-icon-button--sm">
         <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-close" /></svg>
-        <span class="sk-visually-hidden">Remove zone-export.csv</span>
+        <span class="sk-visually-hidden">Remove tasks-export.csv</span>
       </button>
     </li>
   </ul>
@@ -2010,7 +2016,7 @@ export const formComponents: ComponentSpec[] = [
   border-style: solid;
 }
 
-/* Focusing the hidden input must still show a visible indicator on the zone. */
+/* Focusing the hidden input must still show a visible indicator on the drop area. */
 .sk-upload__input:focus-visible ~ .sk-upload__zone {
   outline: var(--sk-focus-ring-width) solid var(--sk-color-focus-ring);
   outline-offset: var(--sk-focus-ring-offset);
@@ -2112,7 +2118,7 @@ export const formComponents: ComponentSpec[] = [
     ],
     html: `<fieldset class="sk-fieldset sk-fieldset--section" aria-describedby="net-desc">
   <legend class="sk-fieldset__legend">Network settings</legend>
-  <p class="sk-fieldset__description" id="net-desc">Applies to every record in this zone.</p>
+  <p class="sk-fieldset__description" id="net-desc">Applies to every task in this project.</p>
   <div class="sk-fieldset__body">
     <div class="sk-field"> ... </div>
     <div class="sk-field"> ... </div>

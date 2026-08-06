@@ -261,7 +261,7 @@ export function overviewPage(): Page {
     ${themeCompare(
       `<div class="sk-card">
         <div class="sk-card__header">
-          <h4 class="sk-card__title">example.com</h4>
+          <h4 class="sk-card__title">Website redesign</h4>
           <span class="sk-badge sk-badge--neutral">Production</span>
         </div>
         <div class="sk-card__body sk-stack sk-stack--gap-12">
@@ -278,7 +278,7 @@ export function overviewPage(): Page {
       </div>
       <div class="sk-alert sk-alert--warning sk-alert--compact">
         ${icon('warning', 16, 'sk-alert__icon')}
-        <div class="sk-alert__content"><p class="sk-alert__body">Delegation not verified.</p></div>
+        <div class="sk-alert__content"><p class="sk-alert__body">4 tasks unassigned.</p></div>
       </div>`,
       'The tinted alert uses the deep <code class="sk-code">950</code> step in dark mode, not a darkened pale tint — that would read as muddy grey.'
     )}`
@@ -518,7 +518,7 @@ npm run emit:css
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Zones · Your product</title>
+  <title>Projects · Your product</title>
 
   <!-- 1. Theme FIRST, inline and synchronous -->
   <script>
@@ -875,10 +875,10 @@ export function darkModePage(): Page {
     ${themeCompare(
       `<div class="sk-table" style="inline-size:100%">
         <table>
-          <thead><tr><th scope="col">Name</th><th scope="col">Type</th><th scope="col">TTL</th></tr></thead>
+          <thead><tr><th scope="col">Task</th><th scope="col">Owner</th><th scope="col">Due</th></tr></thead>
           <tbody>
             <tr><th scope="row">@</th><td>A</td><td>3600</td></tr>
-            <tr><th scope="row">www</th><td>CNAME</td><td>3600</td></tr>
+            <tr><th scope="row">Pricing table</th><td>Andre Kim</td><td>13 Aug</td></tr>
             <tr><th scope="row">api</th><td>A</td><td>300</td></tr>
           </tbody>
         </table>
@@ -899,7 +899,7 @@ export function darkModePage(): Page {
     ${themeCompare(
       `<div class="sk-cluster sk-cluster--gap-8">
         <span class="sk-button sk-button--primary" aria-hidden="true">Primary</span>
-        <span class="sk-button sk-button--danger" aria-hidden="true">Delete zone</span>
+        <span class="sk-button sk-button--danger" aria-hidden="true">Delete project</span>
         <span class="sk-button sk-button--success" aria-hidden="true">Confirm</span>
       </div>
       <div class="sk-cluster sk-cluster--gap-8">
@@ -930,7 +930,7 @@ export function darkModePage(): Page {
     ${themeCompare(
       `<nav class="docs-navdemo" aria-label="Example navigation">
         <a class="sk-side-nav__item" href="#selection-needs-a-bar-not-just-a-tint"><span class="sk-side-nav__label">Overview</span></a>
-        <a class="sk-side-nav__item" href="#selection-needs-a-bar-not-just-a-tint" aria-current="page"><span class="sk-side-nav__label">Zones</span></a>
+        <a class="sk-side-nav__item" href="#selection-needs-a-bar-not-just-a-tint" aria-current="page"><span class="sk-side-nav__label">Projects</span></a>
         <a class="sk-side-nav__item" href="#selection-needs-a-bar-not-just-a-tint"><span class="sk-side-nav__label">Operations</span></a>
       </nav>`,
       'The 3px leading bar is what actually communicates "you are here" on dark.'
@@ -1033,7 +1033,7 @@ export function typographyPage(): Page {
           Code, identifiers, hostnames, keys, hashes — anything a user compares character by
           character.
         </p>
-        <p class="docs-mono-sample" style="font-family:var(--sk-font-family-mono)">1lI 0O — api.example.com 192.0.2.10</p>
+        <p class="docs-mono-sample" style="font-family:var(--sk-font-family-mono)">1lI 0O — WEB-114 · 2026-08-21</p>
       </div>
     </div>
     ${callout(
@@ -1214,7 +1214,7 @@ export function spacingPage(): Page {
               </div>
               <div class="sk-field">
                 <label class="sk-field__label" for="dd-${name}">Hostname</label>
-                <input class="sk-input" id="dd-${name}" type="text" value="api.example.com" readonly />
+                <input class="sk-input" id="dd-${name}" type="text" value="website-redesign" readonly />
               </div>
             </div>`
           )
@@ -1278,7 +1278,7 @@ export function layoutPage(): Page {
           <button type="button" class="sk-button sk-button--secondary sk-button--sm">Sort</button>
           <span class="sk-badge sk-badge--neutral">Environment: Production</span>
           <span class="sk-badge sk-badge--neutral">Status: Applied</span>
-          <button type="button" class="sk-button sk-button--primary sk-button--sm">Create zone</button>
+          <button type="button" class="sk-button sk-button--primary sk-button--sm">Create project</button>
         </div>
       </div>`,
       `.sk-cluster {
@@ -1316,7 +1316,7 @@ export function layoutPage(): Page {
           <p class="docs-minsize__label">${icon('error', 14)} Without <code>min-inline-size: 0</code></p>
           <div class="docs-minsize__row docs-minsize__row--broken" data-sk-overflow-demo>
             <span class="docs-minsize__icon">${icon('globe', 16)}</span>
-            <span class="docs-minsize__text">a-very-long-hostname-that-will-not-shrink.example.com</span>
+            <span class="docs-minsize__text">a-very-long-project-name-that-will-not-shrink</span>
             <span class="sk-badge sk-badge--neutral">Applied</span>
           </div>
           <p class="docs-minsize__note">Overflows its container.</p>
@@ -1325,7 +1325,7 @@ export function layoutPage(): Page {
           <p class="docs-minsize__label">${icon('check-circle', 14)} With it</p>
           <div class="docs-minsize__row docs-minsize__row--fixed">
             <span class="docs-minsize__icon">${icon('globe', 16)}</span>
-            <span class="docs-minsize__text sk-truncate">a-very-long-hostname-that-will-not-shrink.example.com</span>
+            <span class="docs-minsize__text sk-truncate">a-very-long-project-name-that-will-not-shrink</span>
             <span class="sk-badge sk-badge--neutral">Applied</span>
           </div>
           <p class="docs-minsize__note">Truncates, and the badge stays put.</p>
@@ -2288,8 +2288,8 @@ export function behavioursPage(): Page {
 
 <button data-sk-menu-trigger="row-menu">Actions</button>
 <div id="row-menu" class="sk-menu">
-  <button role="menuitem">Edit zone</button>
-  <button role="menuitem">Delete zone</button>
+  <button role="menuitem">Edit project</button>
+  <button role="menuitem">Delete project</button>
 </div>`, { lang: 'html' })}
     ${callout(
       'success',

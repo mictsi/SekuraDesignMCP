@@ -37,10 +37,10 @@ const FIXTURES: Record<string, string> = {
     <button id="before">before</button>
     <button id="trigger" data-sk-menu-trigger="menu">Actions</button>
     <div id="menu" class="sk-menu">
-      <button role="menuitem" id="m1">Edit zone</button>
-      <button role="menuitem" id="m2">Duplicate zone</button>
+      <button role="menuitem" id="m1">Edit project</button>
+      <button role="menuitem" id="m2">Duplicate project</button>
       <button role="menuitem" id="m3" aria-disabled="true">Export</button>
-      <button role="menuitem" id="m4">Delete zone</button>
+      <button role="menuitem" id="m4">Delete project</button>
     </div>
     <button id="after">after</button>`,
 
@@ -78,7 +78,7 @@ const FIXTURES: Record<string, string> = {
     <button id="opener" data-sk-dialog-open="dlg">Open</button>
     <dialog id="dlg" data-sk-dialog>
       <button id="cancel" autofocus>Cancel</button>
-      <button id="confirm">Delete zone</button>
+      <button id="confirm">Delete project</button>
     </dialog>`,
 
   segmented: `
@@ -89,7 +89,7 @@ const FIXTURES: Record<string, string> = {
     </div>`,
 
   selection: `
-    <table id="tbl" data-sk-selection="zones">
+    <table id="tbl" data-sk-selection="projects">
       <thead><tr><th><input type="checkbox" data-sk-select-all /></th><th>Name</th></tr></thead>
       <tbody>
         <tr><td><input type="checkbox" data-sk-select-row id="r1" /></td><td>a</td></tr>

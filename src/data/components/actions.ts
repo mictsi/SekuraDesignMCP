@@ -98,7 +98,7 @@ export const actionComponents: ComponentSpec[] = [
     },
     content: [
       'Sentence case. "Save changes", not "Save Changes" and not "SAVE CHANGES".',
-      'Start with a verb and name the object: "Delete zone", not "Delete", and never "OK".',
+      'Start with a verb and name the object: "Delete project", not "Delete", and never "OK".',
       'In a confirmation dialog, the confirm button repeats the specific action so it reads correctly out of context: "Delete 12 records", not "Confirm".',
       'Keep it under four words where possible. If it needs a sentence, the explanation belongs above the button.',
       'Never use "Click here". The label is the target.',
@@ -423,9 +423,9 @@ export const actionComponents: ComponentSpec[] = [
         'The visual box may be as small as 32px, but the ::after hit area guarantees 24x24 CSS px, and 44x44 is the target on touch-primary surfaces.',
     },
     content: [
-      'The hidden label is a verb phrase, exactly as it would read on a text button: "Delete zone", not "Delete icon" or "Trash".',
+      'The hidden label is a verb phrase, exactly as it would read on a text button: "Delete project", not "Delete icon" or "Trash".',
       'Never include the word "button" or "icon" in the label — the role is already announced.',
-      'On a row action, include the row subject so the label stands alone: "Delete api.example.com".',
+      'On a row action, include the row subject so the label stands alone: "Delete website-redesign".',
     ],
     dos: [
       'Give every icon button a tooltip *and* a hidden label. They serve different users.',
@@ -937,7 +937,7 @@ export const actionComponents: ComponentSpec[] = [
         'Inline links are exempt from SC 2.5.8 because they are in a sentence. Standalone links are not exempt and get vertical padding to reach 24px.',
     },
     content: [
-      'Link text describes the destination: "DNS record reference", not "click here" or "read more".',
+      'Link text describes the destination: "Task field reference", not "click here" or "read more".',
       'Front-load the distinguishing word so the link is scannable.',
       'Do not include the word "link" — the role is announced.',
       'For downloads, state the format and size: "Audit log (CSV, 2.4 MB)".',
@@ -954,7 +954,7 @@ export const actionComponents: ComponentSpec[] = [
       'Do not style :visited inside application chrome.',
     ],
     html: `<p>
-  See the <a class="sk-link" href="/docs/records">DNS record reference</a> for
+  See the <a class="sk-link" href="/docs/tasks">Task field reference</a> for
   supported types, or
   <a class="sk-link" href="https://example.org/rfc" target="_blank" rel="noreferrer noopener">
     the upstream specification
@@ -968,7 +968,7 @@ export const actionComponents: ComponentSpec[] = [
   <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-arrow-right" /></svg>
 </a>
 
-<a class="sk-link sk-link--quiet" href="/zones/example-com" aria-current="page">example.com</a>`,
+<a class="sk-link sk-link--quiet" href="/projects/website-redesign" aria-current="page">Website redesign</a>`,
     css: `.sk-link {
   color: var(--sk-color-text-link);
   text-decoration: underline;

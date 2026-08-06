@@ -208,7 +208,7 @@ export const layoutComponents: ComponentSpec[] = [
       aria: [
         'Exactly one <h1> per page, and it is this one.',
         'The document <title> should begin with the page title so browser tabs and history are useful.',
-        'Actions must have names meaningful out of context: "Create zone", not "Create".',
+        'Actions must have names meaningful out of context: "Create project", not "Create".',
         'A sticky header needs scroll-margin on focusable content so it never obscures focus (WCAG 2.4.11).',
       ],
       wcag: ['1.3.1 Info and Relationships.', '2.4.2 Page Titled.', '2.4.6 Headings and Labels.', '2.4.11 Focus Not Obscured.'],
@@ -216,7 +216,7 @@ export const layoutComponents: ComponentSpec[] = [
       targetSize: 'Actions meet minimums.',
     },
     content: [
-      'Titles are the resource name on a detail page, and a plural noun on a list page: "Zones".',
+      'Titles are the resource name on a detail page, and a plural noun on a list page: "Projects".',
       'Descriptions are one sentence explaining what the page is for.',
       'Do not repeat the title in the description.',
     ],
@@ -228,7 +228,7 @@ export const layoutComponents: ComponentSpec[] = [
   <div class="sk-page-header__main">
     <div class="sk-page-header__titles">
       <div class="sk-page-header__title-row">
-        <h1 class="sk-page-header__title">example.com</h1>
+        <h1 class="sk-page-header__title">Website redesign</h1>
         <span class="sk-badge sk-badge--neutral">Production</span>
         <span class="sk-status sk-status--success">
           <span class="sk-status__dot" aria-hidden="true"></span>
@@ -240,11 +240,11 @@ export const layoutComponents: ComponentSpec[] = [
 
     <div class="sk-page-header__actions">
       <button type="button" class="sk-button sk-button--secondary">Export</button>
-      <button type="button" class="sk-button sk-button--primary">Add record</button>
+      <button type="button" class="sk-button sk-button--primary">Add task</button>
     </div>
   </div>
 
-  <nav class="sk-tabs sk-tabs--routed" aria-label="Zone views"> ... </nav>
+  <nav class="sk-tabs sk-tabs--routed" aria-label="Project views"> ... </nav>
 </header>`,
     css: `.sk-page-header {
   display: flex;
@@ -498,7 +498,7 @@ export const layoutComponents: ComponentSpec[] = [
   <h2 class="sk-cluster__grow">Records</h2>
   <div class="sk-cluster sk-cluster--gap-8">
     <button type="button" class="sk-button sk-button--secondary sk-button--sm">Filter</button>
-    <button type="button" class="sk-button sk-button--primary sk-button--sm">Add record</button>
+    <button type="button" class="sk-button sk-button--primary sk-button--sm">Add task</button>
   </div>
 </div>`,
     css: `.sk-cluster {

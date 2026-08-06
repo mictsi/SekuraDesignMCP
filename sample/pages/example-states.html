@@ -1,0 +1,336 @@
+<!--
+  STATES — the screens nobody designs until production.
+
+  Every list, form and detail view in a product has four more states than the
+  one in the mockup: loading, empty, error, and forbidden. They are usually
+  invented under time pressure by whoever hits them first, which is why they end
+  up inconsistent. This page is the reference so they are not invented twice.
+-->
+      <header class="sk-page-header">
+        <div class="sk-page-header__main">
+          <div class="sk-page-header__titles">
+            <h1 class="sk-page-header__title">Loading, empty and error states</h1>
+            <p class="sk-page-header__description">
+              The states a screen spends most of its unhappy life in. Each one below
+              is the real component, not a picture of it.
+            </p>
+          </div>
+        </div>
+      </header>
+
+      <div class="sk-alert sk-alert--info">
+        <svg class="sk-alert__icon" aria-hidden="true" focusable="false" width="20" height="20"><use href="#sk-icon-info"></use></svg>
+        <div class="sk-alert__content">
+          <h2 class="sk-alert__title">One rule covers most of this page</h2>
+          <p class="sk-alert__body">
+            A state must say <strong>what happened</strong>, <strong>why</strong>, and
+            <strong>what to do next</strong>. Copy that only manages the first of the
+            three — “Something went wrong” — leaves the reader with nothing to act on.
+          </p>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <section class="sk-stack sk-stack--gap-16" aria-labelledby="loading-h">
+        <div>
+          <h2 class="sk-fieldset__legend" id="loading-h">Loading</h2>
+          <p class="sk-field__hint">
+            Three different waits, three different treatments. Choosing by duration
+            rather than by taste is what keeps them consistent.
+          </p>
+        </div>
+
+        <div class="sk-grid sk-grid--min-18 sk-grid--gap-16">
+          <article class="sk-card">
+            <div class="sk-card__header"><h3 class="sk-card__title">Skeleton — content is coming</h3></div>
+            <div class="sk-card__body sk-stack sk-stack--gap-12">
+              <p style="margin:0;color:var(--sk-color-text-secondary);font-size:var(--sk-font-size-body-sm)">
+                Use when you know the <em>shape</em> of what is arriving. It reserves the
+                space, so nothing jumps when the data lands.
+              </p>
+              <!-- aria-busy on the container, one polite status message, and the
+                   bars themselves hidden. Announcing six grey rectangles
+                   individually is noise, not information. -->
+              <div class="sk-skeleton-group" aria-busy="true">
+                <p class="sk-visually-hidden" role="status">Loading projects</p>
+                <div class="sk-skeleton sk-skeleton--text" aria-hidden="true"></div>
+                <div class="sk-skeleton sk-skeleton--text" aria-hidden="true"></div>
+                <div class="sk-skeleton sk-skeleton--text sk-skeleton--short" aria-hidden="true"></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="sk-card">
+            <div class="sk-card__header"><h3 class="sk-card__title">Spinner — duration unknown</h3></div>
+            <div class="sk-card__body sk-stack sk-stack--gap-12">
+              <p style="margin:0;color:var(--sk-color-text-secondary);font-size:var(--sk-font-size-body-sm)">
+                Use when you cannot predict the layout. It always carries a label —
+                a bare spinner tells a screen reader user only that something is happening
+                somewhere.
+              </p>
+              <div class="sk-spinner-region" aria-busy="true">
+                <span class="sk-spinner sk-spinner--lg" role="status"></span>
+                <p class="sk-spinner__label">Checking permissions…</p>
+              </div>
+            </div>
+          </article>
+
+          <article class="sk-card">
+            <div class="sk-card__header"><h3 class="sk-card__title">Progress — the total is known</h3></div>
+            <div class="sk-card__body sk-stack sk-stack--gap-12">
+              <p style="margin:0;color:var(--sk-color-text-secondary);font-size:var(--sk-font-size-body-sm)">
+                Use whenever you can count the work. A determinate bar is the difference
+                between “still going” and “nearly done”.
+              </p>
+              <!-- aria-valuetext, not just aria-valuenow: "3 of 8" is what the
+                   user needs; "37" is what the maths produced. -->
+              <div class="sk-progress">
+                <div class="sk-progress__header">
+                  <span class="sk-progress__label" id="import-label">Importing tasks</span>
+                  <span class="sk-progress__value">3 of 8</span>
+                </div>
+                <div class="sk-progress__track" role="progressbar"
+                     aria-labelledby="import-label"
+                     aria-valuenow="3" aria-valuemin="0" aria-valuemax="8"
+                     aria-valuetext="3 of 8 files imported">
+                  <div class="sk-progress__fill" style="inline-size: 37.5%"></div>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <section class="sk-stack sk-stack--gap-16" aria-labelledby="empty-h">
+        <div>
+          <h2 class="sk-fieldset__legend" id="empty-h">Empty</h2>
+          <p class="sk-field__hint">
+            Three states that all render zero rows and must never share copy. Getting
+            this wrong is the most common empty-state mistake there is: telling a
+            first-time user their search returned nothing.
+          </p>
+        </div>
+
+        <div class="sk-grid sk-grid--min-18 sk-grid--gap-16">
+          <article class="sk-card">
+            <div class="sk-card__header"><h3 class="sk-card__title">First use — nothing exists yet</h3></div>
+            <div class="sk-card__body">
+              <!-- Opportunity, not absence. This is the one empty state that gets
+                   a primary action, because creating the first item IS the task. -->
+              <div class="sk-empty-state sk-empty-state--compact">
+                <svg class="sk-empty-state__icon" aria-hidden="true" focusable="false" width="48" height="48"><use href="#sk-icon-plus"></use></svg>
+                <h4 class="sk-empty-state__heading">Create your first project</h4>
+                <p class="sk-empty-state__body">
+                  Projects hold tasks, files and the people working on them. Most teams
+                  start with one per quarter.
+                </p>
+                <div class="sk-empty-state__actions">
+                  <a class="sk-button sk-button--primary" href="example-form.html">New project</a>
+                  <a class="sk-link" href="example-list.html">See an example</a>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="sk-card">
+            <div class="sk-card__header"><h3 class="sk-card__title">No results — a filter did this</h3></div>
+            <div class="sk-card__body">
+              <!-- Names the filters responsible and offers to clear them. The user
+                   did not lose their data; they narrowed it, and they need to be
+                   told exactly how. -->
+              <div class="sk-empty-state sk-empty-state--compact">
+                <svg class="sk-empty-state__icon" aria-hidden="true" focusable="false" width="48" height="48"><use href="#sk-icon-search"></use></svg>
+                <h4 class="sk-empty-state__heading">No projects match your filters</h4>
+                <p class="sk-empty-state__body">
+                  Nothing matches <strong>“roadmap”</strong> in the <strong>Product</strong>
+                  team. Your other 18 projects are still there.
+                </p>
+                <div class="sk-empty-state__actions">
+                  <button type="button" class="sk-button sk-button--secondary">Clear all filters</button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="sk-card">
+            <div class="sk-card__header"><h3 class="sk-card__title">All clear — zero is the goal</h3></div>
+            <div class="sk-card__body">
+              <!-- An inbox at zero is a success, not a void. Reaching for the
+                   no-results illustration here would read as a failure. -->
+              <div class="sk-empty-state sk-empty-state--compact">
+                <svg class="sk-empty-state__icon" aria-hidden="true" focusable="false" width="48" height="48"><use href="#sk-icon-check-circle"></use></svg>
+                <h4 class="sk-empty-state__heading">Nothing needs your review</h4>
+                <p class="sk-empty-state__body">
+                  You cleared the last item 20 minutes ago. New requests appear here as
+                  they arrive.
+                </p>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <section class="sk-stack sk-stack--gap-16" aria-labelledby="error-h">
+        <div>
+          <h2 class="sk-fieldset__legend" id="error-h">Errors</h2>
+          <p class="sk-field__hint">
+            Sorted by blast radius. The bigger the failure, the more room it gets —
+            but a page-level error is never used for a problem confined to one field.
+          </p>
+        </div>
+
+        <!-- 1. Field level -->
+        <article class="sk-card">
+          <div class="sk-card__header"><h3 class="sk-card__title">Field level — the user can fix it here</h3></div>
+          <div class="sk-card__body sk-stack sk-stack--gap-16">
+            <p style="margin:0;color:var(--sk-color-text-secondary);font-size:var(--sk-font-size-body-sm)">
+              The message sits with the field, is referenced by
+              <code class="sk-code">aria-describedby</code>, and says what a valid value
+              looks like. “Invalid input” describes the verdict, not the fix.
+            </p>
+            <div class="sk-field">
+              <label class="sk-field__label" for="err-key">Project key</label>
+              <p class="sk-field__hint" id="err-key-hint">Prefixes every task number.</p>
+              <input class="sk-input" id="err-key" type="text" value="web redesign"
+                     aria-invalid="true" aria-describedby="err-key-hint err-key-error" />
+              <p class="sk-field__error" id="err-key-error">
+                <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-error"></use></svg>
+                <span>Use 2 to 6 capital letters or digits, with no spaces. For example, WEB.</span>
+              </p>
+            </div>
+          </div>
+        </article>
+
+        <!-- 2. Section level, recoverable -->
+        <article class="sk-card">
+          <div class="sk-card__header"><h3 class="sk-card__title">Section level — one panel failed, the page did not</h3></div>
+          <div class="sk-card__body sk-stack sk-stack--gap-16">
+            <p style="margin:0;color:var(--sk-color-text-secondary);font-size:var(--sk-font-size-body-sm)">
+              Contain the failure. Replacing the whole page because one widget's request
+              failed throws away everything else that loaded correctly.
+            </p>
+            <div class="sk-empty-state sk-empty-state--error sk-empty-state--compact">
+              <svg class="sk-empty-state__icon" aria-hidden="true" focusable="false" width="48" height="48"><use href="#sk-icon-warning"></use></svg>
+              <h4 class="sk-empty-state__heading">Activity could not be loaded</h4>
+              <p class="sk-empty-state__body">
+                The activity service did not respond within 10 seconds. Everything else on
+                this page is up to date.
+              </p>
+              <div class="sk-empty-state__actions">
+                <button type="button" class="sk-button sk-button--secondary"
+                        data-sk-demo-toast="Retrying…" data-sk-demo-intent="info">
+                  <svg class="sk-button__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-refresh"></use></svg>
+                  <span class="sk-button__label">Try again</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- 3. Partial success -->
+        <article class="sk-card">
+          <div class="sk-card__header"><h3 class="sk-card__title">Partial success — the hardest one to write</h3></div>
+          <div class="sk-card__body sk-stack sk-stack--gap-16">
+            <p style="margin:0;color:var(--sk-color-text-secondary);font-size:var(--sk-font-size-body-sm)">
+              A bulk action that half worked is neither a success nor a failure, and
+              reporting it as either is a lie. Give both numbers, and let the user act on
+              the failed subset alone.
+            </p>
+            <!-- role="alert" IS correct here: the user submitted, and this is the
+                 answer to what they did. Compare the static warning on the
+                 dashboard, which must not announce. -->
+            <div class="sk-alert sk-alert--warning" role="alert">
+              <svg class="sk-alert__icon" aria-hidden="true" focusable="false" width="20" height="20"><use href="#sk-icon-warning"></use></svg>
+              <div class="sk-alert__content">
+                <h4 class="sk-alert__title">10 of 12 tasks moved</h4>
+                <p class="sk-alert__body">
+                  Two tasks stayed where they were because they are blocked by work in
+                  another project. The other ten moved successfully.
+                </p>
+                <div class="sk-alert__actions">
+                  <button type="button" class="sk-button sk-button--secondary sk-button--sm">Show the 2 that failed</button>
+                  <button type="button" class="sk-button sk-button--ghost sk-button--sm">Retry those 2</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- 4. Forbidden -->
+        <article class="sk-card">
+          <div class="sk-card__header"><h3 class="sk-card__title">Not permitted — not an error</h3></div>
+          <div class="sk-card__body sk-stack sk-stack--gap-16">
+            <p style="margin:0;color:var(--sk-color-text-secondary);font-size:var(--sk-font-size-body-sm)">
+              Nothing broke, so nothing should look broken. Say who can grant access —
+              a dead end with no route forward is what generates support tickets.
+            </p>
+            <div class="sk-empty-state sk-empty-state--no-access sk-empty-state--compact">
+              <svg class="sk-empty-state__icon" aria-hidden="true" focusable="false" width="48" height="48"><use href="#sk-icon-shield"></use></svg>
+              <h4 class="sk-empty-state__heading">You do not have access to Billing overhaul</h4>
+              <p class="sk-empty-state__body">
+                This project is limited to invited people. Andre Kim owns it and can add
+                you.
+              </p>
+              <div class="sk-empty-state__actions">
+                <button type="button" class="sk-button sk-button--secondary"
+                        data-sk-demo-toast="Access request sent to Andre Kim." data-sk-demo-intent="success">
+                  Request access
+                </button>
+                <a class="sk-link" href="example-list.html">Back to projects</a>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <!-- ============================================================ -->
+      <section class="sk-stack sk-stack--gap-16" aria-labelledby="blocked-h">
+        <div>
+          <h2 class="sk-fieldset__legend" id="blocked-h">Blocked actions</h2>
+          <p class="sk-field__hint">
+            A control the user cannot press yet needs a reason attached to it. This is
+            where <code class="sk-code">disabled</code> and
+            <code class="sk-code">aria-disabled</code> stop being interchangeable.
+          </p>
+        </div>
+
+        <div class="sk-grid sk-grid--min-18 sk-grid--gap-16">
+          <article class="sk-card">
+            <div class="sk-card__header"><h3 class="sk-card__title">Do this</h3></div>
+            <div class="sk-card__body sk-stack sk-stack--gap-12">
+              <!-- aria-disabled keeps the control focusable, so a keyboard user
+                   can reach it, hear why, and act on the reason. -->
+              <button type="button" class="sk-button sk-button--primary" aria-disabled="true"
+                      aria-describedby="publish-why">
+                <span class="sk-button__label">Publish project</span>
+              </button>
+              <p class="sk-inline-message sk-inline-message--info" id="publish-why">
+                <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-info"></use></svg>
+                <span>Assign the 4 unassigned tasks before publishing.</span>
+              </p>
+              <p style="margin:0;color:var(--sk-color-text-secondary);font-size:var(--sk-font-size-body-sm)">
+                Focusable, announced as unavailable, and the reason is one Tab away.
+              </p>
+            </div>
+          </article>
+
+          <article class="sk-card">
+            <div class="sk-card__header"><h3 class="sk-card__title">Not this</h3></div>
+            <div class="sk-card__body sk-stack sk-stack--gap-12">
+              <!-- A `disabled` attribute removes the control from the tab order
+                   entirely, so a keyboard user never discovers it exists — let
+                   alone why it cannot be used. -->
+              <button type="button" class="sk-button sk-button--primary" disabled>
+                <span class="sk-button__label">Publish project</span>
+              </button>
+              <p style="margin:0;color:var(--sk-color-text-secondary);font-size:var(--sk-font-size-body-sm)">
+                Unreachable by keyboard, unexplained, and invisible to anyone tabbing
+                through the page. Reserve <code class="sk-code">disabled</code> for controls
+                that are genuinely inapplicable, never for ones the user must unlock.
+              </p>
+            </div>
+          </article>
+        </div>
+      </section>

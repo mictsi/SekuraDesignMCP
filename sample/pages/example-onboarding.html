@@ -1,0 +1,165 @@
+<!--
+  ONBOARDING — a task split across several screens.
+
+  A wizard is worth its cost only when the steps are genuinely sequential and
+  later answers depend on earlier ones. Splitting a form people could have
+  completed in one pass just hides how long it is, and makes going back
+  expensive. Three rules hold this one together:
+
+    1. Every step is reachable backwards without losing what was typed.
+    2. Progress is stated in words, not only in a row of circles.
+    3. Nothing is committed until the final step, and the final step says so.
+-->
+      <div class="sk-form-page">
+        <header class="sk-page-header">
+          <h1 class="sk-page-header__title">Set up your workspace</h1>
+          <p class="sk-page-header__description">
+            Three steps, about two minutes. Nothing is created until you confirm on the
+            last one.
+          </p>
+        </header>
+
+        <!-- The stepper is a nav, not a tablist: each step is a place you can
+             navigate to, and the browser's back button should work. Completed
+             steps are links; the current and future ones are not. -->
+        <nav class="sk-stepper" aria-label="Setup progress">
+          <ol class="sk-stepper__list">
+            <li class="sk-stepper__step" data-complete>
+              <a class="sk-stepper__link" href="#step-workspace">
+                <span class="sk-stepper__indicator" aria-hidden="true">
+                  <svg width="14" height="14"><use href="#sk-icon-check"></use></svg>
+                </span>
+                <span class="sk-stepper__label">Workspace</span>
+                <span class="sk-visually-hidden">, completed</span>
+              </a>
+            </li>
+            <li class="sk-stepper__step" aria-current="step">
+              <span class="sk-stepper__link">
+                <span class="sk-stepper__indicator" aria-hidden="true">2</span>
+                <span class="sk-stepper__label">Invite people</span>
+                <span class="sk-visually-hidden">, current step</span>
+              </span>
+            </li>
+            <li class="sk-stepper__step">
+              <span class="sk-stepper__link">
+                <span class="sk-stepper__indicator" aria-hidden="true">3</span>
+                <span class="sk-stepper__label">Review</span>
+                <span class="sk-visually-hidden">, not started</span>
+              </span>
+            </li>
+          </ol>
+        </nav>
+
+        <!-- The circles alone are decoration to anyone who cannot see them, and
+             ambiguous to anyone who can. The sentence is the real status. -->
+        <p class="sk-field__hint" role="status">Step 2 of 3 — Invite people</p>
+
+        <form class="sk-stack sk-stack--gap-32" novalidate data-sk-validate>
+
+          <fieldset class="sk-fieldset sk-fieldset--section">
+            <legend class="sk-fieldset__legend">Invite your team</legend>
+            <div class="sk-fieldset__body">
+
+              <div class="sk-field">
+                <label class="sk-field__label" for="invite-emails">
+                  Email addresses
+                  <span class="sk-field__optional">Optional</span>
+                </label>
+                <p class="sk-field__hint" id="invite-emails-hint">
+                  One per line, or separated by commas. You can invite people later from
+                  Settings — skipping this does not lock you out of it.
+                </p>
+                <textarea class="sk-textarea" id="invite-emails" name="inviteEmails" rows="4"
+                          spellcheck="false" autocomplete="off"
+                          aria-describedby="invite-emails-hint"
+                          placeholder="ana.silva@example.com&#10;andre.kim@example.com"></textarea>
+              </div>
+
+              <div class="sk-field">
+                <label class="sk-field__label" for="invite-role">Role for everyone invited</label>
+                <p class="sk-field__hint" id="invite-role-hint">
+                  You can change any individual's role afterwards.
+                </p>
+                <div class="sk-select-wrapper">
+                  <select class="sk-select" id="invite-role" name="inviteRole"
+                          aria-describedby="invite-role-hint">
+                    <option value="editor" selected>Editor — can create and change projects</option>
+                    <option value="viewer">Viewer — can read everything, change nothing</option>
+                    <option value="admin">Admin — can also manage people and billing</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- A switch, not a checkbox, would be wrong here: this form has a
+                   Continue button, so nothing applies until submit. -->
+              <label class="sk-checkbox">
+                <input type="checkbox" class="sk-checkbox__input" name="notifyInvitees" checked />
+                <span class="sk-checkbox__box" aria-hidden="true"></span>
+                <span class="sk-checkbox__content">
+                  <span class="sk-checkbox__label">Send each person an email</span>
+                  <span class="sk-checkbox__description">
+                    Without this they can still sign in, but they will not know the
+                    workspace exists.
+                  </span>
+                </span>
+              </label>
+
+            </div>
+          </fieldset>
+
+          <!-- What was decided on step 1, still visible. A wizard that hides
+               earlier answers forces people to go back to check them, which is
+               the failure mode wizards are supposed to avoid. -->
+          <section class="sk-card" aria-labelledby="so-far-h">
+            <div class="sk-card__header">
+              <h2 class="sk-card__title" id="so-far-h">From step 1</h2>
+              <a class="sk-link" href="#step-workspace">Change</a>
+            </div>
+            <div class="sk-card__body">
+              <dl class="sk-dl sk-dl--columns">
+                <div class="sk-dl__group">
+                  <dt class="sk-dl__term">Workspace name</dt>
+                  <dd class="sk-dl__detail">Northside Studio</dd>
+                </div>
+                <div class="sk-dl__group">
+                  <dt class="sk-dl__term">Address</dt>
+                  <dd class="sk-dl__detail"><code class="sk-code">northside</code></dd>
+                </div>
+                <div class="sk-dl__group">
+                  <dt class="sk-dl__term">Region</dt>
+                  <dd class="sk-dl__detail">Europe</dd>
+                </div>
+              </dl>
+            </div>
+          </section>
+
+          <div class="sk-form-page__actions">
+            <div class="sk-cluster sk-cluster--gap-8">
+              <a class="sk-button sk-button--secondary" href="#step-workspace">
+                <svg class="sk-button__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-arrow-left"></use></svg>
+                <span class="sk-button__label">Back</span>
+              </a>
+
+              <span class="sk-cluster__push"></span>
+
+              <!-- "Skip" is a real answer when a step is optional. Hiding it
+                   behind a greyed-out Continue makes people invent a value just
+                   to move on. -->
+              <button type="button" class="sk-button sk-button--ghost">Skip for now</button>
+              <button type="submit" class="sk-button sk-button--primary">
+                <span class="sk-button__label">Continue to review</span>
+                <svg class="sk-button__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-arrow-right"></use></svg>
+              </button>
+            </div>
+          </div>
+
+        </form>
+
+        <p class="sk-inline-message sk-inline-message--info">
+          <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-info"></use></svg>
+          <span>
+            Nothing has been created yet. Invitations are sent when you confirm on
+            step 3, and you can still remove people there.
+          </span>
+        </p>
+      </div>

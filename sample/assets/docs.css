@@ -968,4 +968,94 @@
     .sk-auth { background-color: var(--sk-color-surface-base); }
     .sk-auth__card { border: none; box-shadow: none; background-color: var(--sk-color-surface-base); }
   }
+
+  /* ------------------------------------------------------------------ *
+   * Marketing example — the system outside app chrome.
+   *
+   * Proof that the tokens are not admin-only. Everything here composes
+   * existing tokens; there is not one literal colour, size or spacing value.
+   * ------------------------------------------------------------------ */
+  .mk { display: flex; flex-direction: column; }
+  .mk__main { display: flex; flex-direction: column; gap: var(--sk-space-64); padding-block: var(--sk-space-48); padding-inline: var(--sk-space-16); inline-size: 100%; max-inline-size: var(--sk-container-lg); margin-inline: auto; }
+  .mk__section { display: flex; flex-direction: column; gap: var(--sk-space-24); }
+
+  .mk__hero { display: flex; flex-direction: column; align-items: center; gap: var(--sk-space-16); text-align: center; }
+  .mk__eyebrow { margin: 0; font-size: var(--sk-font-size-body-sm); font-weight: var(--sk-font-weight-semibold); letter-spacing: 0.04em; text-transform: uppercase; color: var(--sk-color-text-brand); }
+  .mk__title { margin: 0; font-size: var(--sk-font-size-display-xl); line-height: var(--sk-line-height-display-xl); font-weight: var(--sk-font-weight-bold); max-inline-size: var(--sk-container-prose); }
+  .mk__lead { margin: 0; font-size: var(--sk-font-size-body-lg); line-height: var(--sk-line-height-body-lg); color: var(--sk-color-text-secondary); max-inline-size: var(--sk-container-prose); }
+  .mk__section-title { margin: 0; font-size: var(--sk-font-size-heading-lg); line-height: var(--sk-line-height-heading-lg); font-weight: var(--sk-font-weight-bold); }
+  .mk__section-lead { margin: 0; color: var(--sk-color-text-secondary); max-inline-size: var(--sk-container-prose); }
+
+  /* The recommended plan is raised, not recoloured. In dark mode a raised
+     surface gets LIGHTER, so emphasis survives the theme flip without a
+     second treatment. */
+  .mk__plan { display: flex; flex-direction: column; gap: var(--sk-space-16); padding: var(--sk-space-24); background-color: var(--sk-color-surface-base); border: var(--sk-border-width-hairline) solid var(--sk-color-border-default); border-radius: var(--sk-radius-lg); }
+  .mk__plan--featured { background-color: var(--sk-color-surface-raised); border-color: var(--sk-color-border-strong); box-shadow: var(--sk-elevation-2); }
+  .mk__price { display: flex; align-items: baseline; gap: var(--sk-space-4); flex-wrap: wrap; }
+  .mk__amount { font-size: var(--sk-font-size-display-lg); line-height: 1; font-weight: var(--sk-font-weight-bold); }
+  .mk__period { color: var(--sk-color-text-secondary); font-size: var(--sk-font-size-body-sm); }
+  .mk__features { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--sk-space-8); flex: 1 1 auto; }
+  .mk__features li { display: flex; align-items: flex-start; gap: var(--sk-space-8); font-size: var(--sk-font-size-body-sm); }
+  .mk__features svg { flex: 0 0 auto; margin-block-start: 0.15em; fill: var(--sk-color-status-success-text); }
+
+  .mk__footer { border-block-start: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle); padding-block: var(--sk-space-24); text-align: center; color: var(--sk-color-text-tertiary); font-size: var(--sk-font-size-body-sm); }
+
+  @media (max-width: 40rem) {
+    .mk__title { font-size: var(--sk-font-size-display-lg); line-height: var(--sk-line-height-display-lg); }
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Disclosure.
+   *
+   * Native <details>. It works before JavaScript loads, browsers include the
+   * collapsed content in find-in-page, and it needs no ARIA of its own. The
+   * shell's `reference()` sections use this too, so they were previously
+   * rendering with browser defaults.
+   * ------------------------------------------------------------------ */
+  .sk-details {
+    border: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle);
+    border-radius: var(--sk-radius-md);
+    background-color: var(--sk-color-surface-base);
+  }
+  .sk-details + .sk-details { margin-block-start: var(--sk-space-8); }
+  .sk-details > summary {
+    display: flex;
+    align-items: center;
+    gap: var(--sk-space-8);
+    padding: var(--sk-space-12) var(--sk-space-16);
+    cursor: pointer;
+    font-weight: var(--sk-font-weight-medium);
+    color: var(--sk-color-text-primary);
+    border-radius: inherit;
+    list-style: none;
+  }
+  .sk-details > summary::-webkit-details-marker { display: none; }
+  /* The marker is drawn rather than inherited, so it can rotate and so it
+     points the right way in RTL without a second rule. */
+  .sk-details > summary::before {
+    content: '';
+    flex: 0 0 auto;
+    inline-size: 0.5rem;
+    block-size: 0.5rem;
+    border-inline-end: 2px solid currentColor;
+    border-block-end: 2px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform var(--sk-duration-fast) var(--sk-easing-standard);
+  }
+  .sk-details[open] > summary::before { transform: rotate(45deg); }
+  .sk-details > summary:hover { background-color: var(--sk-color-surface-subtle); }
+  .sk-details > summary:focus-visible {
+    outline: var(--sk-focus-ring-width) solid var(--sk-color-focus-ring);
+    outline-offset: var(--sk-focus-ring-offset);
+  }
+  .sk-details__body {
+    padding: 0 var(--sk-space-16) var(--sk-space-16);
+    color: var(--sk-color-text-secondary);
+  }
+  .sk-details__body > :first-child { margin-block-start: 0; }
+  .sk-details__body > :last-child { margin-block-end: 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sk-details > summary::before { transition: none; }
+  }
 }

@@ -1,7 +1,10 @@
 # syntax=docker/dockerfile:1
 
 # ---------- Build ----------
-FROM node:22-alpine AS build
+# Node 24 "Krypton" is the active LTS line. Only even-numbered majors are ever
+# promoted to LTS, so an automated bump to an odd major (25, 27) must be
+# rejected — `npm run check:deps` fails the build if one lands.
+FROM node:24-alpine AS build
 
 WORKDIR /app
 
@@ -33,7 +36,7 @@ RUN npm prune --omit=dev
 
 
 # ---------- Runtime ----------
-FROM node:22-alpine AS runtime
+FROM node:24-alpine AS runtime
 
 # dumb-init gives us correct signal forwarding, so SIGTERM reaches Node and the
 # graceful shutdown handler actually runs.

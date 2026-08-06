@@ -1,3 +1,11 @@
+<!--
+  SETTINGS — preferences that apply the moment they move.
+
+  Two input models appear on this page and they are not interchangeable. A
+  switch takes effect immediately, so it must show a pending state until the
+  server confirms. A checkbox belongs in a form with a Save button. Mixing them
+  is what leaves people unsure whether their change stuck.
+-->
       <header class="sk-page-header">
         <h1 class="sk-page-header__title">Settings</h1>
         <p class="sk-page-header__description">
@@ -70,11 +78,11 @@
                 <div class="theme-preview__pane" data-sk-theme="light">
                   <p class="sk-field__hint" style="margin:0">Light</p>
                   <div class="sk-card">
-                    <div class="sk-card__header"><h4 class="sk-card__title">example.com</h4></div>
+                    <div class="sk-card__header"><h4 class="sk-card__title">Website redesign</h4></div>
                     <div class="sk-card__body">
                       <span class="sk-status sk-status--success">
                         <span class="sk-status__dot" aria-hidden="true"></span>
-                        <span class="sk-status__label">Applied</span>
+                        <span class="sk-status__label">On track</span>
                       </span>
                     </div>
                   </div>
@@ -84,18 +92,18 @@
                   </div>
                   <div class="sk-alert sk-alert--warning sk-alert--compact">
                     <svg class="sk-alert__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-warning"></use></svg>
-                    <div class="sk-alert__content"><p class="sk-alert__body">Delegation not verified.</p></div>
+                    <div class="sk-alert__content"><p class="sk-alert__body">4 tasks unassigned.</p></div>
                   </div>
                 </div>
 
                 <div class="theme-preview__pane" data-sk-theme="dark">
                   <p class="sk-field__hint" style="margin:0">Dark</p>
                   <div class="sk-card">
-                    <div class="sk-card__header"><h4 class="sk-card__title">example.com</h4></div>
+                    <div class="sk-card__header"><h4 class="sk-card__title">Website redesign</h4></div>
                     <div class="sk-card__body">
                       <span class="sk-status sk-status--success">
                         <span class="sk-status__dot" aria-hidden="true"></span>
-                        <span class="sk-status__label">Applied</span>
+                        <span class="sk-status__label">On track</span>
                       </span>
                     </div>
                   </div>
@@ -105,7 +113,7 @@
                   </div>
                   <div class="sk-alert sk-alert--warning sk-alert--compact">
                     <svg class="sk-alert__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-warning"></use></svg>
-                    <div class="sk-alert__content"><p class="sk-alert__body">Delegation not verified.</p></div>
+                    <div class="sk-alert__content"><p class="sk-alert__body">4 tasks unassigned.</p></div>
                   </div>
                 </div>
               </div>
@@ -145,7 +153,7 @@
                 <span class="sk-switch__content">
                   <label class="sk-switch__label" for="mono-ids">Monospace identifiers</label>
                   <span class="sk-switch__description" id="mono-ids-desc">
-                    Render hostnames, keys and hashes in JetBrains Mono, so they can be
+                    Render task keys, IDs and hashes in JetBrains Mono, so they can be
                     compared character by character.
                   </span>
                 </span>
@@ -170,9 +178,9 @@
             <ul class="sk-stack sk-stack--divided sk-stack--gap-0" role="list">
               <li class="sk-switch">
                 <span class="sk-switch__content">
-                  <label class="sk-switch__label" for="notify-failures">Failed operations</label>
+                  <label class="sk-switch__label" for="notify-failures">Overdue tasks</label>
                   <span class="sk-switch__description" id="notify-failures-desc">
-                    Email whenever a change is rejected by a provider.
+                    Email whenever a task assigned to you passes its due date.
                   </span>
                 </span>
                 <input type="checkbox" role="switch" class="sk-switch__input" id="notify-failures"
@@ -182,9 +190,9 @@
 
               <li class="sk-switch">
                 <span class="sk-switch__content">
-                  <label class="sk-switch__label" for="notify-drift">Configuration drift</label>
+                  <label class="sk-switch__label" for="notify-drift">Mentions and replies</label>
                   <span class="sk-switch__description" id="notify-drift-desc">
-                    When a provider's records stop matching what Sekura expects.
+                    When someone names you in a comment or replies to one of yours.
                   </span>
                 </span>
                 <input type="checkbox" role="switch" class="sk-switch__input" id="notify-drift"
@@ -196,7 +204,7 @@
                 <span class="sk-switch__content">
                   <label class="sk-switch__label" for="notify-weekly">Weekly summary</label>
                   <span class="sk-switch__description" id="notify-weekly-desc">
-                    Monday morning digest of every change in the past week.
+                    Monday morning digest of everything that moved in the past week.
                   </span>
                 </span>
                 <input type="checkbox" role="switch" class="sk-switch__input" id="notify-weekly"
@@ -215,7 +223,7 @@
               <div class="sk-stack sk-stack--gap-4 sk-cluster__grow">
                 <p style="margin:0;font-weight:var(--sk-font-weight-semibold)">Andre Kim</p>
                 <p style="margin:0;color:var(--sk-color-text-secondary);font-size:var(--sk-font-size-body-sm)">
-                  andre.kim@example.com · Networking team
+                  andre.kim@example.com · Product team
                 </p>
               </div>
               <button type="button" class="sk-button sk-button--secondary sk-button--sm">Change photo</button>
@@ -243,8 +251,8 @@
           <section class="sk-danger-zone" aria-labelledby="danger-h" id="danger">
             <h2 class="sk-fieldset__legend" id="danger-h" style="color:inherit">Delete account</h2>
             <p>
-              Permanently removes your account and transfers ownership of the 4 zones
-              you own to the Platform team. This cannot be undone.
+              Permanently removes your account and transfers the 4 projects you own to
+              your team lead. This cannot be undone.
             </p>
             <button type="button" class="sk-button sk-button--danger" data-sk-dialog-open="delete-account-dialog">
               Delete account
@@ -266,8 +274,8 @@
           </header>
           <div class="sk-dialog__body">
             <p>
-              This removes your account and transfers <strong>4 zones</strong> to the
-              Platform team. You will lose access immediately. This cannot be undone.
+              This removes your account and transfers <strong>4 projects</strong> to your
+              team lead. You will lose access immediately. This cannot be undone.
             </p>
             <div class="sk-field">
               <label class="sk-field__label" for="da-confirm">

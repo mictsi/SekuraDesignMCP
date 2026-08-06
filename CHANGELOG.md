@@ -25,6 +25,66 @@ the contrast audit proves nothing regressed.
 
 ## [Unreleased]
 
+### Changed
+
+- **Examples rewritten.** The six example pages demonstrated a DNS product,
+  which meant a designer had to learn DNS before they could read the design
+  system. They now demonstrate a team project workspace — an archetype every
+  designer has built — and three new ones were added:
+  - **Loading, empty & error** — the four states every screen has beyond the one
+    in the mockup, including the three empty states that are routinely given the
+    same copy, and `disabled` vs `aria-disabled` side by side.
+  - **Onboarding wizard** — the first real use of the stepper.
+  - **Marketing & pricing** — the system at display type sizes outside app
+    chrome, which nothing else in the docs showed.
+- **DNS vocabulary removed from the system itself.** It had leaked into the
+  component examples, the 15 patterns, the 9 layout recipes and the docs pages —
+  around 180 lines across 13 files. The design system is generic; its examples
+  now are too.
+- **Node 24 (Krypton), the active LTS line**, for the container and the
+  workflows. Dependabot proposed Node 25, which is odd-numbered and therefore
+  never becomes LTS. CI now runs the gates on both supported LTS lines, 22 and
+  24, so `engines: >=22` is verified rather than asserted.
+- Dependencies updated to current stable: TypeScript 7, zod 4, Express 5.2,
+  axe-core 4.13, `@types/node` 24, MCP SDK 1.30. All GitHub Actions moved to
+  their current majors.
+
+### Added
+
+- **8 `chart-N-on-solid` tokens** and 32 contrast checks covering them. 120
+  tokens, 344 checks.
+- **`npm run check:deps`** — a build gate enforcing two rules a dependency bot
+  will otherwise break: no pre-release versions anywhere in the tree, and every
+  Node reference inside the supported LTS window. The window is a closed
+  interval (22–24), not just a floor: an even major is *Current*, not LTS, until
+  the October after it ships, so `@types/node@26` had to be rejected on the same
+  grounds as `node:25-alpine` despite being even. It also checks that the Node
+  major the container builds on is one CI actually tests, and that no action is
+  pinned to a branch.
+- **Dependabot `ignore` rules** for the `node` image and `@types/node` majors,
+  so the two declined proposals do not return every month. Minor and patch
+  updates within the line still come through.
+- **`.sk-details`** styling. The shell's collapsible reference sections have
+  been referencing this class since 1.0.0 without it existing anywhere, so they
+  were rendering with browser defaults.
+
+### Fixed
+
+- **Repository URLs said `OWNER`.** `package.json`, the CHANGELOG compare links,
+  `SECURITY.md` and the GHCR pull command all carried the placeholder, so the
+  advisory link went nowhere and the documented `docker run` could not resolve.
+- **Avatar initials failed WCAG 1.4.3.** The tints came from the chart palette
+  with `text-on-brand` layered on top — white on `chart-2` is **3.46:1** in light
+  mode, against a 4.5:1 requirement. The palette is audited at 3:1, which is the
+  *non-text* threshold (1.4.11) and correct for a chart fill; text drawn on that
+  fill is text. Two different promises, conflated. Each tint is now paired with
+  an audited on-solid colour, and the pairing is in the contract so it cannot
+  regress. Found by axe only once a tinted avatar moved into a visible tab — the
+  previous example had them inside a hidden panel, which axe skips.
+- **`test:rtl` ran before `site:build`**, so it tested whatever the previous
+  build had left in `sample/`. Reordered in both `npm run verify` and CI.
+- Removed `sample/assets/site.css` — 380 lines referenced by nothing.
+
 ## [1.0.0]
 
 First release.
@@ -61,6 +121,7 @@ First release.
 Everything below is a build gate, not a report:
 
 - **312 contrast checks** — 78 declared pairings across four themes.
+  (344 across 86 pairings as of Unreleased.)
 - **CSS structural lint** over all 67 stylesheets.
 - **704 MCP smoke checks** — every tool, component, framework, export format.
 - **63 behaviour assertions** driven through a real browser.
@@ -86,5 +147,5 @@ Recorded rather than hidden:
 - The behaviours package is packed into releases but not published to npm.
 - Chromium only — no Firefox or WebKit in the test matrix.
 
-[Unreleased]: https://github.com/OWNER/SekuraDesignMCP/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/OWNER/SekuraDesignMCP/releases/tag/v1.0.0
+[Unreleased]: https://github.com/mictsi/SekuraDesignMCP/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/mictsi/SekuraDesignMCP/releases/tag/v1.0.0

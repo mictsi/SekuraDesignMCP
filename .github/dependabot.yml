@@ -1,5 +1,19 @@
 version: 2
 
+# Two ecosystems below carry `ignore` rules for major updates. That is not
+# reluctance to upgrade — npm and Actions majors are taken freely. It is that
+# the Node runtime major is a *policy* decision, and Dependabot has no way to
+# know the policy.
+#
+# Node's release schedule makes the rule arithmetic: odd majors are never
+# promoted to LTS, and an even major is Current — not LTS — until the October
+# after it ships. Dependabot offered `node:25-alpine` (odd, so never LTS) and
+# `@types/node@26` (even, but pre-LTS until October 2026). Both were declined
+# in favour of Node 24 "Krypton", the active LTS line.
+#
+# `npm run check:deps` enforces the same rule as a build gate, so a major that
+# arrives by some other route still fails the build rather than shipping.
+
 updates:
   - package-ecosystem: npm
     directory: /
@@ -11,6 +25,12 @@ updates:
       dev-dependencies:
         dependency-type: development
         update-types: [minor, patch]
+    ignore:
+      # The types must describe the runtime we actually ship on, so this major
+      # moves when the Dockerfile's Node major moves, and not before. Minor and
+      # patch updates within the line are still proposed.
+      - dependency-name: '@types/node'
+        update-types: [version-update:semver-major]
     labels: [dependencies]
 
   - package-ecosystem: github-actions
@@ -21,4 +41,10 @@ updates:
   - package-ecosystem: docker
     directory: /
     schedule: { interval: monthly }
+    ignore:
+      # Moving Node major is a deliberate decision recorded in the CHANGELOG,
+      # taken when a line reaches LTS or leaves maintenance — not when a new
+      # tag appears. Patch and minor tags within the line are still proposed.
+      - dependency-name: node
+        update-types: [version-update:semver-major]
     labels: [dependencies, docker]

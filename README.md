@@ -9,8 +9,8 @@ interface without guessing at a single value.
 
 ```
 55 components · 15 foundations · 15 UX patterns · 9 layout recipes
-112 semantic tokens · 4 themes · 3 densities · 8 target frameworks
-312 contrast checks · 45 colour · 63 behaviour · 55 RTL · 0 axe violations
+120 semantic tokens · 4 themes · 3 densities · 8 target frameworks
+344 contrast checks · 45 colour · 63 behaviour · 73 RTL · 0 axe violations
 ```
 
 The human-readable specification is [`DESIGN.md`](./DESIGN.md), and there is an
@@ -69,7 +69,7 @@ document.
 
 | | |
 |---|---|
-| `color.html` | Every ramp step with its contrast against white *and* black, all 112 semantic tokens in four themes, and the full 78-pairing contrast contract with measured ratios |
+| `color.html` | Every ramp step with its contrast against white *and* black, all 120 semantic tokens in four themes, and the full 86-pairing contrast contract with measured ratios |
 | `dark-mode.html` | The elevation inversion, demonstrated with the same markup under both themes side by side — plus the nine things that break silently |
 | `layout.html` | Flex-first, with **resizable** demos that reflow on container width |
 | `tokens.html` | Filterable reference for every token |
@@ -338,12 +338,13 @@ non-zero, so a change that breaks a promise cannot merge green:
 | Gate | Checks |
 |---|---|
 | `check:version` | No version literal has drifted from `package.json` |
-| `audit:contrast` | 312 checks — 78 declared pairings across four themes |
+| `check:deps` | No pre-release dependencies; every Node reference an LTS line |
+| `audit:contrast` | 344 checks — 86 declared pairings across four themes |
 | `lint:css` | Structure, tokens only, no physical properties |
 | `smoke` | Every MCP tool, component, framework and export format |
 | `test:color` | Colour maths against WCAG reference values |
 | `test:behaviours` | Real key presses in a browser: focus, ARIA, Escape, inert |
-| `test:rtl` | Nothing clipped in either direction, at three widths |
+| `test:rtl` | Nothing clipped in either direction, at three widths, 12 pages |
 | `verify:sample` | Dangling references, broken links, markup lint |
 | `test:a11y` | axe-core, WCAG 2.2 AA, both themes |
 | Docker | Image builds, `/health` re-runs the contrast audit inside it |
@@ -373,7 +374,7 @@ runs the full gate chain again (a release cannot skip checks) and publishes:
 Plus a multi-arch image to GHCR, tagged `1.2.3`, `1.2`, `1` and `latest`:
 
 ```bash
-docker run -d -p 8080:8080 ghcr.io/OWNER/SekuraDesignMCP:1.0.0
+docker run -d -p 8080:8080 ghcr.io/mictsi/sekuradesignmcp:1.0.0
 ```
 
 and the documentation site to GitHub Pages.
@@ -398,8 +399,9 @@ contrast audit proves nothing regressed. See [`CHANGELOG.md`](./CHANGELOG.md).
 npm run verify          # everything below, in order
 npm run build           # compile
 npm run check:version   # no version literal has drifted
+npm run check:deps      # dependency policy: stable releases, Node LTS only
 npm run test:color      # colour maths vs WCAG reference values
-npm run audit:contrast  # 312 contrast checks — build gate
+npm run audit:contrast  # 344 contrast checks — build gate
 npm run lint:css        # structural CSS lint over all 67 stylesheets
 npm run smoke           # 704 checks across every tool, component and export
 npm run emit:css        # write dist-css/ — 66 files, sekura.css is ~190 KB
@@ -430,7 +432,7 @@ src/
 │   └── pages.ts          every page, built from the data below
 ├── data/
 │   ├── primitives.ts     ramps, scales, type scale, elevation, motion, breakpoints
-│   ├── semantic.ts       112 tokens × 4 themes + the contrast contract
+│   ├── semantic.ts       120 tokens × 4 themes + the contrast contract
 │   ├── tokens.ts         resolution and audit
 │   ├── base-css.ts       reset, utilities, prose, theme runtime
 │   ├── foundations.ts    15 foundation documents
@@ -463,6 +465,16 @@ src/
 The HTTP server is **stateless** — a fresh server per request, no sessions to lose.
 The design system is read-only at runtime, so the container runs unprivileged with a
 read-only filesystem and all capabilities dropped.
+
+## Supported runtimes
+
+Node **22 (Jod)** and **24 (Krypton)** — the two Node LTS lines currently in
+support. The container builds on 24; CI runs every gate on both, so
+`engines: >=22` is a verified claim rather than an aspiration.
+
+Odd-numbered Node majors are never promoted to LTS, so a dependency bot
+offering `node:25-alpine` is offering a runtime that reaches end-of-life in
+months. `npm run check:deps` fails the build if one lands.
 
 ## Licence
 

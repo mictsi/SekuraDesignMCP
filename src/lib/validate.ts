@@ -64,7 +64,7 @@ export function validateMarkup(html: string, componentId?: string): Finding[] {
         message:
           'A <button> has no accessible name. Its content is an icon or empty, so screen reader and voice control users cannot identify or invoke it.',
         snippet: snip(full),
-        fix: 'Add a visually hidden label inside the button: <span class="sk-visually-hidden">Delete zone</span>. Prefer this over aria-label — it survives translation pipelines that skip attributes.',
+        fix: 'Add a visually hidden label inside the button: <span class="sk-visually-hidden">Delete project</span>. Prefer this over aria-label — it survives translation pipelines that skip attributes.',
         wcag: '4.1.2 Name, Role, Value; 1.1.1 Non-text Content',
       });
     }
@@ -112,7 +112,7 @@ export function validateMarkup(html: string, componentId?: string): Finding[] {
         message:
           'Link text is not meaningful out of context. Screen reader users often list all links on a page, stripped of their surrounding sentence.',
         snippet: snip(full),
-        fix: 'Describe the destination: "DNS record reference" rather than "read more".',
+        fix: 'Describe the destination: "Task field reference" rather than "read more".',
         wcag: '2.4.4 Link Purpose (In Context)',
       });
     }

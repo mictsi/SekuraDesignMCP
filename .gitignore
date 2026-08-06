@@ -9,8 +9,9 @@ dist-js/
 # Runtime state written by run.sh
 .run/
 
-# Generated sample pages. The source lives in sample/pages/ and sample/build.mjs;
-# sample/assets/sekura.css is emitted from the token source.
+# Generated documentation site. The sources are src/site/ (documentation pages,
+# generated from the system's own data) and sample/pages/ (example pages, which
+# are authored). sample/assets/sekura.css is emitted from the token source.
 sample/*.html
 sample/assets/sekura.css
 

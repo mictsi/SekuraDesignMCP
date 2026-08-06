@@ -318,7 +318,7 @@ export const navigationComponents: ComponentSpec[] = [
       targetSize: 'Items are at least 36px tall, comfortably above the minimum.',
     },
     content: [
-      'Item labels are nouns naming the destination: "Zones", not "Manage zones".',
+      'Item labels are nouns naming the destination: "Projects", not "Manage projects".',
       'Group labels categorise: "Operations", "Administration".',
       'Keep labels to one or two words so they never wrap in the rail.',
     ],
@@ -342,9 +342,9 @@ export const navigationComponents: ComponentSpec[] = [
       </a>
     </li>
     <li>
-      <a class="sk-side-nav__item" href="/zones" aria-current="page">
+      <a class="sk-side-nav__item" href="/projects" aria-current="page">
         <svg aria-hidden="true" focusable="false" width="20" height="20"><use href="#sk-icon-globe" /></svg>
-        <span class="sk-side-nav__label">Zones</span>
+        <span class="sk-side-nav__label">Projects</span>
         <span class="sk-side-nav__count">128</span>
       </a>
     </li>
@@ -521,9 +521,9 @@ export const navigationComponents: ComponentSpec[] = [
     donts: ['Do not link the current page to itself.', 'Do not use breadcrumbs as history.', 'Do not put separators in the DOM as text.'],
     html: `<nav class="sk-breadcrumbs" aria-label="Breadcrumb">
   <ol class="sk-breadcrumbs__list">
-    <li class="sk-breadcrumbs__item"><a class="sk-link sk-link--quiet" href="/zones">Zones</a></li>
-    <li class="sk-breadcrumbs__item"><a class="sk-link sk-link--quiet" href="/zones/example-com">example.com</a></li>
-    <li class="sk-breadcrumbs__item"><a class="sk-link sk-link--quiet" href="/zones/example-com/records">Records</a></li>
+    <li class="sk-breadcrumbs__item"><a class="sk-link sk-link--quiet" href="/projects">Projects</a></li>
+    <li class="sk-breadcrumbs__item"><a class="sk-link sk-link--quiet" href="/projects/website-redesign">Website redesign</a></li>
+    <li class="sk-breadcrumbs__item"><a class="sk-link sk-link--quiet" href="/projects/website-redesign/tasks">Records</a></li>
     <li class="sk-breadcrumbs__item"><span aria-current="page">www A record</span></li>
   </ol>
 </nav>`,
@@ -660,12 +660,12 @@ export const navigationComponents: ComponentSpec[] = [
       'Do not hide required form fields inside an unselected tab — a validation error the user cannot see is a dead end.',
     ],
     html: `<div class="sk-tabs">
-  <div class="sk-tabs__list" role="tablist" aria-label="Zone views">
+  <div class="sk-tabs__list" role="tablist" aria-label="Project views">
     <button class="sk-tabs__tab" role="tab" id="tab-overview"
             aria-selected="true" aria-controls="panel-overview" tabindex="0">Overview</button>
     <button class="sk-tabs__tab" role="tab" id="tab-records"
             aria-selected="false" aria-controls="panel-records" tabindex="-1">
-      Records <span class="sk-tabs__count">128</span>
+      Tasks <span class="sk-tabs__count">34</span>
     </button>
   </div>
 
@@ -674,10 +674,10 @@ export const navigationComponents: ComponentSpec[] = [
 </div>
 
 <!-- Routed: links, aria-current, no tab roles -->
-<nav class="sk-tabs sk-tabs--routed" aria-label="Zone views">
+<nav class="sk-tabs sk-tabs--routed" aria-label="Project views">
   <div class="sk-tabs__list">
-    <a class="sk-tabs__tab" href="/zones/example-com" aria-current="page">Overview</a>
-    <a class="sk-tabs__tab" href="/zones/example-com/records">Records <span class="sk-tabs__count">128</span></a>
+    <a class="sk-tabs__tab" href="/projects/website-redesign" aria-current="page">Overview</a>
+    <a class="sk-tabs__tab" href="/projects/website-redesign/tasks">Tasks <span class="sk-tabs__count">34</span></a>
   </div>
 </nav>`,
     css: `.sk-tabs { display: flex; flex-direction: column; min-inline-size: 0; }
@@ -821,14 +821,14 @@ export const navigationComponents: ComponentSpec[] = [
       targetSize: 'Every control is at least 32x32, and spacing prevents mis-taps.',
     },
     content: [
-      'Status reads "Showing 21–40 of 128 zones" — range, total, and what is being counted.',
+      'Status reads "Showing 21–40 of 128 projects" — range, total, and what is being counted.',
       'Use "Previous" and "Next", not "«" and "»" alone.',
       'Never show a count that includes resources the user is not permitted to see.',
     ],
     dos: ['Keep page state in the URL.', 'Announce the new range after navigation.', 'Render nothing when there is only one page.'],
     donts: ['Do not remove boundary controls; disable them.', 'Do not use infinite scroll for data users must reach precisely.', 'Do not reset to page 1 on an unrelated filter change without saying so.'],
     html: `<nav class="sk-pagination" aria-label="Pagination">
-  <p class="sk-pagination__status" role="status">Showing 21–40 of 128 zones</p>
+  <p class="sk-pagination__status" role="status">Showing 21–40 of 128 projects</p>
 
   <ul class="sk-pagination__list">
     <li><a class="sk-pagination__control" href="?page=1" rel="prev">
@@ -982,7 +982,7 @@ export const navigationComponents: ComponentSpec[] = [
       targetSize: 'Interactive steps have a 24px minimum target, extended by the label.',
     },
     content: [
-      'Step labels are short noun phrases: "Zone details", "Records", "Review".',
+      'Step labels are short noun phrases: "Project details", "Records", "Review".',
       'The final step is "Review" or "Confirm", never "Finish".',
       'Say which steps are optional in the label: "Tags (optional)".',
     ],
@@ -1003,7 +1003,7 @@ export const navigationComponents: ComponentSpec[] = [
         <span class="sk-stepper__indicator" aria-hidden="true">
           <svg width="14" height="14"><use href="#sk-icon-check" /></svg>
         </span>
-        <span class="sk-stepper__label">Zone details</span>
+        <span class="sk-stepper__label">Project details</span>
         <span class="sk-visually-hidden">, completed</span>
       </a>
     </li>
@@ -1188,7 +1188,7 @@ a.sk-stepper__link:focus-visible {
       targetSize: 'Items are at least 36px tall and span the menu width.',
     },
     content: [
-      'Items are verb phrases: "Duplicate zone", "Export as CSV".',
+      'Items are verb phrases: "Duplicate project", "Export as CSV".',
       'Group related items and separate destructive ones.',
       'Show keyboard shortcuts right-aligned where they exist.',
       'Never label an item "More".',
@@ -1206,25 +1206,25 @@ a.sk-stepper__link:focus-visible {
     html: `<button type="button" class="sk-icon-button" id="row-actions-trigger"
         aria-haspopup="menu" aria-expanded="false" aria-controls="row-actions">
   <svg aria-hidden="true" focusable="false" width="20" height="20"><use href="#sk-icon-more" /></svg>
-  <span class="sk-visually-hidden">Actions for example.com</span>
+  <span class="sk-visually-hidden">Actions for Website redesign</span>
 </button>
 
 <div class="sk-menu" id="row-actions" role="menu" aria-labelledby="row-actions-trigger" hidden>
   <button type="button" class="sk-menu__item" role="menuitem">
     <svg class="sk-menu__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-edit" /></svg>
-    <span class="sk-menu__label">Edit zone</span>
+    <span class="sk-menu__label">Edit project</span>
     <kbd class="sk-menu__shortcut">E</kbd>
   </button>
   <button type="button" class="sk-menu__item" role="menuitem">
     <svg class="sk-menu__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-copy" /></svg>
-    <span class="sk-menu__label">Duplicate zone</span>
+    <span class="sk-menu__label">Duplicate project</span>
   </button>
 
   <hr class="sk-menu__separator" role="separator" />
 
   <button type="button" class="sk-menu__item sk-menu__item--danger" role="menuitem">
     <svg class="sk-menu__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-trash" /></svg>
-    <span class="sk-menu__label">Delete zone</span>
+    <span class="sk-menu__label">Delete project</span>
   </button>
 </div>`,
     css: `.sk-menu {
@@ -1381,7 +1381,7 @@ a.sk-stepper__link:focus-visible {
       targetSize: 'Results are 44px tall — this is a pointer target as well as a keyboard one.',
     },
     content: [
-      'Placeholder names the scope: "Search zones, records, and actions".',
+      'Placeholder names the scope: "Search projects, tasks and actions".',
       'Each result carries a context line so ambiguous names are distinguishable.',
       'The empty state offers concrete next steps, not just "No results".',
       'Show the discoverable shortcut in the top bar button so users learn it.',
@@ -1403,7 +1403,7 @@ a.sk-stepper__link:focus-visible {
       <input class="sk-command-palette__input" type="text" role="combobox"
              aria-expanded="true" aria-controls="cp-results" aria-autocomplete="list"
              aria-activedescendant="cp-item-0" autocomplete="off"
-             placeholder="Search zones, records, and actions" />
+             placeholder="Search projects, tasks and actions" />
       <kbd class="sk-kbd">Esc</kbd>
     </div>
 
@@ -1412,8 +1412,8 @@ a.sk-stepper__link:focus-visible {
         <p class="sk-command-palette__group-label" aria-hidden="true">Navigation</p>
         <div class="sk-command-palette__item" id="cp-item-0" role="option" aria-selected="true" data-active>
           <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-globe" /></svg>
-          <span class="sk-command-palette__label">Zones</span>
-          <span class="sk-command-palette__context">128 zones</span>
+          <span class="sk-command-palette__label">Projects</span>
+          <span class="sk-command-palette__context">128 projects</span>
         </div>
       </div>
     </div>

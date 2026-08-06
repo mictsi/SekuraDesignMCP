@@ -911,7 +911,7 @@ Wire this into CI: \`npm run audit:contrast\` exits non-zero on any failure.`);
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <!-- Never set user-scalable=no or maximum-scale — it fails WCAG 1.4.4 outright. -->
-  <title>Zones · Sekura Console</title>
+  <title>Projects · Sekura Workspace</title>
 
   <!-- 1. Theme script FIRST, inline and synchronous, before any stylesheet. -->
   ${themeScript.split('\n').slice(2).join('\n  ')}

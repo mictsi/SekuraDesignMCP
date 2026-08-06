@@ -1,0 +1,427 @@
+<!--
+  DETAIL PAGE — one record, several views of it.
+
+  The header carries identity (breadcrumb, title, status) and never scrolls out
+  of the reader's mental model. Tabs switch the view without changing what the
+  page is about; if a tab would change the subject, it should be a link instead.
+-->
+      <header class="sk-page-header sk-page-header--detail">
+        <nav class="sk-breadcrumbs" aria-label="Breadcrumb">
+          <ol class="sk-breadcrumbs__list">
+            <li class="sk-breadcrumbs__item"><a class="sk-link sk-link--quiet" href="example-list.html">Projects</a></li>
+            <li class="sk-breadcrumbs__item"><span aria-current="page">Website redesign</span></li>
+          </ol>
+        </nav>
+
+        <div class="sk-page-header__main">
+          <div class="sk-page-header__titles">
+            <div class="sk-page-header__title-row">
+              <h1 class="sk-page-header__title">Website redesign</h1>
+              <span class="sk-badge sk-badge--neutral">Product</span>
+              <span class="sk-status sk-status--warning">
+                <span class="sk-status__dot" aria-hidden="true"></span>
+                <span class="sk-status__label">At risk</span>
+                <span class="sk-status__detail">4 tasks unassigned</span>
+              </span>
+            </div>
+            <p class="sk-page-header__description">
+              34 tasks, 23 complete. Owned by Ana Silva, due 21 August.
+            </p>
+          </div>
+
+          <div class="sk-page-header__actions">
+            <!-- Split button: one click for the common case, one more for the
+                 rest. The trigger has its own name — "More" alone is
+                 meaningless in a list of controls. -->
+            <div class="sk-split-button sk-split-button--secondary" role="group" aria-label="Share options">
+              <button type="button" class="sk-split-button__action"
+                      data-sk-demo-toast="Link copied to the clipboard." data-sk-demo-intent="success">Copy link</button>
+              <button type="button" class="sk-split-button__trigger"
+                      aria-haspopup="menu" aria-expanded="false" aria-controls="share-menu">
+                <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-chevron-down"></use></svg>
+                <span class="sk-visually-hidden">More share options</span>
+              </button>
+            </div>
+            <button type="button" class="sk-button sk-button--primary">
+              <svg class="sk-button__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-plus"></use></svg>
+              <span class="sk-button__label">Add task</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="sk-tabs">
+          <div class="sk-tabs__list" role="tablist" aria-label="Project views">
+            <button class="sk-tabs__tab" role="tab" id="tab-tasks"
+                    aria-selected="true" aria-controls="panel-tasks" tabindex="0">
+              Tasks <span class="sk-tabs__count">34</span>
+            </button>
+            <button class="sk-tabs__tab" role="tab" id="tab-details"
+                    aria-selected="false" aria-controls="panel-details" tabindex="-1">Details</button>
+            <button class="sk-tabs__tab" role="tab" id="tab-activity"
+                    aria-selected="false" aria-controls="panel-activity" tabindex="-1">Activity</button>
+            <button class="sk-tabs__tab" role="tab" id="tab-people"
+                    aria-selected="false" aria-controls="panel-people" tabindex="-1">People</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="sk-tabs__panel" role="tabpanel" id="panel-tasks" aria-labelledby="tab-tasks" tabindex="0">
+        <div class="sk-stack sk-stack--gap-16">
+          <div class="sk-alert sk-alert--info">
+            <svg class="sk-alert__icon" aria-hidden="true" focusable="false" width="20" height="20"><use href="#sk-icon-info"></use></svg>
+            <div class="sk-alert__content">
+              <p class="sk-alert__body">
+                A task stays <strong>In review</strong> until a second person approves it.
+                The interface never marks work complete on the author's word alone.
+              </p>
+            </div>
+          </div>
+
+          <div class="sk-table" role="region" aria-labelledby="tasks-caption" tabindex="0" data-sk-table>
+            <table>
+              <caption id="tasks-caption" class="sk-table__caption">
+                Tasks
+                <span class="sk-table__caption-detail">Showing 6 of 34</span>
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col" class="sk-table__column--sortable" aria-sort="ascending">
+                    <button type="button" class="sk-table__sort" data-sk-sort>
+                      Task
+                      <svg aria-hidden="true" focusable="false" width="14" height="14"><use href="#sk-icon-sort-asc"></use></svg>
+                    </button>
+                  </th>
+                  <th scope="col">Priority</th>
+                  <th scope="col">Assignee</th>
+                  <th scope="col">Due</th>
+                  <th scope="col">Status</th>
+                  <th scope="col"><span class="sk-visually-hidden">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Audit the current colour usage</th>
+                  <td><span class="sk-badge sk-badge--neutral">Low</span></td>
+                  <td><span class="sk-avatar-with-name"><span class="sk-avatar sk-avatar--sm" data-tint="2" aria-hidden="true">AS</span> Ana Silva</span></td>
+                  <td><time datetime="2026-08-08">8 Aug</time></td>
+                  <td>
+                    <span class="sk-status sk-status--success">
+                      <span class="sk-status__dot" aria-hidden="true"></span>
+                      <span class="sk-status__label">Done</span>
+                    </span>
+                  </td>
+                  <td>
+                    <button type="button" class="sk-button sk-button--ghost sk-button--sm"
+                            data-sk-drawer-open="task-drawer">Inspect</button>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">Rewrite the empty states</th>
+                  <td><span class="sk-badge sk-badge--neutral">Medium</span></td>
+                  <td><span class="sk-avatar-with-name"><span class="sk-avatar sk-avatar--sm" data-tint="4" aria-hidden="true">AK</span> Andre Kim</span></td>
+                  <td><time datetime="2026-08-11">11 Aug</time></td>
+                  <td>
+                    <span class="sk-status sk-status--success">
+                      <span class="sk-status__dot" aria-hidden="true"></span>
+                      <span class="sk-status__label">Done</span>
+                    </span>
+                  </td>
+                  <td>
+                    <button type="button" class="sk-button sk-button--ghost sk-button--sm"
+                            data-sk-drawer-open="task-drawer">Inspect</button>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">Pricing table variants</th>
+                  <td><span class="sk-badge sk-badge--warning">High</span></td>
+                  <td><span class="sk-avatar-with-name"><span class="sk-avatar sk-avatar--sm" data-tint="4" aria-hidden="true">AK</span> Andre Kim</span></td>
+                  <td><time datetime="2026-08-13">13 Aug</time></td>
+                  <td>
+                    <span class="sk-status sk-status--pending">
+                      <span class="sk-status__dot" aria-hidden="true"></span>
+                      <span class="sk-status__label">In review</span>
+                    </span>
+                  </td>
+                  <td>
+                    <button type="button" class="sk-button sk-button--ghost sk-button--sm"
+                            data-sk-drawer-open="task-drawer">Inspect</button>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">Navigation on small screens</th>
+                  <td><span class="sk-badge sk-badge--warning">High</span></td>
+                  <td><span class="sk-avatar-with-name"><span class="sk-avatar sk-avatar--sm" data-tint="2" aria-hidden="true">AS</span> Ana Silva</span></td>
+                  <td><time datetime="2026-08-15">15 Aug</time></td>
+                  <td>
+                    <span class="sk-status sk-status--pending">
+                      <span class="sk-status__dot" aria-hidden="true"></span>
+                      <span class="sk-status__label">In progress</span>
+                    </span>
+                  </td>
+                  <td>
+                    <button type="button" class="sk-button sk-button--ghost sk-button--sm"
+                            data-sk-drawer-open="task-drawer">Inspect</button>
+                  </td>
+                </tr>
+                <!-- Unassigned is a real state, not a blank cell. Spelling it out
+                     is what makes the "4 unassigned" warning in the header
+                     actionable rather than mysterious. -->
+                <tr>
+                  <th scope="row">Migrate the docs templates</th>
+                  <td><span class="sk-badge sk-badge--danger">Urgent</span></td>
+                  <td><em style="color:var(--sk-color-text-tertiary)">Unassigned</em></td>
+                  <td><time datetime="2026-08-18">18 Aug</time></td>
+                  <td>
+                    <span class="sk-status sk-status--neutral">
+                      <span class="sk-status__dot" aria-hidden="true"></span>
+                      <span class="sk-status__label">To do</span>
+                    </span>
+                  </td>
+                  <td>
+                    <button type="button" class="sk-button sk-button--ghost sk-button--sm"
+                            data-sk-drawer-open="task-drawer">Inspect</button>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">Final accessibility pass</th>
+                  <td><span class="sk-badge sk-badge--danger">Urgent</span></td>
+                  <td><em style="color:var(--sk-color-text-tertiary)">Unassigned</em></td>
+                  <td><time datetime="2026-08-20">20 Aug</time></td>
+                  <td>
+                    <span class="sk-status sk-status--danger">
+                      <span class="sk-status__dot" aria-hidden="true"></span>
+                      <span class="sk-status__label">Blocked</span>
+                    </span>
+                  </td>
+                  <td>
+                    <button type="button" class="sk-button sk-button--ghost sk-button--sm"
+                            data-sk-drawer-open="task-drawer">Inspect</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="sk-tabs__panel" role="tabpanel" id="panel-details" aria-labelledby="tab-details" tabindex="0" hidden>
+        <dl class="sk-dl sk-dl--columns">
+          <div class="sk-dl__group">
+            <dt class="sk-dl__term">Owner</dt>
+            <dd class="sk-dl__detail">Ana Silva <span class="sk-badge sk-badge--brand sk-badge--sm">Product team</span></dd>
+          </div>
+          <div class="sk-dl__group">
+            <dt class="sk-dl__term">Portfolio</dt>
+            <dd class="sk-dl__detail">Q3 customer experience</dd>
+          </div>
+          <div class="sk-dl__group">
+            <dt class="sk-dl__term">Started</dt>
+            <dd class="sk-dl__detail">
+              <time datetime="2026-05-04">4 May 2026</time>
+            </dd>
+          </div>
+          <div class="sk-dl__group">
+            <dt class="sk-dl__term">Due</dt>
+            <dd class="sk-dl__detail">
+              <time datetime="2026-08-21">21 August 2026</time>
+              <span style="color:var(--sk-color-text-tertiary)">(in 15 days)</span>
+            </dd>
+          </div>
+          <div class="sk-dl__group">
+            <dt class="sk-dl__term">Progress</dt>
+            <dd class="sk-dl__detail">23 of 34 tasks complete (68%)</dd>
+          </div>
+          <!-- An em dash alone announces nothing, so the absence is spelled out. -->
+          <div class="sk-dl__group" data-empty>
+            <dt class="sk-dl__term">Budget code</dt>
+            <dd class="sk-dl__detail">
+              <span aria-hidden="true">—</span>
+              <span class="sk-visually-hidden">Not set</span>
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="sk-tabs__panel" role="tabpanel" id="panel-activity" aria-labelledby="tab-activity" tabindex="0" hidden>
+        <h2 class="sk-timeline__date-heading">Newest first</h2>
+        <ol class="sk-timeline">
+          <li class="sk-timeline__event" data-success>
+            <span class="sk-timeline__marker" aria-hidden="true"></span>
+            <div class="sk-timeline__content">
+              <p class="sk-timeline__summary">
+                <strong>Ana Silva</strong> moved <em>Rewrite the empty states</em> to Done.
+              </p>
+              <p class="sk-timeline__meta">
+                <time datetime="2026-08-06T09:12:00Z">6 August 2026, 09:12</time> · Approved by Andre Kim
+              </p>
+            </div>
+          </li>
+          <li class="sk-timeline__event" data-pending>
+            <span class="sk-timeline__marker" aria-hidden="true"></span>
+            <div class="sk-timeline__content">
+              <p class="sk-timeline__summary">
+                <strong>Andre Kim</strong> requested review on <em>Pricing table variants</em>.
+              </p>
+              <p class="sk-timeline__meta">
+                <time datetime="2026-08-05T16:02:00Z">5 August 2026, 16:02</time> · Awaiting a second reviewer
+              </p>
+            </div>
+          </li>
+          <li class="sk-timeline__event" data-failed>
+            <span class="sk-timeline__marker" aria-hidden="true"></span>
+            <div class="sk-timeline__content">
+              <p class="sk-timeline__summary">
+                <strong>Final accessibility pass</strong> was blocked by
+                <em>Migrate the docs templates</em>.
+              </p>
+              <p class="sk-timeline__meta">
+                <time datetime="2026-08-05T11:20:00Z">5 August 2026, 11:20</time> · Blocked
+              </p>
+            </div>
+          </li>
+          <li class="sk-timeline__event" data-success>
+            <span class="sk-timeline__marker" aria-hidden="true"></span>
+            <div class="sk-timeline__content">
+              <p class="sk-timeline__summary">
+                <strong>Ana Silva</strong> created the project <em>Website redesign</em>.
+              </p>
+              <p class="sk-timeline__meta">
+                <time datetime="2026-05-04T10:00:00Z">4 May 2026, 10:00</time> · Created
+              </p>
+            </div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="sk-tabs__panel" role="tabpanel" id="panel-people" aria-labelledby="tab-people" tabindex="0" hidden>
+        <div class="sk-stack sk-stack--gap-16">
+          <div class="sk-alert sk-alert--info">
+            <svg class="sk-alert__icon" aria-hidden="true" focusable="false" width="20" height="20"><use href="#sk-icon-info"></use></svg>
+            <div class="sk-alert__content">
+              <p class="sk-alert__body">
+                Only people you are permitted to see are listed. Counts never include
+                members outside your access.
+              </p>
+            </div>
+          </div>
+
+          <div class="sk-table" role="region" aria-label="Project members" tabindex="0">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Member</th>
+                  <th scope="col">Role</th>
+                  <th scope="col">Source</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">
+                    <span class="sk-avatar-with-name">
+                      <span class="sk-avatar sk-avatar--sm" data-tint="2" aria-hidden="true">AS</span>
+                      <span class="sk-avatar-with-name__label">Ana Silva</span>
+                    </span>
+                  </th>
+                  <td>Owner</td>
+                  <td>Direct</td>
+                </tr>
+                <tr>
+                  <th scope="row">
+                    <span class="sk-avatar-with-name">
+                      <span class="sk-avatar sk-avatar--sm" data-tint="4" aria-hidden="true">AK</span>
+                      <span class="sk-avatar-with-name__label">Andre Kim</span>
+                    </span>
+                  </th>
+                  <td>Editor</td>
+                  <td>Inherited from Product team</td>
+                </tr>
+                <tr>
+                  <th scope="row">
+                    <span class="sk-avatar-with-name">
+                      <span class="sk-avatar sk-avatar--sm" data-tint="6" aria-hidden="true">MT</span>
+                      <span class="sk-avatar-with-name__label">Marketing team</span>
+                    </span>
+                  </th>
+                  <td>Viewer</td>
+                  <td>Direct</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inline drawer above lg (page stays interactive, focus not trapped, no
+           aria-modal), modal below it. app.js switches the ARIA as well as the
+           CSS — shipping only the CSS half is a real accessibility bug. -->
+      <aside class="sk-drawer sk-drawer--modal" id="task-drawer" aria-labelledby="task-drawer-title" hidden>
+        <header class="sk-drawer__header">
+          <h2 class="sk-drawer__title" id="task-drawer-title">Pricing table variants</h2>
+          <button type="button" class="sk-icon-button sk-icon-button--sm" data-sk-drawer-close>
+            <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-close"></use></svg>
+            <span class="sk-visually-hidden">Close task details</span>
+          </button>
+        </header>
+
+        <div class="sk-drawer__body sk-stack sk-stack--gap-20">
+          <dl class="sk-dl">
+            <div class="sk-dl__group">
+              <dt class="sk-dl__term">Status</dt>
+              <dd class="sk-dl__detail">
+                <span class="sk-status sk-status--pending">
+                  <span class="sk-status__dot" aria-hidden="true"></span>
+                  <span class="sk-status__label">In review</span>
+                </span>
+              </dd>
+            </div>
+            <div class="sk-dl__group">
+              <dt class="sk-dl__term">Priority</dt>
+              <dd class="sk-dl__detail"><span class="sk-badge sk-badge--warning">High</span></dd>
+            </div>
+            <div class="sk-dl__group">
+              <dt class="sk-dl__term">Assignee</dt>
+              <dd class="sk-dl__detail">Andre Kim</dd>
+            </div>
+            <div class="sk-dl__group">
+              <dt class="sk-dl__term">Due</dt>
+              <dd class="sk-dl__detail">
+                <time datetime="2026-08-13">13 August 2026</time>
+                <span style="color:var(--sk-color-text-tertiary)">(in 7 days)</span>
+              </dd>
+            </div>
+          </dl>
+
+          <figure class="sk-code-block">
+            <figcaption class="sk-code-block__header">
+              <span class="sk-code-block__language">html</span>
+              <button type="button" class="sk-button sk-button--ghost sk-button--sm"
+                      data-sk-copy="#task-snippet">
+                <svg class="sk-button__icon" aria-hidden="true" focusable="false" width="14" height="14"><use href="#sk-icon-copy"></use></svg>
+                <span class="sk-button__label" data-sk-copy-label>Copy</span>
+              </button>
+            </figcaption>
+            <div class="sk-code-block__scroll" tabindex="0" role="region" aria-label="Attached markup">
+<pre class="sk-code-block__pre" id="task-snippet"><code>&lt;div class="sk-grid sk-grid--min-20"&gt;
+  &lt;article class="sk-card"&gt;…&lt;/article&gt;
+&lt;/div&gt;</code></pre>
+            </div>
+          </figure>
+        </div>
+
+        <footer class="sk-drawer__footer">
+          <button type="button" class="sk-button sk-button--secondary">Edit task</button>
+          <button type="button" class="sk-button sk-button--danger-ghost">Delete task</button>
+        </footer>
+      </aside>
+
+      <div class="sk-menu" id="share-menu" role="menu" hidden>
+        <button type="button" class="sk-menu__item" role="menuitem">
+          <span class="sk-menu__label">Copy link</span>
+        </button>
+        <button type="button" class="sk-menu__item" role="menuitem">
+          <span class="sk-menu__label">Invite by email</span>
+        </button>
+        <button type="button" class="sk-menu__item" role="menuitem">
+          <span class="sk-menu__label">Export as CSV</span>
+        </button>
+      </div>

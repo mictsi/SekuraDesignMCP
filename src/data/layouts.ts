@@ -67,7 +67,7 @@ export const layouts: LayoutRecipe[] = [
             <h1 class="sk-page-header__title">Overview</h1>
             <span class="sk-badge sk-badge--warning">Staging</span>
           </div>
-          <p class="sk-page-header__description">Zone and record health across all environments.</p>
+          <p class="sk-page-header__description">Project and task health across every team.</p>
         </div>
         <div class="sk-page-header__actions">
           <div class="sk-button-group sk-button-group--segmented" role="radiogroup" aria-label="Time range">
@@ -82,7 +82,7 @@ export const layouts: LayoutRecipe[] = [
     <!-- Auto-fit: 4 across, then 2, then 1, driven by container width -->
     <section class="sk-grid sk-grid--min-12" aria-label="Key metrics">
       <div class="sk-stat sk-stat--carded" role="group" aria-labelledby="m1">
-        <p class="sk-stat__label" id="m1">Active zones</p>
+        <p class="sk-stat__label" id="m1">Active projects</p>
         <p class="sk-stat__value">128</p>
         <p class="sk-stat__delta sk-stat__delta--good">
           <svg aria-hidden="true" focusable="false" width="14" height="14"><use href="#sk-icon-arrow-up" /></svg>
@@ -183,11 +183,11 @@ export const layouts: LayoutRecipe[] = [
     <header class="sk-page-header">
       <div class="sk-page-header__main">
         <div class="sk-page-header__titles">
-          <h1 class="sk-page-header__title">Zones</h1>
-          <p class="sk-page-header__description">128 zones across 3 environments.</p>
+          <h1 class="sk-page-header__title">Projects</h1>
+          <p class="sk-page-header__description">128 projects across 4 teams.</p>
         </div>
         <div class="sk-page-header__actions">
-          <button type="button" class="sk-button sk-button--primary">Create zone</button>
+          <button type="button" class="sk-button sk-button--primary">Create project</button>
         </div>
       </div>
     </header>
@@ -195,9 +195,9 @@ export const layouts: LayoutRecipe[] = [
     <!-- Cluster: wraps to multiple rows rather than overflowing -->
     <div class="sk-cluster sk-cluster--gap-8" role="search">
       <form class="sk-search sk-search--sm" role="search">
-        <label class="sk-visually-hidden" for="q">Search zones</label>
+        <label class="sk-visually-hidden" for="q">Search projects</label>
         <svg class="sk-search__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-search" /></svg>
-        <input class="sk-search__input" id="q" type="search" placeholder="Search zones and tags" />
+        <input class="sk-search__input" id="q" type="search" placeholder="Search projects and owners" />
       </form>
 
       <button type="button" class="sk-button sk-button--secondary sk-button--sm"
@@ -217,23 +217,23 @@ export const layouts: LayoutRecipe[] = [
 
     <!-- Appears only when rows are selected -->
     <div class="sk-bulk-bar sk-cluster sk-cluster--gap-12" role="region" aria-label="Bulk actions" hidden>
-      <span class="sk-bulk-bar__count" role="status">3 zones selected</span>
+      <span class="sk-bulk-bar__count" role="status">3 projects selected</span>
       <button type="button" class="sk-button sk-button--secondary sk-button--sm">Add tag</button>
-      <button type="button" class="sk-button sk-button--danger-ghost sk-button--sm">Delete 3 zones</button>
+      <button type="button" class="sk-button sk-button--danger-ghost sk-button--sm">Delete 3 projects</button>
       <button type="button" class="sk-button sk-button--ghost sk-button--sm sk-cluster__push">Clear selection</button>
     </div>
 
     <!-- tabindex + role + label: without these a keyboard user cannot scroll it -->
-    <div class="sk-table" role="region" aria-labelledby="zones-caption" tabindex="0">
+    <div class="sk-table" role="region" aria-labelledby="projects-caption" tabindex="0">
       <table>
-        <caption id="zones-caption" class="sk-visually-hidden">DNS zones, sorted by name</caption>
+        <caption id="projects-caption" class="sk-visually-hidden">Projects, sorted by name</caption>
         <thead> ... </thead>
         <tbody> ... </tbody>
       </table>
     </div>
 
     <nav class="sk-pagination" aria-label="Pagination"> ... </nav>
-    <p class="sk-visually-hidden" role="status">Showing 1 to 20 of 128 zones.</p>
+    <p class="sk-visually-hidden" role="status">Showing 1 to 20 of 128 projects.</p>
 
   </div>
 </main>`,
@@ -295,7 +295,7 @@ export const layouts: LayoutRecipe[] = [
   <aside class="sk-drawer sk-drawer--inline sk-list-detail__detail"
          data-open aria-labelledby="detail-title">
     <header class="sk-drawer__header">
-      <h2 class="sk-drawer__title" id="detail-title">www.example.com</h2>
+      <h2 class="sk-drawer__title" id="detail-title">Pricing table variants</h2>
       <button type="button" class="sk-icon-button sk-icon-button--sm">
         <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-close" /></svg>
         <span class="sk-visually-hidden">Close details panel</span>
@@ -349,8 +349,8 @@ export const layouts: LayoutRecipe[] = [
     html: `<main class="sk-app-shell__main" id="main" tabindex="-1">
   <div class="sk-form-page">
     <header class="sk-page-header">
-      <h1 class="sk-page-header__title">Create zone</h1>
-      <p class="sk-page-header__description">Zones group the DNS records for one domain.</p>
+      <h1 class="sk-page-header__title">Create project</h1>
+      <p class="sk-page-header__description">Projects group the tasks for one piece of work.</p>
     </header>
 
     <!-- Focus moves here on failed submit -->
@@ -359,28 +359,28 @@ export const layouts: LayoutRecipe[] = [
       <div class="sk-alert__content">
         <h2 class="sk-alert__title">There are 2 problems with this form</h2>
         <ul>
-          <li><a class="sk-link" href="#zone-name">Enter a zone name</a></li>
-          <li><a class="sk-link" href="#ttl">Enter a TTL between 60 and 86400 seconds</a></li>
+          <li><a class="sk-link" href="#project-name">Enter a project name</a></li>
+          <li><a class="sk-link" href="#reminder">Enter a number of days between 1 and 30</a></li>
         </ul>
       </div>
     </div>
 
     <form class="sk-stack sk-stack--gap-32" novalidate>
       <fieldset class="sk-fieldset sk-fieldset--section">
-        <legend class="sk-fieldset__legend">Zone details</legend>
+        <legend class="sk-fieldset__legend">Project details</legend>
         <div class="sk-fieldset__body">
           <div class="sk-field">
-            <label class="sk-field__label" for="zone-name">Zone name</label>
-            <p class="sk-field__hint" id="zone-name-hint">A fully qualified domain, lowercase.</p>
-            <input class="sk-input sk-input--mono" id="zone-name" name="zoneName" type="text"
-                   placeholder="example.com" aria-describedby="zone-name-hint" spellcheck="false" />
+            <label class="sk-field__label" for="project-name">Project name</label>
+            <p class="sk-field__hint" id="project-name-hint">What the team will recognise it by.</p>
+            <input class="sk-input sk-input--mono" id="project-name" name="projectName" type="text"
+                   placeholder="Website redesign" aria-describedby="project-name-hint" spellcheck="false" />
           </div>
 
           <!-- Value and unit share a row, wrapping rather than cramping -->
           <div class="sk-cluster sk-cluster--gap-12 sk-cluster--align-start">
             <div class="sk-field sk-cluster__grow">
-              <label class="sk-field__label" for="ttl">Default TTL</label>
-              <input class="sk-input" id="ttl" type="text" inputmode="numeric" value="3600" />
+              <label class="sk-field__label" for="reminder">Reminder</label>
+              <input class="sk-input" id="reminder" type="text" inputmode="numeric" value="3600" />
             </div>
             <div class="sk-field sk-cluster__grow">
               <label class="sk-field__label" for="env">Environment</label>
@@ -393,7 +393,7 @@ export const layouts: LayoutRecipe[] = [
       <div class="sk-form-page__actions">
         <div class="sk-cluster sk-cluster--end sk-cluster--gap-8">
           <button type="button" class="sk-button sk-button--secondary">Cancel</button>
-          <button type="submit" class="sk-button sk-button--primary">Create zone</button>
+          <button type="submit" class="sk-button sk-button--primary">Create project</button>
         </div>
       </div>
     </form>
@@ -451,7 +451,7 @@ export const layouts: LayoutRecipe[] = [
     <div class="sk-wizard__panel">
       <!-- Focus moves here on step change -->
       <h1 class="sk-wizard__heading" id="step-heading" tabindex="-1">Records</h1>
-      <p class="sk-wizard__description">Add the initial records for this zone. You can add more later.</p>
+      <p class="sk-wizard__description">Add the first tasks for this project. You can add more later.</p>
       <form class="sk-stack sk-stack--gap-24"> ... </form>
     </div>
 
@@ -537,7 +537,7 @@ export const layouts: LayoutRecipe[] = [
 
         <section class="sk-danger-zone" aria-labelledby="danger-h">
           <h2 class="sk-fieldset__legend" id="danger-h">Delete account</h2>
-          <p>Permanently removes your account and all zones you own. This cannot be undone.</p>
+          <p>Permanently removes your account and every project you own. This cannot be undone.</p>
           <button type="button" class="sk-button sk-button--danger">Delete account</button>
         </section>
       </div>
@@ -585,7 +585,7 @@ export const layouts: LayoutRecipe[] = [
       <div class="sk-page-header__main">
         <div class="sk-page-header__titles">
           <div class="sk-page-header__title-row">
-            <h1 class="sk-page-header__title">example.com</h1>
+            <h1 class="sk-page-header__title">Website redesign</h1>
             <span class="sk-badge sk-badge--neutral">Production</span>
             <span class="sk-status sk-status--success">
               <span class="sk-status__dot" aria-hidden="true"></span>
@@ -595,21 +595,21 @@ export const layouts: LayoutRecipe[] = [
         </div>
         <div class="sk-page-header__actions">
           <button type="button" class="sk-button sk-button--secondary sk-button--sm">Export</button>
-          <button type="button" class="sk-button sk-button--primary sk-button--sm">Add record</button>
+          <button type="button" class="sk-button sk-button--primary sk-button--sm">Add task</button>
         </div>
       </div>
-      <nav class="sk-tabs sk-tabs--routed" aria-label="Zone views">
+      <nav class="sk-tabs sk-tabs--routed" aria-label="Project views">
         <div class="sk-tabs__list">
-          <a class="sk-tabs__tab" href="/zones/example-com" aria-current="page">Overview</a>
-          <a class="sk-tabs__tab" href="/zones/example-com/records">Records <span class="sk-tabs__count">128</span></a>
-          <a class="sk-tabs__tab" href="/zones/example-com/history">History</a>
+          <a class="sk-tabs__tab" href="/projects/website-redesign" aria-current="page">Overview</a>
+          <a class="sk-tabs__tab" href="/projects/website-redesign/tasks">Tasks <span class="sk-tabs__count">34</span></a>
+          <a class="sk-tabs__tab" href="/projects/website-redesign/activity">History</a>
         </div>
       </nav>
     </header>
 
     <div class="sk-sidebar-layout sk-sidebar-layout--end">
       <div class="sk-sidebar-layout__content"> ... </div>
-      <aside class="sk-sidebar-layout__sidebar" aria-label="Zone metadata">
+      <aside class="sk-sidebar-layout__sidebar" aria-label="Project metadata">
         <dl class="sk-dl"> ... </dl>
       </aside>
     </div>
@@ -739,7 +739,7 @@ export const layouts: LayoutRecipe[] = [
       <div class="sk-sidebar-layout sk-sidebar-layout--end sk-sidebar-layout--narrow sk-sidebar-layout--sticky">
         <article class="sk-sidebar-layout__content sk-prose">
           <h1>Managing records</h1>
-          <p class="sk-lead">Records map names to values within a zone.</p>
+          <p class="sk-lead">Tasks are the units of work inside a project.</p>
           <h2>Record types</h2>
           <p>…</p>
           <figure class="sk-code-block"> ... </figure>
@@ -749,7 +749,7 @@ export const layouts: LayoutRecipe[] = [
           <h2 class="sk-side-nav__group-label">On this page</h2>
           <ul class="sk-side-nav__list">
             <li><a class="sk-side-nav__item" href="#record-types" aria-current="true"><span class="sk-side-nav__label">Record types</span></a></li>
-            <li><a class="sk-side-nav__item" href="#ttl"><span class="sk-side-nav__label">TTL</span></a></li>
+            <li><a class="sk-side-nav__item" href="#reminder"><span class="sk-side-nav__label">Reminders</span></a></li>
           </ul>
         </nav>
       </div>

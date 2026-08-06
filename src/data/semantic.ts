@@ -363,6 +363,36 @@ export const semanticTokens: SemanticToken[] = [
     'azure.400', 'azure.200', 'azure.600', 'azure.100'),
   t('color-chart-8', 'chart', 'Eighth categorical series. Beyond eight, group into "Other".',
     'neutral.500', 'neutral.400', 'neutral.700', 'neutral.300'),
+  /*
+   * Text drawn ON a filled series — an avatar's initials, a direct label inside
+   * a bar, a legend swatch carrying a count.
+   *
+   * The series themselves are audited at 3:1, which is the non-text threshold
+   * (WCAG 1.4.11) and correct for a chart fill. Text on top of that fill is
+   * text, and needs 4.5:1. Those are different promises, and conflating them
+   * shipped white initials on `chart-2` at 3.46:1.
+   *
+   * No single colour satisfies every theme, because the series invert: a light
+   * theme's series are dark colours and a dark theme's are light ones. So the
+   * pairing is declared per series per theme, and audited like any other.
+   */
+  t('color-chart-1-on-solid', 'chart', 'Text drawn on a chart-1 fill.',
+    'neutral.0', 'neutral.1000', 'neutral.0', 'neutral.1000'),
+  t('color-chart-2-on-solid', 'chart', 'Text drawn on a chart-2 fill. Dark in light mode — white clears only 3.5:1 here.',
+    'neutral.1000', 'neutral.1000', 'neutral.0', 'neutral.1000'),
+  t('color-chart-3-on-solid', 'chart', 'Text drawn on a chart-3 fill. Amber is too light to carry white text.',
+    'neutral.1000', 'neutral.1000', 'neutral.0', 'neutral.1000'),
+  t('color-chart-4-on-solid', 'chart', 'Text drawn on a chart-4 fill.',
+    'neutral.0', 'neutral.1000', 'neutral.0', 'neutral.1000'),
+  t('color-chart-5-on-solid', 'chart', 'Text drawn on a chart-5 fill.',
+    'neutral.0', 'neutral.1000', 'neutral.0', 'neutral.1000'),
+  t('color-chart-6-on-solid', 'chart', 'Text drawn on a chart-6 fill. Dark: white reaches only 4.45:1, just under the bar.',
+    'neutral.1000', 'neutral.1000', 'neutral.0', 'neutral.1000'),
+  t('color-chart-7-on-solid', 'chart', 'Text drawn on a chart-7 fill.',
+    'neutral.1000', 'neutral.1000', 'neutral.0', 'neutral.1000'),
+  t('color-chart-8-on-solid', 'chart', 'Text drawn on a chart-8 fill.',
+    'neutral.0', 'neutral.1000', 'neutral.0', 'neutral.1000'),
+
   t('color-chart-grid', 'chart', 'Axis gridlines. Deliberately faint — they orient, they do not compete.',
     'neutral.200', 'neutral.800', 'neutral.400', 'neutral.700'),
   t('color-chart-axis', 'chart', 'Axis lines and tick marks.',
@@ -636,4 +666,15 @@ export const contrastRequirements: ContrastRequirement[] = [
     use: 'ui-component',
     note: 'The boundary marking AI content must be perceivable.',
   },
+
+  /*
+   * Text on a filled chart series. Eight series x four themes = 32 checks that
+   * did not exist while the avatar was shipping white initials on teal.
+   */
+  ...[1, 2, 3, 4, 5, 6, 7, 8].map((n): ContrastRequirement => ({
+    foreground: `color-chart-${n}-on-solid`,
+    background: `color-chart-${n}`,
+    use: 'body-text',
+    note: `Initials, direct labels and counts drawn on the series ${n} fill are text, not decoration, so they are held to 4.5:1 rather than the 3:1 the fill itself must clear.`,
+  })),
 ];

@@ -848,7 +848,7 @@ capitalise. Proper nouns and product names keep their capitalisation.
 
 ## Buttons
 
-Verb plus object, naming the specific thing: "Delete zone", not "Delete" and never
+Verb plus object, naming the specific thing: "Delete project", not "Delete" and never
 "OK". In a confirmation dialog the confirm button repeats the action so it reads
 correctly out of context — a screen reader user tabbing to it hears only the button.
 
@@ -856,8 +856,8 @@ correctly out of context — a screen reader user tabbing to it hears only the b
 
 Three parts, in order: what happened, why, what to do.
 
-> Two of twelve records failed to apply because the parent zone rejected the
-> delegation. Retry the change, or open the operation to see which records failed.
+> Two of twelve tasks could not be moved because another project still blocks
+> them. Retry the change, or open the report to see which two.
 
 Never: "An error occurred." Never: "You entered an invalid value." The system
 failed to accept the value; the user did not fail.
@@ -869,7 +869,7 @@ stack traces, internal hostnames or credential types.
 
 - "3 of 12 records" not "some records".
 - "Up to 10 MB" not "file too large".
-- "Between 60 and 86400 seconds" not "invalid TTL".
+- "Between 1 and 30 days" not "invalid reminder".
 
 Quantify impact before destructive actions: "This removes 128 records and cannot be
 undone."
@@ -880,10 +880,10 @@ Four genuinely different situations needing four different messages:
 
 | Situation | Heading | Body |
 |---|---|---|
-| First use | "No zones yet" | What a zone is, and how to make one. |
-| No results | "No zones match your filters" | Which filters, and an offer to clear them. |
-| No access | "You do not have access to this zone" | How to request it — without revealing what exists. |
-| Error | "Could not load zones" | Retry, plus a correlation ID. |
+| First use | "No projects yet" | What a project is, and how to make one. |
+| No results | "No projects match your filters" | Which filters, and an offer to clear them. |
+| No access | "You do not have access to this project" | How to request it — without revealing what exists. |
+| Error | "Could not load projects" | Retry, plus a correlation ID. |
 
 Using the same copy for first-use and no-results is the most common empty-state
 mistake, and it is confusing in both directions.
@@ -899,12 +899,12 @@ Always use \`<time datetime="...">\` with an ISO value.
 
 ## Terminology
 
-One word per concept, product-wide. If it is a "zone" on one screen it is not a
+One word per concept, product-wide. If it is a "project" on one screen it is not a
 "domain" on the next. Define technical terms on first use in a given context.
 
 ## Placeholders in examples
 
-Use reserved, obviously-fake values: \`example.com\`, \`192.0.2.10\`,
+Use reserved, obviously-fake values: \`Website redesign\`, \`192.0.2.10\`,
 \`YOUR_API_KEY\`. Never real hostnames, real IPs, real customer names, or real
 credentials — including in screenshots.`,
     related: ['accessibility', 'principles'],

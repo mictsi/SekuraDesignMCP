@@ -60,73 +60,74 @@ function buildPaletteIndex(): ShellContext['palette'] {
 }
 
 /* ------------------------------------------------------------------ *
- * The examples reuse the fragments written for the product demo. Their
- * internal links point at the old filenames, so they are rewritten here
- * rather than duplicating the fragments.
+ * Examples
+ *
+ * These are authored HTML, not generated: unlike the documentation pages,
+ * an example page has no data source in the system to derive from. It is a
+ * demonstration product, and pretending otherwise would only move hand-written
+ * markup into a template literal.
+ *
+ * The fragments are named for the file they produce, so their internal links
+ * are written directly and nothing needs rewriting at build time.
  * ------------------------------------------------------------------ */
 
-const EXAMPLE_LINK_MAP: Record<string, string> = {
-  'index.html': 'example-dashboard.html',
-  'zones.html': 'example-list.html',
-  'zone.html': 'example-detail.html',
-  'create-zone.html': 'example-form.html',
-  'settings.html': 'example-settings.html',
-  'signin.html': 'example-signin.html',
-  'components.html': 'components.html',
-};
-
-function rewriteExampleLinks(html: string): string {
-  return html.replace(/href="([^"#?]+\.html)((?:[#?][^"]*)?)"/g, (whole, file: string, rest: string) => {
-    const mapped = EXAMPLE_LINK_MAP[file];
-    return mapped ? `href="${mapped}${rest}"` : whole;
-  });
-}
-
 interface ExampleSpec {
-  fragment: string;
   file: string;
   title: string;
   description: string;
+  /** Its own <main> and page-level layout — the app shell would nest a second one. */
   bare?: boolean;
+  /** Body class for bare pages. */
+  bodyClass?: string;
 }
 
 const EXAMPLES: ExampleSpec[] = [
   {
-    fragment: 'index.html',
     file: 'example-dashboard.html',
     title: 'Dashboard',
     description: 'Stat tiles, a chart with a data-table alternative, and an activity timeline.',
   },
   {
-    fragment: 'zones.html',
     file: 'example-list.html',
     title: 'List page',
     description: 'Search, filters, sorting, tri-state bulk selection and a typed-confirmation delete.',
   },
   {
-    fragment: 'zone.html',
     file: 'example-detail.html',
     title: 'Detail page',
     description: 'Breadcrumbs, tabs, a split button and an inspection drawer.',
   },
   {
-    fragment: 'create-zone.html',
     file: 'example-form.html',
     title: 'Form page',
     description: 'Validation on blur and submit, with a focus-managed error summary.',
   },
   {
-    fragment: 'settings.html',
+    file: 'example-states.html',
+    title: 'Loading, empty & error',
+    description: 'The four states every screen has beyond the one in the mockup.',
+  },
+  {
+    file: 'example-onboarding.html',
+    title: 'Onboarding wizard',
+    description: 'A stepper, a step that can be skipped, and nothing committed until the end.',
+  },
+  {
     file: 'example-settings.html',
     title: 'Settings',
     description: 'Theme and density controls, and switches that show a pending state.',
   },
   {
-    fragment: 'signin.html',
+    file: 'example-marketing.html',
+    title: 'Marketing & pricing',
+    description: 'The same tokens at display sizes, outside app chrome.',
+    bare: true,
+    bodyClass: 'mk',
+  },
+  {
     file: 'example-signin.html',
     title: 'Sign in',
     description: 'Correct autocomplete tokens, a password reveal, and a deliberately vague error.',
-    // Its own <main> and centred layout — the app shell would nest a second one.
     bare: true,
   },
 ];
@@ -187,20 +188,14 @@ function main(): void {
 
   /* ---- Examples ---- */
   for (const ex of EXAMPLES) {
-    const path = join(PAGES_DIR, ex.fragment);
+    const path = join(PAGES_DIR, ex.file);
     if (!existsSync(path)) {
-      console.warn(`  skipped ${ex.file} (no fragment at pages/${ex.fragment})`);
+      console.error(`  MISSING fragment pages/${ex.file}`);
+      process.exitCode = 1;
       continue;
     }
-    const content = rewriteExampleLinks(readFileSync(path, 'utf8').trimEnd());
-    write(
-      ex.file,
-      renderExamplePage(
-        { file: ex.file, title: ex.title, description: ex.description, bare: ex.bare },
-        content,
-        ctx
-      )
-    );
+    const content = readFileSync(path, 'utf8').trimEnd();
+    write(ex.file, renderExamplePage(ex, content, ctx));
   }
 
   /* ---- Remove pages from a previous layout that are no longer generated ---- */

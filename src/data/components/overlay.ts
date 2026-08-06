@@ -79,9 +79,9 @@ export const overlayComponents: ComponentSpec[] = [
       targetSize: 'Actions and close meet minimums.',
     },
     content: [
-      'The title states the decision as a question or a noun phrase: "Delete zone example.com?"',
+      'The title states the decision as a question or a noun phrase: "Delete Website redesign?"',
       'The body states the consequence, including what cannot be undone and what else is affected.',
-      'The confirm button repeats the specific action: "Delete zone", never "OK" or "Yes".',
+      'The confirm button repeats the specific action: "Delete project", never "OK" or "Yes".',
       'The cancel button is "Cancel". Do not get clever.',
       'Quantify the impact: "This will remove 128 records. This cannot be undone."',
     ],
@@ -97,10 +97,10 @@ export const overlayComponents: ComponentSpec[] = [
       'Do not block Escape outright.',
       'Do not use a dialog for something a Toast with Undo would handle better.',
     ],
-    html: `<dialog class="sk-dialog sk-dialog--destructive sk-dialog--sm" id="delete-zone" aria-labelledby="delete-zone-title">
+    html: `<dialog class="sk-dialog sk-dialog--destructive sk-dialog--sm" id="delete-project" aria-labelledby="delete-project-title">
   <form method="dialog" class="sk-dialog__panel">
     <header class="sk-dialog__header">
-      <h2 class="sk-dialog__title" id="delete-zone-title">Delete zone example.com?</h2>
+      <h2 class="sk-dialog__title" id="delete-project-title">Delete Website redesign?</h2>
       <button type="button" class="sk-icon-button sk-icon-button--sm" data-sk-dialog-close>
         <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-close" /></svg>
         <span class="sk-visually-hidden">Close dialog</span>
@@ -110,10 +110,10 @@ export const overlayComponents: ComponentSpec[] = [
     <div class="sk-dialog__body">
       <p>
         This removes <strong>128 records</strong> and cannot be undone. Any service
-        resolving through this zone will stop resolving within the TTL window.
+        everyone assigned to it will lose access immediately.
       </p>
       <div class="sk-field">
-        <label class="sk-field__label" for="confirm-phrase">Type <code class="sk-code">example.com</code> to confirm</label>
+        <label class="sk-field__label" for="confirm-phrase">Type <code class="sk-code">Website redesign</code> to confirm</label>
         <input class="sk-input sk-input--mono" id="confirm-phrase" type="text" autocomplete="off" />
       </div>
     </div>
@@ -121,7 +121,7 @@ export const overlayComponents: ComponentSpec[] = [
     <footer class="sk-dialog__footer">
       <!-- Safe option is focused first, and comes first in the DOM. -->
       <button type="submit" value="cancel" class="sk-button sk-button--secondary" autofocus>Cancel</button>
-      <button type="submit" value="confirm" class="sk-button sk-button--danger" disabled>Delete zone</button>
+      <button type="submit" value="confirm" class="sk-button sk-button--danger" disabled>Delete project</button>
     </footer>
   </form>
 </dialog>`,
@@ -312,7 +312,7 @@ export const overlayComponents: ComponentSpec[] = [
     html: `<!-- Inline: no backdrop, page stays usable, focus not trapped -->
 <aside class="sk-drawer sk-drawer--inline" data-open aria-labelledby="detail-title">
   <header class="sk-drawer__header">
-    <h2 class="sk-drawer__title" id="detail-title">www.example.com</h2>
+    <h2 class="sk-drawer__title" id="detail-title">Pricing table variants</h2>
     <button type="button" class="sk-icon-button sk-icon-button--sm">
       <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-close" /></svg>
       <span class="sk-visually-hidden">Close details panel</span>
@@ -506,7 +506,7 @@ export const overlayComponents: ComponentSpec[] = [
 
 <div class="sk-popover sk-popover--arrow" id="filters-popover" popover>
   <header class="sk-popover__header">
-    <h3 class="sk-popover__title">Filter zones</h3>
+    <h3 class="sk-popover__title">Filter projects</h3>
   </header>
   <div class="sk-popover__body">
     <fieldset class="sk-fieldset"> ... </fieldset>

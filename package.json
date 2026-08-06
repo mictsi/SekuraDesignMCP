@@ -1,14 +1,14 @@
 {
   "name": "sekura-design-mcp",
   "version": "1.0.0",
-  "description": "Sekura Design System \u2014 MCP server exposing the complete design, UX, accessibility and dark-mode specification as machine-readable tools.",
+  "description": "Sekura Design System — MCP server exposing the complete design, UX, accessibility and dark-mode specification as machine-readable tools.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
     "sekura-design-mcp": "dist/index.js"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -19,13 +19,14 @@
     "lint:css": "node dist/scripts/lint-css.js",
     "emit:css": "node dist/scripts/emit-css.js",
     "smoke": "node dist/scripts/smoke.js",
-    "verify": "npm run build && npm run check:version && npm run test:color && npm run audit:contrast && npm run lint:css && npm run smoke && npm run build:behaviours && npm run test:behaviours && npm run test:rtl && npm run emit:css && npm run site:build && npm run verify:sample",
+    "verify": "npm run build && npm run check:version && npm run check:deps && npm run test:color && npm run audit:contrast && npm run lint:css && npm run smoke && npm run build:behaviours && npm run test:behaviours && npm run emit:css && npm run site:build && npm run verify:sample && npm run test:rtl",
     "sample": "node dist/scripts/serve-sample.js",
     "verify:sample": "node dist/scripts/verify-sample.js",
     "site:build": "node dist/scripts/build-site.js",
     "build:behaviours": "tsc -p tsconfig.behaviours.json && node dist/scripts/build-behaviours.js",
     "test:behaviours": "node dist/scripts/test-behaviours.js",
     "check:version": "node dist/scripts/check-version.js",
+    "check:deps": "node dist/scripts/check-deps.js",
     "test:a11y": "node src/scripts/test-a11y.mjs",
     "test:color": "node dist/scripts/test-color.js",
     "test:rtl": "node dist/scripts/test-rtl.js"
@@ -41,27 +42,29 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.20.0",
-    "express": "^5.1.0",
-    "zod": "^3.25.76"
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "express": "^5.2.1",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@types/express": "^5.0.3",
-    "@types/node": "^22.15.0",
-    "axe-core": "^4.12.1",
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.13.3",
+    "axe-core": "^4.13.0",
     "esbuild": "^0.28.1",
     "playwright-core": "^1.62.1",
-    "typescript": "^5.9.2"
+    "typescript": "^7.0.2"
   },
   "files": [
     "dist",
     "dist-css",
     "dist-js",
     "DESIGN.md",
-    "README.md"
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/OWNER/SekuraDesignMCP.git"
+    "url": "https://github.com/mictsi/SekuraDesignMCP.git"
   }
 }

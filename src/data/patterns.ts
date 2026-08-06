@@ -38,7 +38,7 @@ Undo is almost always better than a dialog when it is technically possible. It i
 faster for the common case, and it actually protects against the mistake rather
 than protecting against the click.`,
     rules: [
-      'Name the specific target in both the message and the button: "Delete zone example.com", never "Confirm".',
+      'Name the specific target in both the message and the button: "Delete project Website redesign", never "Confirm".',
       'Quantify the impact: "This removes 128 records and cannot be undone."',
       'Focus the safe option, never the destructive one.',
       'Say what else is affected — dependent resources, downstream services.',
@@ -48,7 +48,7 @@ than protecting against the click.`,
     accessibility: [
       'Initial focus goes to Cancel. A user pressing Enter reflexively must not destroy anything.',
       'The dialog is labelled by its title via aria-labelledby.',
-      'The confirm button label must make sense read alone: "Delete zone", not "Yes".',
+      'The confirm button label must make sense read alone: "Delete project", not "Yes".',
       'The typed-confirmation field is a normal labelled input with the phrase shown in the label, not in a placeholder.',
       'Announce the outcome in a live region — the dialog closing is silent.',
       'Escape must always work. For a dirty dialog, intercept and confirm rather than blocking it.',
@@ -64,7 +64,7 @@ than protecting against the click.`,
   await deleteRecord(id);
   showToast({
     intent: 'success',
-    message: 'Record www.example.com deleted.',
+    message: 'Record Pricing table variants deleted.',
     action: { label: 'Undo', onClick: () => restoreRecord(id) },
     duration: 10000,   // longer, because it carries an action
   });
@@ -74,21 +74,21 @@ than protecting against the click.`,
 <dialog class="sk-dialog sk-dialog--destructive sk-dialog--sm" aria-labelledby="dz-title">
   <form method="dialog" class="sk-dialog__panel">
     <header class="sk-dialog__header">
-      <h2 class="sk-dialog__title" id="dz-title">Delete zone example.com?</h2>
+      <h2 class="sk-dialog__title" id="dz-title">Delete Website redesign?</h2>
     </header>
     <div class="sk-dialog__body">
       <p>This removes <strong>128 records</strong> and cannot be undone. Any service
-         resolving through this zone stops resolving within the TTL window.</p>
+         everyone assigned to it loses access immediately.</p>
       <div class="sk-field">
         <label class="sk-field__label" for="confirm">
-          Type <code class="sk-code">example.com</code> to confirm
+          Type <code class="sk-code">Website redesign</code> to confirm
         </label>
         <input class="sk-input sk-input--mono" id="confirm" type="text" autocomplete="off" />
       </div>
     </div>
     <footer class="sk-dialog__footer">
       <button type="submit" value="cancel" class="sk-button sk-button--secondary" autofocus>Cancel</button>
-      <button type="submit" value="confirm" class="sk-button sk-button--danger" disabled>Delete zone</button>
+      <button type="submit" value="confirm" class="sk-button sk-button--danger" disabled>Delete project</button>
     </footer>
   </form>
 </dialog>`,
@@ -115,7 +115,7 @@ than protecting against the click.`,
 4. Mark each bad field with \`aria-invalid\` and an inline message.
 5. Preserve every value the user entered.`,
     rules: [
-      'Errors say how to fix: "Enter a TTL between 60 and 86400 seconds", not "Invalid value".',
+      'Errors say how to fix: "Enter a number of days between 1 and 30", not "Invalid value".',
       'Never validate on keystroke. Do clear an error on keystroke once it is resolved.',
       'Preserve input across a failed server submit. Never clear a password field.',
       'Mark optional fields, not required ones.',
@@ -226,7 +226,7 @@ active. Reset to page 1 on any filter change, and say so.`,
     solution: `The header checkbox selects the **current page** and shows an indeterminate
 state when the page is partially selected. When a whole page is selected, offer a
 separate, explicit escalation: "All 20 on this page are selected. Select all 4,000
-matching zones." Never make that leap implicitly.
+matching projects." Never make that leap implicitly.
 
 The action bar appears on first selection, states the count, and offers Clear
 selection. Destructive bulk actions name the count in the button label.`,
@@ -234,13 +234,13 @@ selection. Destructive bulk actions name the count in the button label.`,
       'The header checkbox scopes to the current page only.',
       'Selecting all matching items is an explicit, separate action.',
       'The count is always visible while a selection exists.',
-      'Destructive bulk buttons name the count: "Delete 3 zones".',
+      'Destructive bulk buttons name the count: "Delete 3 projects".',
       'Report per-item results on partial failure and never call the batch atomic.',
       'Selection survives sorting; it does not survive filtering — and say so when it is cleared.',
     ],
     components: ['checkbox', 'table', 'button', 'alert', 'toast', 'dialog'],
     accessibility: [
-      'Each row checkbox names its row: "Select example.com".',
+      'Each row checkbox names its row: "Select Website redesign".',
       'The header checkbox uses the indeterminate DOM property, announced as "mixed".',
       'Announce selection count changes politely.',
       'The action bar is a labelled region so it can be reached by landmark.',
@@ -375,7 +375,7 @@ When a user genuinely lacks permission for something they can see:
       'Showing every option at once overwhelms new users. Hiding options behind vague labels means expert users cannot find them, and clicking "Advanced" to discover what is inside is a guessing game.',
     solution: `Keep the primary path direct and complete — a user who never expands anything
 should still be able to finish the task. Put secondary options behind clearly
-labelled disclosures that name their contents ("Advanced DNS options", not
+labelled disclosures that name their contents ("Advanced sharing options", not
 "Advanced"). Remember expansion state per user. Never hide a required field.`,
     rules: [
       'The default path must be complete on its own.',

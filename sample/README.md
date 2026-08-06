@@ -2,7 +2,7 @@
 
 An 81-page documentation site for the Sekura Design System — explanations, a
 full colour guide, a type specimen, live demos, a complete component reference,
-and six worked examples.
+and nine worked examples.
 
 **Everything is generated from the design system's own data**, so the colour
 guide shows genuinely audited contrast values and the component pages show the
@@ -45,15 +45,30 @@ the full narrative in a collapsible section.
 ### Reference
 | Page | |
 |---|---|
-| `tokens.html` | All 112 semantic tokens, filterable, with the value in each of the four themes |
+| `tokens.html` | All 120 semantic tokens, filterable, with the value in each of the four themes |
 | `components.html` | 55 components grouped by category |
 | `component-*.html` | One page each: anatomy, variants, states, props, dark-mode note, full keyboard and ARIA contract, CSS |
 | `patterns.html` | 15 UX patterns with their anti-patterns |
 | `recipes.html` | 9 page blueprints with markup |
 
 ### Examples
-Six pages showing the system in a real product: dashboard, list page with bulk
-actions, detail page, form with validation, settings, sign-in.
+Nine pages showing the system in a real product — a team project workspace,
+chosen because every designer has built one and none of it needs explaining.
+
+| Page | What it is for |
+|---|---|
+| `example-dashboard.html` | Stat tiles, a chart with a data-table alternative, an activity timeline |
+| `example-list.html` | Search, filters as removable chips, sorting, tri-state bulk selection, typed-confirmation delete |
+| `example-detail.html` | Breadcrumbs, tabs, a split button, an inspection drawer |
+| `example-form.html` | Validation on blur and on submit, with a focus-managed error summary |
+| `example-states.html` | Loading, empty, error and forbidden — the four states nobody designs until production |
+| `example-onboarding.html` | A stepper, a skippable step, and nothing committed until the end |
+| `example-settings.html` | Theme and density controls, and switches that show a pending state |
+| `example-marketing.html` | The same tokens at display sizes, outside app chrome |
+| `example-signin.html` | Autocomplete tokens, a password reveal, a deliberately vague error |
+
+`example-states.html` is the one to read first if you are adopting the system.
+The others show components; that one shows the decisions.
 
 ## The pages worth seeing first
 
@@ -62,7 +77,7 @@ white *and* against black, which is what you actually need in order to know
 whether a step is safe for text (4.5:1), safe only for a boundary (3:1), or
 decorative. The two steps pinned by contrast rather than by eye are marked. Then
 every semantic token with its value in all four themes, and the full contrast
-contract — 73 declared pairings × 4 themes, with the measured ratio in each.
+contract — 86 declared pairings × 4 themes, with the measured ratio in each.
 
 **`dark-mode.html`** — the elevation inversion, demonstrated with the same
 markup rendered under both themes side by side. Plus the nine things that pass a
@@ -90,7 +105,7 @@ involved.
 
 ```
 sample/
-├── pages/*.html        Source fragments for the six examples only
+├── pages/*.html        Source fragments, one per example page
 ├── assets/
 │   ├── sekura.css      The design system (generated — do not edit)
 │   ├── docs.css        Documentation-site styles, built entirely from tokens
@@ -114,7 +129,7 @@ overwritten; change the token or component source and regenerate.
 npm run verify:sample
 ```
 
-Checks all 81 pages for dangling ARIA id references, icons referenced but never
+Checks all 85 pages for dangling ARIA id references, icons referenced but never
 defined, links to missing pages, duplicate ids, hard-coded colours and correct
 document structure — then runs the design system's own `validate_markup` over
 each page. The site is held to the standard the server tells everyone else to

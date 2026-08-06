@@ -1,0 +1,321 @@
+<!--
+  MARKETING PAGE — the system outside app chrome.
+
+  Every other example lives inside a sidebar and a top bar, which makes it easy
+  to assume the system is an admin toolkit. It is not. This page uses the same
+  tokens, the same components and the same dark mode at display type sizes and
+  marketing rhythm, with no page-specific colour, size or spacing value.
+
+  Three things worth noticing:
+
+    - The featured plan is RAISED, not recoloured. In dark mode a raised surface
+      gets lighter, so the emphasis survives the theme flip with no second
+      treatment and no "dark variant" asset.
+    - Prices are real text at real sizes, not images. They reflow, they respond
+      to browser zoom, and a screen reader reads them.
+    - The comparison table scrolls inside itself, so this page never scrolls
+      sideways at 320px.
+-->
+<main class="mk__main" id="main">
+
+  <section class="mk__hero">
+    <p class="mk__eyebrow">Sekura Workspace</p>
+    <h1 class="mk__title">Projects your team can actually find</h1>
+    <p class="mk__lead">
+      One place for the work, the files and the decisions behind them. No setup
+      call, no per-seat surprises, and an export button that always works.
+    </p>
+    <div class="sk-cluster sk-cluster--center sk-cluster--gap-12">
+      <a class="sk-button sk-button--primary sk-button--lg" href="example-onboarding.html">
+        <span class="sk-button__label">Start free</span>
+        <svg class="sk-button__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-arrow-right"></use></svg>
+      </a>
+      <a class="sk-button sk-button--secondary sk-button--lg" href="example-dashboard.html">
+        <span class="sk-button__label">See a live workspace</span>
+      </a>
+    </div>
+    <p style="margin:0;color:var(--sk-color-text-tertiary);font-size:var(--sk-font-size-body-sm)">
+      Free for up to 3 people. No card needed.
+    </p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section class="mk__section" aria-labelledby="value-h">
+    <div class="sk-stack sk-stack--gap-8">
+      <h2 class="mk__section-title" id="value-h">Built around the boring parts</h2>
+      <p class="mk__section-lead">
+        The features nobody demos and everybody needs on the second week.
+      </p>
+    </div>
+
+    <div class="sk-grid sk-grid--min-18 sk-grid--gap-24">
+      <article class="sk-card">
+        <div class="sk-card__body sk-stack sk-stack--gap-8">
+          <span class="sk-avatar sk-avatar--square" data-tint="1" aria-hidden="true">
+            <svg width="20" height="20"><use href="#sk-icon-search"></use></svg>
+          </span>
+          <h3 class="sk-card__title">Search that reaches inside</h3>
+          <p style="margin:0;color:var(--sk-color-text-secondary);font-size:var(--sk-font-size-body-sm)">
+            Comments, attachments and archived projects, not just titles. Results
+            explain which field they matched.
+          </p>
+        </div>
+      </article>
+
+      <article class="sk-card">
+        <div class="sk-card__body sk-stack sk-stack--gap-8">
+          <span class="sk-avatar sk-avatar--square" data-tint="3" aria-hidden="true">
+            <svg width="20" height="20"><use href="#sk-icon-download"></use></svg>
+          </span>
+          <h3 class="sk-card__title">Export without asking</h3>
+          <p style="margin:0;color:var(--sk-color-text-secondary);font-size:var(--sk-font-size-body-sm)">
+            Every project, comment and file, as CSV or JSON, on every plan
+            including the free one. Leaving should not require a support ticket.
+          </p>
+        </div>
+      </article>
+
+      <article class="sk-card">
+        <div class="sk-card__body sk-stack sk-stack--gap-8">
+          <span class="sk-avatar sk-avatar--square" data-tint="5" aria-hidden="true">
+            <svg width="20" height="20"><use href="#sk-icon-shield"></use></svg>
+          </span>
+          <h3 class="sk-card__title">Accessible by default</h3>
+          <p style="margin:0;color:var(--sk-color-text-secondary);font-size:var(--sk-font-size-body-sm)">
+            Keyboard paths for every action, WCAG 2.2 AA contrast in both themes,
+            and a published VPAT. Verified in the build, not once a year.
+          </p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section class="mk__section" aria-labelledby="pricing-h">
+    <div class="sk-stack sk-stack--gap-8">
+      <h2 class="mk__section-title" id="pricing-h">Pricing</h2>
+      <p class="mk__section-lead">
+        Per workspace, not per seat. Adding a reviewer should never cost you a
+        conversation with finance.
+      </p>
+    </div>
+
+    <div class="sk-grid sk-grid--min-18 sk-grid--gap-24">
+
+      <article class="mk__plan" aria-labelledby="plan-free">
+        <div class="sk-stack sk-stack--gap-4">
+          <h3 class="sk-card__title" id="plan-free">Free</h3>
+          <p style="margin:0;color:var(--sk-color-text-secondary);font-size:var(--sk-font-size-body-sm)">
+            For a small team finding its shape.
+          </p>
+        </div>
+        <p class="mk__price">
+          <span class="mk__amount">€0</span>
+          <span class="mk__period">forever</span>
+        </p>
+        <ul class="mk__features">
+          <li><svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-check"></use></svg> Up to 3 people</li>
+          <li><svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-check"></use></svg> 5 active projects</li>
+          <li><svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-check"></use></svg> Full export</li>
+          <li><svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-check"></use></svg> Community support</li>
+        </ul>
+        <a class="sk-button sk-button--secondary sk-button--full-width" href="example-onboarding.html">
+          <span class="sk-button__label">Start free</span>
+        </a>
+      </article>
+
+      <!-- Raised, not recoloured. The badge names WHY it is recommended rather
+           than just shouting "Popular". -->
+      <article class="mk__plan mk__plan--featured" aria-labelledby="plan-team">
+        <div class="sk-stack sk-stack--gap-4">
+          <div class="sk-cluster sk-cluster--gap-8">
+            <h3 class="sk-card__title" id="plan-team">Team</h3>
+            <span class="sk-badge sk-badge--brand">Most teams pick this</span>
+          </div>
+          <p style="margin:0;color:var(--sk-color-text-secondary);font-size:var(--sk-font-size-body-sm)">
+            For a team that has outgrown a shared document.
+          </p>
+        </div>
+        <p class="mk__price">
+          <span class="mk__amount">€49</span>
+          <span class="mk__period">per month, billed yearly</span>
+        </p>
+        <ul class="mk__features">
+          <li><svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-check"></use></svg> Unlimited people</li>
+          <li><svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-check"></use></svg> Unlimited projects</li>
+          <li><svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-check"></use></svg> Portfolios and roadmaps</li>
+          <li><svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-check"></use></svg> Audit log, 12 months</li>
+          <li><svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-check"></use></svg> Email support, one business day</li>
+        </ul>
+        <a class="sk-button sk-button--primary sk-button--full-width" href="example-onboarding.html">
+          <span class="sk-button__label">Start a 14-day trial</span>
+        </a>
+      </article>
+
+      <article class="mk__plan" aria-labelledby="plan-org">
+        <div class="sk-stack sk-stack--gap-4">
+          <h3 class="sk-card__title" id="plan-org">Organisation</h3>
+          <p style="margin:0;color:var(--sk-color-text-secondary);font-size:var(--sk-font-size-body-sm)">
+            For several teams under one roof.
+          </p>
+        </div>
+        <p class="mk__price">
+          <span class="mk__amount">€180</span>
+          <span class="mk__period">per month, billed yearly</span>
+        </p>
+        <ul class="mk__features">
+          <li><svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-check"></use></svg> Everything in Team</li>
+          <li><svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-check"></use></svg> SAML single sign-on</li>
+          <li><svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-check"></use></svg> Data residency choice</li>
+          <li><svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-check"></use></svg> Audit log, 7 years</li>
+          <li><svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-check"></use></svg> Named contact</li>
+        </ul>
+        <a class="sk-button sk-button--secondary sk-button--full-width" href="example-onboarding.html">
+          <span class="sk-button__label">Talk to us</span>
+        </a>
+      </article>
+
+    </div>
+
+    <!-- Same scroll-container rule as every other table in the system: it
+         scrolls inside itself, has a name and takes focus, so the page never
+         scrolls sideways and a keyboard user can still reach the far column. -->
+    <div class="sk-table" role="region" aria-labelledby="compare-caption" tabindex="0">
+      <table>
+        <caption id="compare-caption" class="sk-table__caption">
+          Plan comparison
+          <span class="sk-table__caption-detail">Scroll sideways for the full table</span>
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Feature</th>
+            <th scope="col">Free</th>
+            <th scope="col">Team</th>
+            <th scope="col">Organisation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">People</th>
+            <td>3</td>
+            <td>Unlimited</td>
+            <td>Unlimited</td>
+          </tr>
+          <tr>
+            <th scope="row">Active projects</th>
+            <td>5</td>
+            <td>Unlimited</td>
+            <td>Unlimited</td>
+          </tr>
+          <!-- A tick with no text alternative is colour-and-shape-only
+               information. The visually hidden word is what a screen reader
+               reads, and it is what the cell actually means. -->
+          <tr>
+            <th scope="row">Full data export</th>
+            <td><svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-check"></use></svg><span class="sk-visually-hidden">Included</span></td>
+            <td><svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-check"></use></svg><span class="sk-visually-hidden">Included</span></td>
+            <td><svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-check"></use></svg><span class="sk-visually-hidden">Included</span></td>
+          </tr>
+          <tr>
+            <th scope="row">Audit log retention</th>
+            <td><span aria-hidden="true">—</span><span class="sk-visually-hidden">Not included</span></td>
+            <td>12 months</td>
+            <td>7 years</td>
+          </tr>
+          <tr>
+            <th scope="row">SAML single sign-on</th>
+            <td><span aria-hidden="true">—</span><span class="sk-visually-hidden">Not included</span></td>
+            <td><span aria-hidden="true">—</span><span class="sk-visually-hidden">Not included</span></td>
+            <td><svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-check"></use></svg><span class="sk-visually-hidden">Included</span></td>
+          </tr>
+          <tr>
+            <th scope="row">Support response</th>
+            <td>Community</td>
+            <td>One business day</td>
+            <td>Named contact</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section class="mk__section" aria-labelledby="faq-h">
+    <h2 class="mk__section-title" id="faq-h">Questions people actually ask</h2>
+
+    <div class="sk-stack sk-stack--gap-8">
+      <!-- Native details/summary. It works before JavaScript loads, it is
+           findable by the browser's own find-in-page, and it needs no ARIA. -->
+      <details class="sk-details">
+        <summary>What happens to my data if I stop paying?</summary>
+        <div class="sk-details__body">
+          <p>
+            The workspace becomes read-only and export stays enabled indefinitely.
+            Nothing is deleted for 12 months, and we email before anything is.
+          </p>
+        </div>
+      </details>
+
+      <details class="sk-details">
+        <summary>Do you charge per seat?</summary>
+        <div class="sk-details__body">
+          <p>
+            No. The price is per workspace, so inviting a reviewer, a contractor or
+            a stakeholder costs nothing extra.
+          </p>
+        </div>
+      </details>
+
+      <details class="sk-details">
+        <summary>Is there a dark mode?</summary>
+        <div class="sk-details__body">
+          <p>
+            Yes, and it follows your operating system by default. This page is in it
+            right now if your system is — including the pricing cards, where the
+            recommended plan is raised rather than recoloured so the emphasis
+            survives the theme change.
+          </p>
+        </div>
+      </details>
+
+      <details class="sk-details">
+        <summary>How accessible is it, really?</summary>
+        <div class="sk-details__body">
+          <p>
+            Every colour pairing is contrast-audited in four themes as a build gate,
+            keyboard behaviour is tested against a real browser, and the build fails
+            rather than shipping a regression. The
+            <a class="sk-link" href="accessibility.html">accessibility page</a> lists
+            what is verified and what is not.
+          </p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section class="mk__section">
+    <div class="sk-card">
+      <div class="sk-card__body sk-stack sk-stack--gap-16" style="text-align:center;align-items:center">
+        <h2 class="mk__section-title">Try it with your own work</h2>
+        <p class="mk__section-lead" style="text-align:center">
+          Import a spreadsheet, invite two people, and see whether it survives a
+          real week.
+        </p>
+        <div class="sk-cluster sk-cluster--center sk-cluster--gap-12">
+          <a class="sk-button sk-button--primary sk-button--lg" href="example-onboarding.html">
+            <span class="sk-button__label">Start free</span>
+          </a>
+          <a class="sk-button sk-button--ghost sk-button--lg" href="example-dashboard.html">
+            <span class="sk-button__label">Look around first</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <p class="mk__footer">
+    This is a demonstration page for the Sekura Design System. The product,
+    the prices and the plans are invented.
+  </p>
+</main>

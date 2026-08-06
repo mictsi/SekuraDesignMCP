@@ -72,7 +72,10 @@ export const NAV: NavGroup[] = [
       { file: 'example-list.html', label: 'List page' },
       { file: 'example-detail.html', label: 'Detail page' },
       { file: 'example-form.html', label: 'Form page' },
+      { file: 'example-states.html', label: 'Loading, empty & error' },
+      { file: 'example-onboarding.html', label: 'Onboarding wizard' },
       { file: 'example-settings.html', label: 'Settings' },
+      { file: 'example-marketing.html', label: 'Marketing & pricing' },
       { file: 'example-signin.html', label: 'Sign in' },
     ],
   },
@@ -512,7 +515,7 @@ ${commandPalette(ctx.palette)}
  * a demonstration rather than the documentation itself.
  */
 export function renderExamplePage(
-  opts: { file: string; title: string; description: string; bare?: boolean },
+  opts: { file: string; title: string; description: string; bare?: boolean; bodyClass?: string },
   content: string,
   ctx: ShellContext
 ): string {
@@ -536,7 +539,7 @@ export function renderExamplePage(
 <head>
 ${head(opts.title, opts.description)}
 </head>
-<body class="sk-auth">
+<body class="${opts.bodyClass ?? 'sk-auth'}">
 <script src="assets/icons.js"></script>
 <a class="sk-skip-link" href="#main">Skip to main content</a>
 ${banner}

@@ -148,7 +148,7 @@ cobalt-600     →    color-action-primary-bg  →  .sk-button--primary
 `cobalt-600` means nothing on its own.
 
 **Semantic tokens** name roles. Each resolves to a different primitive per theme.
-112 tokens across nine groups: surface, text, border, focus, action, status, form,
+120 tokens across nine groups: surface, text, border, focus, action, status, form,
 chart, ai.
 
 **Components** consume semantic tokens and never choose a primitive.

@@ -1,0 +1,333 @@
+<!--
+  DASHBOARD — the "how is everything doing?" archetype.
+
+  Reading order matters more than density. The page answers three questions in
+  order: is anything wrong (the alert), what are the headline numbers (the stat
+  grid), and what changed recently (the chart and timeline). A dashboard that
+  opens with a chart makes the reader hunt for the problem.
+-->
+<header class="sk-page-header">
+        <div class="sk-page-header__main">
+          <div class="sk-page-header__titles">
+            <div class="sk-page-header__title-row">
+              <h1 class="sk-page-header__title">Overview</h1>
+            </div>
+            <p class="sk-page-header__description">
+              Project and task health across the whole team.
+            </p>
+          </div>
+          <div class="sk-page-header__actions">
+            <div class="sk-button-group sk-button-group--segmented" role="radiogroup" aria-label="Time range">
+              <button type="button" class="sk-button-group__segment" role="radio" aria-checked="false" tabindex="-1">24h</button>
+              <button type="button" class="sk-button-group__segment" role="radio" aria-checked="true"  tabindex="0">7d</button>
+              <button type="button" class="sk-button-group__segment" role="radio" aria-checked="false" tabindex="-1">30d</button>
+            </div>
+            <a class="sk-button sk-button--primary" href="example-form.html">
+              <svg class="sk-button__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-plus"></use></svg>
+              <span class="sk-button__label">New project</span>
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <!-- Static alert: present on load, so NO role="alert". Announcing it would
+           be out of context — the user did not do anything to cause it. -->
+      <div class="sk-alert sk-alert--warning">
+        <svg class="sk-alert__icon" aria-hidden="true" focusable="false" width="20" height="20"><use href="#sk-icon-warning"></use></svg>
+        <div class="sk-alert__content">
+          <h2 class="sk-alert__title">Two projects will miss their deadline</h2>
+          <p class="sk-alert__body">
+            <strong>Website redesign</strong> and <strong>Mobile onboarding</strong> have more open
+            tasks than working days remaining. Both still have unassigned work.
+          </p>
+          <div class="sk-alert__actions">
+            <a class="sk-button sk-button--secondary sk-button--sm" href="example-list.html?filter=at-risk">
+              <span class="sk-button__label">Review both projects</span>
+            </a>
+            <a class="sk-link" href="example-detail.html">Open Website redesign</a>
+          </div>
+        </div>
+        <button type="button" class="sk-icon-button sk-icon-button--sm sk-alert__dismiss"
+                onclick="this.closest('.sk-alert').remove()">
+          <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-close"></use></svg>
+          <span class="sk-visually-hidden">Dismiss deadline warning</span>
+        </button>
+      </div>
+
+      <!-- Auto-fit grid: four across, then two, then one. Driven by container
+           width, so no breakpoint is involved. -->
+      <section class="sk-grid sk-grid--min-12" aria-label="Key metrics">
+        <div class="sk-stat sk-stat--carded" role="group" aria-labelledby="m-projects">
+          <p class="sk-stat__label" id="m-projects">Active projects</p>
+          <p class="sk-stat__value">18</p>
+          <p class="sk-stat__delta sk-stat__delta--good">
+            <svg aria-hidden="true" focusable="false" width="14" height="14"><use href="#sk-icon-arrow-up"></use></svg>
+            <span aria-hidden="true">2</span>
+            <span class="sk-visually-hidden">up by 2</span>
+            <span class="sk-stat__comparison">vs. last week</span>
+          </p>
+        </div>
+
+        <div class="sk-stat sk-stat--carded" role="group" aria-labelledby="m-completed">
+          <p class="sk-stat__label" id="m-completed">Tasks completed</p>
+          <p class="sk-stat__value">342</p>
+          <p class="sk-stat__delta sk-stat__delta--good">
+            <svg aria-hidden="true" focusable="false" width="14" height="14"><use href="#sk-icon-arrow-up"></use></svg>
+            <span aria-hidden="true">18%</span>
+            <span class="sk-visually-hidden">up 18 percent</span>
+            <span class="sk-stat__comparison">vs. last week</span>
+          </p>
+        </div>
+
+        <div class="sk-stat sk-stat--carded" role="group" aria-labelledby="m-review">
+          <p class="sk-stat__label" id="m-review">Awaiting review</p>
+          <p class="sk-stat__value">7</p>
+          <p class="sk-stat__delta sk-stat__delta--flat">
+            <span class="sk-stat__comparison">Oldest waiting 3 days</span>
+          </p>
+        </div>
+
+        <!-- Colour follows "is this good?", not "which way did the arrow point?".
+             Overdue work going DOWN is good, so a down arrow is green here and
+             would be red on a completion count. Direction and sentiment are two
+             different things and the system keeps them separate. -->
+        <div class="sk-stat sk-stat--carded" role="group" aria-labelledby="m-overdue">
+          <p class="sk-stat__label" id="m-overdue">Overdue tasks</p>
+          <p class="sk-stat__value">12</p>
+          <p class="sk-stat__delta sk-stat__delta--good">
+            <svg aria-hidden="true" focusable="false" width="14" height="14"><use href="#sk-icon-arrow-down"></use></svg>
+            <span aria-hidden="true">5</span>
+            <span class="sk-visually-hidden">down by 5</span>
+            <span class="sk-stat__comparison">vs. last week</span>
+          </p>
+        </div>
+      </section>
+
+      <!-- Sidebar layout: wraps to stacked on CONTAINER width. No media query. -->
+      <div class="sk-sidebar-layout sk-sidebar-layout--end">
+
+        <div class="sk-sidebar-layout__content">
+          <section class="sk-card">
+            <div class="sk-card__header">
+              <h2 class="sk-card__title">Tasks completed per day</h2>
+              <button type="button" class="sk-button sk-button--ghost sk-button--sm"
+                      data-sk-toggle-target="#volume-table" aria-expanded="false">
+                View as table
+              </button>
+            </div>
+            <div class="sk-card__body">
+              <figure style="margin:0">
+                <!-- Drawn from the audited chart palette, so it is correct in
+                     every theme with no second asset. -->
+                <div class="demo-chart" role="img" aria-labelledby="chart-caption">
+                  <span class="demo-chart__bar"><span class="demo-chart__fill" style="block-size:52%"></span><span class="demo-chart__label">Mon</span></span>
+                  <span class="demo-chart__bar"><span class="demo-chart__fill" style="block-size:61%"></span><span class="demo-chart__label">Tue</span></span>
+                  <span class="demo-chart__bar"><span class="demo-chart__fill" style="block-size:58%"></span><span class="demo-chart__label">Wed</span></span>
+                  <span class="demo-chart__bar"><span class="demo-chart__fill" style="block-size:41%"></span><span class="demo-chart__label">Thu</span></span>
+                  <span class="demo-chart__bar"><span class="demo-chart__fill" style="block-size:73%"></span><span class="demo-chart__label">Fri</span></span>
+                  <span class="demo-chart__bar"><span class="demo-chart__fill" style="block-size:18%"></span><span class="demo-chart__label">Sat</span></span>
+                  <span class="demo-chart__bar"><span class="demo-chart__fill" style="block-size:12%"></span><span class="demo-chart__label">Sun</span></span>
+                </div>
+                <figcaption id="chart-caption" style="margin-block-start:var(--sk-space-12);color:var(--sk-color-text-secondary);font-size:var(--sk-font-size-body-sm)">
+                  Completions peaked at 61 on Friday and fell to 10 over the weekend.
+                  Thursday's dip to 34 coincided with the company all-hands.
+                </figcaption>
+              </figure>
+
+              <!-- Every chart needs a text alternative. A data table is the
+                   strongest one; aria-label alone collapses the whole chart to
+                   a single string. -->
+              <div id="volume-table" hidden style="margin-block-start:var(--sk-space-16)">
+                <div class="sk-table" role="region" aria-label="Tasks completed per day" tabindex="0">
+                  <table>
+                    <caption class="sk-visually-hidden">Tasks completed per day, Monday to Sunday</caption>
+                    <thead>
+                      <tr><th scope="col">Day</th><th scope="col" class="sk-table__cell--numeric">Completed</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><th scope="row">Monday</th><td class="sk-table__cell--numeric">43</td></tr>
+                      <tr><th scope="row">Tuesday</th><td class="sk-table__cell--numeric">51</td></tr>
+                      <tr><th scope="row">Wednesday</th><td class="sk-table__cell--numeric">48</td></tr>
+                      <tr><th scope="row">Thursday</th><td class="sk-table__cell--numeric">34</td></tr>
+                      <tr><th scope="row">Friday</th><td class="sk-table__cell--numeric">61</td></tr>
+                      <tr><th scope="row">Saturday</th><td class="sk-table__cell--numeric">15</td></tr>
+                      <tr><th scope="row">Sunday</th><td class="sk-table__cell--numeric">10</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="sk-card" style="margin-block-start:var(--sk-space-16)">
+            <div class="sk-card__header">
+              <h2 class="sk-card__title">Your projects</h2>
+              <a class="sk-link" href="example-list.html">See all 18</a>
+            </div>
+            <div class="sk-card__body">
+              <!-- Auto-fit card grid. Each card is a single link target, so the
+                   whole card is clickable without nesting interactive elements
+                   inside one another. -->
+              <div class="sk-grid sk-grid--min-16">
+                <article class="sk-card sk-card--interactive">
+                  <div class="sk-card__body sk-stack sk-stack--gap-8">
+                    <h3 class="sk-card__title" style="font-size:var(--sk-font-size-heading-xs)">
+                      <a class="sk-link sk-link--quiet" href="example-detail.html">Website redesign</a>
+                    </h3>
+                    <p style="margin:0;color:var(--sk-color-text-secondary);font-size:var(--sk-font-size-body-sm)">
+                      Marketing site, docs and the pricing page.
+                    </p>
+                    <div class="sk-progress sk-progress--sm">
+                      <div class="sk-progress__track" role="progressbar" aria-labelledby="p1-label"
+                           aria-valuenow="68" aria-valuemin="0" aria-valuemax="100"
+                           aria-valuetext="68 percent complete">
+                        <div class="sk-progress__fill" style="inline-size:68%"></div>
+                      </div>
+                    </div>
+                    <p class="sk-cluster sk-cluster--gap-8" style="margin:0;font-size:var(--sk-font-size-body-sm);color:var(--sk-color-text-secondary)">
+                      <span id="p1-label">68% complete</span>
+                      <span aria-hidden="true">·</span>
+                      <span>Due 21 August</span>
+                    </p>
+                  </div>
+                </article>
+
+                <article class="sk-card sk-card--interactive">
+                  <div class="sk-card__body sk-stack sk-stack--gap-8">
+                    <h3 class="sk-card__title" style="font-size:var(--sk-font-size-heading-xs)">
+                      <a class="sk-link sk-link--quiet" href="example-detail.html">Mobile onboarding</a>
+                    </h3>
+                    <p style="margin:0;color:var(--sk-color-text-secondary);font-size:var(--sk-font-size-body-sm)">
+                      First-run flow for the iOS and Android apps.
+                    </p>
+                    <div class="sk-progress sk-progress--sm">
+                      <div class="sk-progress__track" role="progressbar" aria-labelledby="p2-label"
+                           aria-valuenow="41" aria-valuemin="0" aria-valuemax="100"
+                           aria-valuetext="41 percent complete">
+                        <div class="sk-progress__fill" style="inline-size:41%"></div>
+                      </div>
+                    </div>
+                    <p class="sk-cluster sk-cluster--gap-8" style="margin:0;font-size:var(--sk-font-size-body-sm);color:var(--sk-color-text-secondary)">
+                      <span id="p2-label">41% complete</span>
+                      <span aria-hidden="true">·</span>
+                      <span>Due 14 August</span>
+                    </p>
+                  </div>
+                </article>
+
+                <article class="sk-card sk-card--interactive">
+                  <div class="sk-card__body sk-stack sk-stack--gap-8">
+                    <h3 class="sk-card__title" style="font-size:var(--sk-font-size-heading-xs)">
+                      <a class="sk-link sk-link--quiet" href="example-detail.html">Design system rollout</a>
+                    </h3>
+                    <p style="margin:0;color:var(--sk-color-text-secondary);font-size:var(--sk-font-size-body-sm)">
+                      Migrating four products onto shared components.
+                    </p>
+                    <div class="sk-progress sk-progress--sm">
+                      <div class="sk-progress__track" role="progressbar" aria-labelledby="p3-label"
+                           aria-valuenow="92" aria-valuemin="0" aria-valuemax="100"
+                           aria-valuetext="92 percent complete">
+                        <div class="sk-progress__fill" style="inline-size:92%"></div>
+                      </div>
+                    </div>
+                    <p class="sk-cluster sk-cluster--gap-8" style="margin:0;font-size:var(--sk-font-size-body-sm);color:var(--sk-color-text-secondary)">
+                      <span id="p3-label">92% complete</span>
+                      <span aria-hidden="true">·</span>
+                      <span>Due 29 August</span>
+                    </p>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <aside class="sk-sidebar-layout__sidebar sk-stack sk-stack--gap-16" aria-label="Recent activity">
+          <section class="sk-card">
+            <div class="sk-card__header"><h2 class="sk-card__title">Recent activity</h2></div>
+            <div class="sk-card__body">
+              <ol class="sk-timeline">
+                <li class="sk-timeline__event" data-success>
+                  <span class="sk-timeline__marker" aria-hidden="true"></span>
+                  <div class="sk-timeline__content">
+                    <p class="sk-timeline__summary">
+                      <strong>Ana Silva</strong> moved <em>Rewrite the empty states</em> to Done.
+                    </p>
+                    <p class="sk-timeline__meta">
+                      <time datetime="2026-08-06T09:12:00Z">6 August 2026, 09:12</time> · Website redesign
+                    </p>
+                  </div>
+                </li>
+                <li class="sk-timeline__event" data-failed>
+                  <span class="sk-timeline__marker" aria-hidden="true"></span>
+                  <div class="sk-timeline__content">
+                    <p class="sk-timeline__summary">
+                      <strong>Nightly export</strong> could not reach the reporting service.
+                    </p>
+                    <p class="sk-timeline__meta">
+                      <time datetime="2026-08-06T02:40:00Z">6 August 2026, 02:40</time> · Failed, will retry
+                    </p>
+                  </div>
+                </li>
+                <li class="sk-timeline__event" data-pending>
+                  <span class="sk-timeline__marker" aria-hidden="true"></span>
+                  <div class="sk-timeline__content">
+                    <p class="sk-timeline__summary">
+                      <strong>Andre Kim</strong> requested review on <em>Pricing table variants</em>.
+                    </p>
+                    <p class="sk-timeline__meta">
+                      <time datetime="2026-08-05T16:02:00Z">5 August 2026, 16:02</time> · Awaiting review
+                    </p>
+                  </div>
+                </li>
+                <li class="sk-timeline__event" data-success>
+                  <span class="sk-timeline__marker" aria-hidden="true"></span>
+                  <div class="sk-timeline__content">
+                    <p class="sk-timeline__summary">
+                      <strong>Priya Raman</strong> created the project <em>Design system rollout</em>.
+                    </p>
+                    <p class="sk-timeline__meta">
+                      <time datetime="2026-08-05T11:45:00Z">5 August 2026, 11:45</time> · Created
+                    </p>
+                  </div>
+                </li>
+              </ol>
+            </div>
+            <div class="sk-card__footer">
+              <a class="sk-link sk-link--standalone" href="example-detail.html">
+                View all activity
+                <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-arrow-right"></use></svg>
+              </a>
+            </div>
+          </section>
+
+          <!-- Status indicators carry a dot AND a word. The dot alone would make
+               the state colour-only information, which fails WCAG 1.4.1. -->
+          <section class="sk-card">
+            <div class="sk-card__header"><h2 class="sk-card__title">Project health</h2></div>
+            <div class="sk-card__body sk-stack sk-stack--gap-12">
+              <span class="sk-status sk-status--success">
+                <span class="sk-status__dot" aria-hidden="true"></span>
+                <span class="sk-status__label">Design system rollout</span>
+                <span class="sk-status__detail">On track</span>
+              </span>
+              <span class="sk-status sk-status--warning">
+                <span class="sk-status__dot" aria-hidden="true"></span>
+                <span class="sk-status__label">Website redesign</span>
+                <span class="sk-status__detail">At risk, 4 tasks unassigned</span>
+              </span>
+              <span class="sk-status sk-status--danger">
+                <span class="sk-status__dot" aria-hidden="true"></span>
+                <span class="sk-status__label">Mobile onboarding</span>
+                <span class="sk-status__detail">Behind, deadline in 8 days</span>
+              </span>
+              <span class="sk-status sk-status--neutral">
+                <span class="sk-status__dot" aria-hidden="true"></span>
+                <span class="sk-status__label">Q4 research</span>
+                <span class="sk-status__detail">Not started</span>
+              </span>
+            </div>
+          </section>
+        </aside>
+
+      </div>

@@ -1,0 +1,215 @@
+<!--
+  FORM PAGE — one column, grouped, validated on blur and on submit.
+
+  A single column is not a stylistic preference. Two columns of fields make the
+  reading order ambiguous, and ambiguity in a form is answered by guessing.
+-->
+      <div class="sk-form-page">
+        <nav class="sk-breadcrumbs" aria-label="Breadcrumb">
+          <ol class="sk-breadcrumbs__list">
+            <li class="sk-breadcrumbs__item"><a class="sk-link sk-link--quiet" href="example-list.html">Projects</a></li>
+            <li class="sk-breadcrumbs__item"><span aria-current="page">New project</span></li>
+          </ol>
+        </nav>
+
+        <header class="sk-page-header">
+          <h1 class="sk-page-header__title">New project</h1>
+          <p class="sk-page-header__description">
+            A project groups tasks, files and people. You can invite the rest of the
+            team once it exists.
+          </p>
+        </header>
+
+        <!-- Focus moves here on failed submit, which is why it needs
+             tabindex="-1". Each entry links to the field that caused it. -->
+        <div class="sk-alert sk-alert--danger" role="alert" id="error-summary" tabindex="-1" hidden
+             data-sk-error-summary>
+          <svg class="sk-alert__icon" aria-hidden="true" focusable="false" width="20" height="20"><use href="#sk-icon-error"></use></svg>
+          <div class="sk-alert__content">
+            <h2 class="sk-alert__title">There are problems with this form</h2>
+            <ul></ul>
+          </div>
+        </div>
+
+        <form class="sk-stack sk-stack--gap-32" novalidate data-sk-validate>
+
+          <fieldset class="sk-fieldset sk-fieldset--section">
+            <legend class="sk-fieldset__legend">Project details</legend>
+            <div class="sk-fieldset__body">
+
+              <div class="sk-field">
+                <label class="sk-field__label" for="project-name">Project name</label>
+                <!-- Hint ABOVE the control, so it is read before the user starts
+                     typing rather than after they finish. -->
+                <p class="sk-field__hint" id="project-name-hint">
+                  What the team will recognise it by. Between 3 and 60 characters.
+                </p>
+                <input class="sk-input" id="project-name" name="projectName" type="text"
+                       required autocomplete="off"
+                       placeholder="Website redesign"
+                       aria-describedby="project-name-hint"
+                       data-sk-pattern="^.{3,60}$"
+                       data-sk-required-message="Enter a project name."
+                       data-sk-pattern-message="Use between 3 and 60 characters." />
+              </div>
+
+              <div class="sk-field">
+                <label class="sk-field__label" for="project-key">
+                  Project key
+                  <!-- Sekura marks the minority case. In most forms the required
+                       fields are the majority, and marking the majority is noise. -->
+                  <span class="sk-field__optional">Optional</span>
+                </label>
+                <p class="sk-field__hint" id="project-key-hint">
+                  Prefixes every task number, like <code class="sk-code">WEB-114</code>.
+                  Generated from the name if you leave it blank.
+                </p>
+                <input class="sk-input sk-input--mono" id="project-key" name="projectKey" type="text"
+                       autocomplete="off" spellcheck="false" placeholder="WEB"
+                       aria-describedby="project-key-hint"
+                       data-sk-pattern="^[A-Z][A-Z0-9]{1,5}$"
+                       data-sk-pattern-message="Use 2 to 6 capital letters or digits, starting with a letter. For example, WEB." />
+              </div>
+
+              <div class="sk-field">
+                <label class="sk-field__label" for="team">Team</label>
+                <div class="sk-select-wrapper">
+                  <select class="sk-select" id="team" name="team" required>
+                    <option value="product" selected>Product</option>
+                    <option value="marketing">Marketing</option>
+                    <option value="platform">Platform</option>
+                    <option value="research">Research</option>
+                  </select>
+                </div>
+              </div>
+
+            </div>
+          </fieldset>
+
+          <fieldset class="sk-fieldset sk-fieldset--section">
+            <legend class="sk-fieldset__legend">Schedule</legend>
+            <div class="sk-fieldset__body">
+
+              <!-- Two related short fields share a row via a Cluster, wrapping
+                   to stacked rather than cramping. -->
+              <div class="sk-cluster sk-cluster--gap-16 sk-cluster--align-start">
+                <div class="sk-field sk-cluster__grow">
+                  <label class="sk-field__label" for="start-date">Start date</label>
+                  <p class="sk-field__hint" id="start-date-hint">Today if you leave it blank.</p>
+                  <input class="sk-input" id="start-date" name="startDate" type="date"
+                         value="2026-08-10" aria-describedby="start-date-hint" />
+                </div>
+
+                <div class="sk-field sk-cluster__grow">
+                  <label class="sk-field__label" for="target-days">Target length</label>
+                  <p class="sk-field__hint" id="target-days-hint">
+                    Working days from the start date. Between 1 and 260.
+                  </p>
+                  <div class="sk-input-group">
+                    <!-- type="text" with inputmode="numeric": type="number" adds
+                         a spinner and scroll-wheel accidents, and silently
+                         rejects leading zeros. -->
+                    <input class="sk-input" id="target-days" name="targetDays" type="text"
+                           inputmode="numeric" value="45" required
+                           aria-describedby="target-days-hint"
+                           data-sk-pattern="^(?:[1-9]|[1-9][0-9]|1[0-9]{2}|2[0-5][0-9]|260)$"
+                           data-sk-required-message="Enter a target length."
+                           data-sk-pattern-message="Enter a whole number of working days between 1 and 260." />
+                    <!-- Unit in a suffix rather than the label: "Target length"
+                         with a "days" suffix beats "Target length (days)". -->
+                    <span class="sk-input-group__suffix" aria-hidden="true">days</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </fieldset>
+
+          <fieldset class="sk-fieldset sk-fieldset--section">
+            <legend class="sk-fieldset__legend">Who can see this project</legend>
+            <div class="sk-fieldset__body">
+              <p class="sk-field__hint" id="visibility-hint">
+                You can change this later, but existing links keep working either way.
+              </p>
+
+              <!-- A radio group is the component; a lone radio is always a bug.
+                   Options describe consequences, not mechanisms. -->
+              <div class="sk-radio-group sk-radio-group--cards">
+                <label class="sk-radio">
+                  <input type="radio" class="sk-radio__input" name="visibility" value="workspace" checked
+                         aria-describedby="visibility-hint workspace-desc" />
+                  <span class="sk-radio__control" aria-hidden="true"></span>
+                  <span class="sk-radio__content">
+                    <span class="sk-radio__label">Everyone in the workspace</span>
+                    <span class="sk-radio__description" id="workspace-desc">
+                      Anyone signed in can find and read it. Only members can edit.
+                      Recommended.
+                    </span>
+                  </span>
+                </label>
+
+                <label class="sk-radio">
+                  <input type="radio" class="sk-radio__input" name="visibility" value="private"
+                         aria-describedby="visibility-hint private-desc" />
+                  <span class="sk-radio__control" aria-hidden="true"></span>
+                  <span class="sk-radio__content">
+                    <span class="sk-radio__label">Invited people only</span>
+                    <span class="sk-radio__description" id="private-desc">
+                      Invisible in search and in the project list. People you invite get
+                      an email; nobody else can request access.
+                    </span>
+                  </span>
+                </label>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="sk-fieldset sk-fieldset--section">
+            <legend class="sk-fieldset__legend">Notify me about</legend>
+            <div class="sk-fieldset__body">
+              <!-- Checkboxes, not switches: this form has a Save button, so the
+                   value applies on submit. Mixing the two models is what leaves
+                   users unsure whether their change took effect. -->
+              <label class="sk-checkbox">
+                <input type="checkbox" class="sk-checkbox__input" name="notify" value="assigned" checked />
+                <span class="sk-checkbox__box" aria-hidden="true"></span>
+                <span class="sk-checkbox__content">
+                  <span class="sk-checkbox__label">Tasks assigned to me</span>
+                  <span class="sk-checkbox__description">One message per assignment.</span>
+                </span>
+              </label>
+
+              <label class="sk-checkbox">
+                <input type="checkbox" class="sk-checkbox__input" name="notify" value="overdue" />
+                <span class="sk-checkbox__box" aria-hidden="true"></span>
+                <span class="sk-checkbox__content">
+                  <span class="sk-checkbox__label">Anything that becomes overdue</span>
+                  <span class="sk-checkbox__description">
+                    A daily digest, not a message per task.
+                  </span>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="sk-field">
+            <label class="sk-field__label" for="summary">
+              Summary
+              <span class="sk-field__optional">Optional</span>
+            </label>
+            <p class="sk-field__hint" id="summary-hint">
+              Shown under the project name in lists. Up to 500 characters.
+            </p>
+            <textarea class="sk-textarea" id="summary" name="summary" rows="3" maxlength="500"
+                      aria-describedby="summary-hint"></textarea>
+          </div>
+
+          <div class="sk-form-page__actions">
+            <div class="sk-cluster sk-cluster--end sk-cluster--gap-8">
+              <a class="sk-button sk-button--secondary" href="example-list.html">Cancel</a>
+              <button type="submit" class="sk-button sk-button--primary">Create project</button>
+            </div>
+          </div>
+
+        </form>
+      </div>

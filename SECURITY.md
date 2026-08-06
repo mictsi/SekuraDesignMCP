@@ -5,7 +5,7 @@
 Report privately through GitHub's [security advisory][advisory] form rather than
 opening a public issue. Expect an acknowledgement within three working days.
 
-[advisory]: https://github.com/OWNER/SekuraDesignMCP/security/advisories/new
+[advisory]: https://github.com/mictsi/SekuraDesignMCP/security/advisories/new
 
 ## Scope
 

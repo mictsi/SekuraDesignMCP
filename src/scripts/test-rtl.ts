@@ -46,7 +46,10 @@ const PAGES = [
   'example-list.html',
   'example-detail.html',
   'example-form.html',
+  'example-states.html',
+  'example-onboarding.html',
   'example-settings.html',
+  'example-marketing.html',
 ];
 
 const WIDTHS = [1280, 768, 390];

@@ -66,7 +66,7 @@ export const dataDisplayComponents: ComponentSpec[] = [
         'scope="col" on column headers and scope="row" on row headers. Without scope, cell-to-header association breaks in complex tables.',
         'aria-sort="ascending" | "descending" | "none" on the sorted column header.',
         'The horizontally scrollable wrapper needs tabindex="0", role="region" and an accessible name, or keyboard users cannot scroll it.',
-        'Row action menus need row-specific names: "Actions for example.com".',
+        'Row action menus need row-specific names: "Actions for Website redesign".',
         'Announce sort and filter results in a polite live region — the visual reorder is silent.',
         'Never place secret values or internal identifiers in data attributes; they are readable by anyone with the page.',
       ],
@@ -82,7 +82,7 @@ export const dataDisplayComponents: ComponentSpec[] = [
       targetSize: 'Row checkboxes and action buttons meet 24x24 CSS px; dense mode extends the hit area with padding rather than shrinking the target.',
     },
     content: [
-      'Column headers are short nouns: "Type", "Value", "TTL".',
+      'Column headers are short nouns: "Owner", "Status", "Due".',
       'Right-align numeric columns and use tabular figures so digits line up.',
       'Use absolute timestamps with a relative one as supporting detail, not the other way round.',
       'Never show a count that includes rows the user is not permitted to see.',
@@ -99,11 +99,11 @@ export const dataDisplayComponents: ComponentSpec[] = [
       'Do not hide critical columns on narrow screens without an alternative view.',
       'Do not use divs with grid roles unless you are genuinely building a spreadsheet.',
     ],
-    html: `<div class="sk-table" role="region" aria-labelledby="zones-caption" tabindex="0">
+    html: `<div class="sk-table" role="region" aria-labelledby="projects-caption" tabindex="0">
   <table>
-    <caption id="zones-caption" class="sk-table__caption">
-      DNS zones
-      <span class="sk-table__caption-detail">128 zones, sorted by name</span>
+    <caption id="projects-caption" class="sk-table__caption">
+      Projects
+      <span class="sk-table__caption-detail">128 projects, sorted by name</span>
     </caption>
     <thead>
       <tr>
@@ -111,12 +111,12 @@ export const dataDisplayComponents: ComponentSpec[] = [
           <label class="sk-checkbox">
             <input type="checkbox" class="sk-checkbox__input" />
             <span class="sk-checkbox__box" aria-hidden="true"></span>
-            <span class="sk-visually-hidden">Select all zones on this page</span>
+            <span class="sk-visually-hidden">Select all projects on this page</span>
           </label>
         </th>
         <th scope="col" aria-sort="ascending">
           <button type="button" class="sk-table__sort">
-            Zone name
+            Project name
             <svg aria-hidden="true" focusable="false" width="14" height="14"><use href="#sk-icon-sort-asc" /></svg>
           </button>
         </th>
@@ -132,10 +132,10 @@ export const dataDisplayComponents: ComponentSpec[] = [
           <label class="sk-checkbox">
             <input type="checkbox" class="sk-checkbox__input" />
             <span class="sk-checkbox__box" aria-hidden="true"></span>
-            <span class="sk-visually-hidden">Select example.com</span>
+            <span class="sk-visually-hidden">Select Website redesign</span>
           </label>
         </td>
-        <th scope="row"><a class="sk-link sk-link--quiet" href="/zones/example-com">example.com</a></th>
+        <th scope="row"><a class="sk-link sk-link--quiet" href="/projects/website-redesign">Website redesign</a></th>
         <td>Production</td>
         <td>
           <span class="sk-status sk-status--success">
@@ -147,14 +147,14 @@ export const dataDisplayComponents: ComponentSpec[] = [
         <td>
           <button type="button" class="sk-icon-button sk-icon-button--sm" aria-haspopup="menu" aria-expanded="false">
             <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-more" /></svg>
-            <span class="sk-visually-hidden">Actions for example.com</span>
+            <span class="sk-visually-hidden">Actions for Website redesign</span>
           </button>
         </td>
       </tr>
     </tbody>
   </table>
 </div>
-<p class="sk-visually-hidden" role="status">Sorted by zone name, ascending. 128 zones.</p>`,
+<p class="sk-visually-hidden" role="status">Sorted by project name, ascending. 128 projects.</p>`,
     css: `.sk-table {
   /* The table scrolls inside its own container so the page never scrolls
      horizontally — this is what satisfies WCAG 1.4.10 Reflow. */
@@ -333,7 +333,7 @@ export const dataDisplayComponents: ComponentSpec[] = [
       targetSize: 'The stretched-link technique makes the whole card a target while keeping the accessible name confined to the link text.',
     },
     content: [
-      'Card titles name the subject, not the card: "example.com", not "Zone card".',
+      'Card titles name the subject, not the card: "Website redesign", not "Project card".',
       'Keep cards in a grid to a comparable length; wildly ragged cards are hard to scan.',
       'Put the most distinguishing information first.',
     ],
@@ -353,7 +353,7 @@ export const dataDisplayComponents: ComponentSpec[] = [
       <div class="sk-card__header">
         <h3 class="sk-card__title">
           <!-- Stretched link: the whole card is a target, the accessible name is just this text. -->
-          <a class="sk-card__link" href="/zones/example-com">example.com</a>
+          <a class="sk-card__link" href="/projects/website-redesign">Website redesign</a>
         </h3>
         <span class="sk-badge sk-badge--neutral">Production</span>
       </div>
@@ -519,21 +519,21 @@ export const dataDisplayComponents: ComponentSpec[] = [
         'Do not use a heading element for the label unless it genuinely belongs in the page outline.',
       ],
       wcag: ['1.3.1 Info and Relationships.', '1.4.1 Use of Color — the arrow, not the colour, carries direction.', '1.4.3 Contrast.'],
-      screenReader: 'Reads as "Active zones, 128, up 12 percent versus last week".',
+      screenReader: 'Reads as "Active projects, 128, up 12 percent versus last week".',
       targetSize: 'Not interactive; when linked, the link owns the target.',
     },
     content: [
-      'Labels are short noun phrases: "Active zones".',
+      'Labels are short noun phrases: "Active projects".',
       'Abbreviate large numbers consistently and keep the exact value in a title or tooltip.',
       'Always name the comparison period.',
       'Show an em dash for unavailable, never a zero.',
     ],
     dos: ['State the comparison period.', 'Use tabular figures so values do not jitter as they update.', 'Pair colour with an arrow and text.'],
     donts: ['Do not show a delta without a baseline.', 'Do not use green/red as the only signal.', 'Do not show more than six tiles in a row.'],
-    html: `<div class="sk-stat sk-stat--carded" role="group" aria-labelledby="stat-zones-label">
-  <p class="sk-stat__label" id="stat-zones-label">Active zones</p>
+    html: `<div class="sk-stat sk-stat--carded" role="group" aria-labelledby="stat-projects-label">
+  <p class="sk-stat__label" id="stat-projects-label">Active projects</p>
   <p class="sk-stat__value">
-    128<span class="sk-stat__unit">zones</span>
+    128<span class="sk-stat__unit">projects</span>
   </p>
   <p class="sk-stat__delta sk-stat__delta--good">
     <svg aria-hidden="true" focusable="false" width="14" height="14"><use href="#sk-icon-arrow-up" /></svg>
@@ -723,7 +723,7 @@ export const dataDisplayComponents: ComponentSpec[] = [
     summary:
       'Represents a person or entity as an image or initials. Never the only identifier — an avatar without a name is a guessing game.',
     whenToUse: ['Beside a name in a list, comment or audit entry.', 'The account menu trigger.', 'Stacked groups showing collaborators.'],
-    whenNotToUse: ['As the sole identifier of a person.', 'For non-entities. An avatar for a "zone" is just an icon.'],
+    whenNotToUse: ['As the sole identifier of a person.', 'For non-entities. An avatar for a "project" is just an icon.'],
     anatomy: [
       { part: 'Container', required: true, description: 'Circle, or a rounded square for organisations.' },
       { part: 'Image', required: false, description: 'The photo, with a graceful fallback.' },
@@ -812,14 +812,17 @@ export const dataDisplayComponents: ComponentSpec[] = [
 .sk-avatar--sm { inline-size: 1.75rem; block-size: 1.75rem; font-size: var(--sk-font-size-body-xs); }
 .sk-avatar--lg { inline-size: 4rem; block-size: 4rem; font-size: var(--sk-font-size-heading-sm); }
 
-/* Fallback tints come from the chart palette, which is already audited at 3:1
-   per theme, rather than from fixed hex values that break in one theme. */
-.sk-avatar[data-tint="1"] { background-color: var(--sk-color-chart-1); color: var(--sk-color-text-on-brand); }
-.sk-avatar[data-tint="2"] { background-color: var(--sk-color-chart-2); color: var(--sk-color-text-on-brand); }
-.sk-avatar[data-tint="3"] { background-color: var(--sk-color-chart-3); color: var(--sk-color-status-warning-on-solid); }
-.sk-avatar[data-tint="4"] { background-color: var(--sk-color-chart-4); color: var(--sk-color-text-on-brand); }
-.sk-avatar[data-tint="5"] { background-color: var(--sk-color-chart-5); color: var(--sk-color-text-on-brand); }
-.sk-avatar[data-tint="6"] { background-color: var(--sk-color-chart-6); color: var(--sk-color-text-on-brand); }
+/* Fallback tints come from the chart palette rather than from fixed hex values
+   that break in one theme. The initials are TEXT, so each tint is paired with
+   its audited on-solid colour (4.5:1) rather than assuming white: white on
+   chart-2 reaches only 3.46:1 in light mode, which is a real WCAG 1.4.3
+   failure and is what this pairing exists to prevent. */
+.sk-avatar[data-tint="1"] { background-color: var(--sk-color-chart-1); color: var(--sk-color-chart-1-on-solid); }
+.sk-avatar[data-tint="2"] { background-color: var(--sk-color-chart-2); color: var(--sk-color-chart-2-on-solid); }
+.sk-avatar[data-tint="3"] { background-color: var(--sk-color-chart-3); color: var(--sk-color-chart-3-on-solid); }
+.sk-avatar[data-tint="4"] { background-color: var(--sk-color-chart-4); color: var(--sk-color-chart-4-on-solid); }
+.sk-avatar[data-tint="5"] { background-color: var(--sk-color-chart-5); color: var(--sk-color-chart-5-on-solid); }
+.sk-avatar[data-tint="6"] { background-color: var(--sk-color-chart-6); color: var(--sk-color-chart-6-on-solid); }
 
 .sk-avatar-with-name {
   display: inline-flex;
@@ -889,8 +892,8 @@ export const dataDisplayComponents: ComponentSpec[] = [
     donts: ['Do not use a dl for two-column layout.', 'Do not put a bare dash for missing values.', 'Do not nest a dl inside a dd without good reason.'],
     html: `<dl class="sk-dl sk-dl--columns">
   <div class="sk-dl__group">
-    <dt class="sk-dl__term">Zone name</dt>
-    <dd class="sk-dl__detail"><code class="sk-code">example.com</code></dd>
+    <dt class="sk-dl__term">Project name</dt>
+    <dd class="sk-dl__detail"><code class="sk-code">Website redesign</code></dd>
   </div>
   <div class="sk-dl__group">
     <dt class="sk-dl__term">Environment</dt>
@@ -964,7 +967,7 @@ export const dataDisplayComponents: ComponentSpec[] = [
     status: 'stable',
     summary:
       'Displays code, configuration or structured output as monospace text. Includes copy-to-clipboard, because the reason users look at a code block is usually to take it somewhere else.',
-    whenToUse: ['Configuration, API examples, zone files, logs.', 'Any output where whitespace and exact characters matter.'],
+    whenToUse: ['Configuration, API examples, task exports, logs.', 'Any output where whitespace and exact characters matter.'],
     whenNotToUse: ['A single identifier inline — use inline code.', 'Editable content — use a monospace Textarea or an editor.'],
     anatomy: [
       { part: 'Container', required: true, description: 'Sunken surface with a border.' },
@@ -1013,7 +1016,7 @@ export const dataDisplayComponents: ComponentSpec[] = [
       targetSize: 'The copy button meets minimums.',
     },
     content: [
-      'Use placeholder values that are obviously placeholders: example.com, 192.0.2.10, YOUR_API_KEY.',
+      'Use placeholder values that are obviously placeholders: Website redesign, 192.0.2.10, YOUR_API_KEY.',
       'Never include real credentials, hostnames or customer data in an example.',
       'Label the language.',
     ],
@@ -1021,15 +1024,15 @@ export const dataDisplayComponents: ComponentSpec[] = [
     donts: ['Do not put real secrets in examples.', 'Do not rely on colour alone in diffs.', 'Do not make code text smaller than 13px.'],
     html: `<figure class="sk-code-block">
   <figcaption class="sk-code-block__header">
-    <span class="sk-code-block__language">zone file</span>
+    <span class="sk-code-block__language">task export</span>
     <button type="button" class="sk-button sk-button--ghost sk-button--sm sk-code-block__copy">
       <svg aria-hidden="true" focusable="false" width="14" height="14"><use href="#sk-icon-copy" /></svg>
       Copy
     </button>
   </figcaption>
-  <div class="sk-code-block__scroll" tabindex="0" role="region" aria-label="Zone file example">
-<pre class="sk-code-block__pre"><code>example.com.      3600  IN  A      192.0.2.10
-www.example.com.  3600  IN  CNAME  example.com.</code></pre>
+  <div class="sk-code-block__scroll" tabindex="0" role="region" aria-label="Task export example">
+<pre class="sk-code-block__pre"><code>project:  website-redesign
+  due:      2026-08-21</code></pre>
   </div>
 </figure>
 <p class="sk-visually-hidden" role="status" id="copy-status"></p>`,
@@ -1240,7 +1243,7 @@ www.example.com.  3600  IN  CNAME  example.com.</code></pre>
       targetSize: 'Interactive elements inside events meet minimums.',
     },
     content: [
-      'Write events as complete sentences: "Ana Silva changed the TTL from 300 to 3600."',
+      'Write events as complete sentences: "Ana Silva moved Pricing table variants to 13 August."',
       'Use absolute timestamps with the user’s timezone; put relative time in supporting text.',
       'Name the actor, including system actors: "Automatic retry".',
     ],
@@ -1251,7 +1254,7 @@ www.example.com.  3600  IN  CNAME  example.com.</code></pre>
     <span class="sk-timeline__marker" aria-hidden="true"></span>
     <div class="sk-timeline__content">
       <p class="sk-timeline__summary">
-        <strong>Ana Silva</strong> changed the TTL of <code class="sk-code">www</code> from 300 to 3600.
+        <strong>Ana Silva</strong> moved <em>Pricing table variants</em> from 11 to 13 August.
       </p>
       <p class="sk-timeline__meta">
         <time datetime="2026-08-04T09:12:00Z">4 August 2026, 09:12 UTC</time>
@@ -1338,7 +1341,7 @@ www.example.com.  3600  IN  CNAME  example.com.</code></pre>
     status: 'beta',
     summary:
       'A hierarchical, expandable list. Powerful and easy to get wrong — the ARIA tree pattern has a demanding keyboard contract that must be implemented completely or not at all.',
-    whenToUse: ['Genuine hierarchies: zone and subzone structures, permission scopes, file trees.', 'Structures users navigate by expanding rather than by searching.'],
+    whenToUse: ['Genuine hierarchies: portfolios and their projects, permission scopes, file trees.', 'Structures users navigate by expanding rather than by searching.'],
     whenNotToUse: [
       'Flat lists.',
       'Hierarchies two levels deep — use grouped lists, which need no custom keyboard model.',
@@ -1399,18 +1402,18 @@ www.example.com.  3600  IN  CNAME  example.com.</code></pre>
     content: ['Node labels are the entity name only.', 'Show child counts on collapsed parents.', 'Indicate lazily loaded children with a loading state, not an empty expansion.'],
     dos: ['Implement the whole keyboard contract.', 'Use a roving tabindex.', 'Offer search alongside the tree.'],
     donts: ['Do not use a tree for two-level data.', 'Do not put aria-expanded on leaves.', 'Do not make every item a separate tab stop.'],
-    html: `<ul class="sk-tree" role="tree" aria-label="Zone hierarchy">
+    html: `<ul class="sk-tree" role="tree" aria-label="Project hierarchy">
   <li class="sk-tree__item" role="treeitem" aria-expanded="true" aria-selected="false" tabindex="0">
     <span class="sk-tree__row">
       <svg class="sk-tree__chevron" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-chevron-down" /></svg>
-      <span class="sk-tree__label">example.com</span>
+      <span class="sk-tree__label">Website redesign</span>
       <span class="sk-tree__count">3</span>
     </span>
     <ul role="group">
       <li class="sk-tree__item" role="treeitem" aria-selected="true" tabindex="-1">
         <span class="sk-tree__row">
           <span class="sk-tree__chevron-spacer" aria-hidden="true"></span>
-          <span class="sk-tree__label">api.example.com</span>
+          <span class="sk-tree__label">website-redesign</span>
         </span>
       </li>
     </ul>
