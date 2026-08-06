@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ---------- Build ----------
-FROM node:22-alpine AS build
+FROM node:25-alpine AS build
 
 WORKDIR /app
 
@@ -33,7 +33,7 @@ RUN npm prune --omit=dev
 
 
 # ---------- Runtime ----------
-FROM node:22-alpine AS runtime
+FROM node:25-alpine AS runtime
 
 # dumb-init gives us correct signal forwarding, so SIGTERM reaches Node and the
 # graceful shutdown handler actually runs.
