@@ -1542,7 +1542,17 @@ export const formComponents: ComponentSpec[] = [
 @media (prefers-reduced-motion: no-preference) {
   .sk-combobox__list { animation: sk-fade-in var(--sk-duration-fast) var(--sk-easing-entrance); }
 }
-@keyframes sk-fade-in { from { opacity: 0; translate: 0 -4px; } }`,
+@keyframes sk-fade-in { from { opacity: 0; translate: 0 -4px; } }
+
+/* The listbox floats on a shadow, and the active option is marked by a
+   background — both discarded. aria-activedescendant is still correct, but a
+   sighted HCM user would have nothing to look at. */
+@media (forced-colors: active) {
+  .sk-combobox__list { border: 1px solid CanvasText; }
+  .sk-combobox__option[data-active],
+  .sk-combobox__option:hover { background-color: Highlight; color: HighlightText; }
+}
+`,
     related: ['select', 'text-field', 'command-palette', 'badge'],
   },
 
@@ -1880,7 +1890,19 @@ export const formComponents: ComponentSpec[] = [
 
 @media (prefers-reduced-motion: reduce) {
   .sk-slider__input::-webkit-slider-thumb { transition: none; }
-}`,
+}
+
+/* The filled portion of the track is what shows the value. It is a background,
+   so in HCM the slider reads as empty at every position. */
+@media (forced-colors: active) {
+  .sk-slider__input { forced-color-adjust: none; }
+  .sk-slider__input::-webkit-slider-runnable-track { background-color: CanvasText; }
+  .sk-slider__input::-moz-range-track { background-color: CanvasText; }
+  .sk-slider__input::-webkit-slider-thumb { background-color: Highlight; border: 1px solid CanvasText; }
+  .sk-slider__input::-moz-range-thumb { background-color: Highlight; border: 1px solid CanvasText; }
+  .sk-slider__input:focus-visible { outline-color: Highlight; }
+}
+`,
     related: ['text-field', 'form-field', 'progress'],
   },
 

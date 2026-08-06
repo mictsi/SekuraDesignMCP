@@ -339,7 +339,15 @@ export const feedbackComponents: ComponentSpec[] = [
 @media (prefers-reduced-motion: reduce) {
   .sk-toast[data-state="entering"], .sk-toast[data-state="leaving"] { animation: none; }
   .sk-toast--loading .sk-toast__icon { animation-duration: 2s; }
-}`,
+}
+
+/* A toast is a floating surface whose intent is carried by colour. HCM removes
+   both, which is survivable only because the icon and the text still say what
+   happened — but the toast still needs an edge to read as one object. */
+@media (forced-colors: active) {
+  .sk-toast { border: 1px solid CanvasText; }
+}
+`,
     related: ['alert', 'inline-message', 'button'],
   },
 

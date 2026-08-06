@@ -271,7 +271,18 @@ export const dataDisplayComponents: ComponentSpec[] = [
 .sk-table--dense th, .sk-table--dense td { padding-block: var(--sk-space-4); padding-inline: var(--sk-space-12); }
 
 .sk-table__empty { padding: 0; }
-.sk-table__empty td { padding: 0; }`,
+.sk-table__empty td { padding: 0; }
+
+/* A selected row is a tinted background and nothing else, so in HCM the
+   selection disappears completely — including from the bulk action the user is
+   about to confirm. */
+@media (forced-colors: active) {
+  .sk-table tbody tr[aria-selected="true"] { background-color: Highlight; color: HighlightText; }
+  .sk-table thead { border-block-end: 1px solid CanvasText; }
+  .sk-table tbody tr + tr { border-block-start-color: CanvasText; }
+  .sk-table:focus-visible { outline-color: Highlight; }
+}
+`,
     related: ['pagination', 'checkbox', 'menu', 'empty-state', 'skeleton', 'status-indicator'],
   },
 
@@ -465,7 +476,16 @@ export const dataDisplayComponents: ComponentSpec[] = [
 .sk-card-grid > li { display: flex; min-inline-size: 0; }
 .sk-card-grid > li > .sk-card { flex: 1 1 auto; }
 
-@media (prefers-reduced-motion: reduce) { .sk-card { transition: none; } }`,
+@media (prefers-reduced-motion: reduce) { .sk-card { transition: none; } }
+
+/* Cards separate from the page by shadow in light mode and by border in dark.
+   HCM has neither unless one is drawn. A selected card loses its tint too. */
+@media (forced-colors: active) {
+  .sk-card { border: 1px solid CanvasText; }
+  .sk-card[data-selected] { outline: 2px solid Highlight; outline-offset: -2px; }
+  .sk-card--interactive:focus-within { outline-color: Highlight; }
+}
+`,
     related: ['stat-tile', 'table', 'badge', 'grid'],
   },
 
@@ -1473,7 +1493,16 @@ export const dataDisplayComponents: ComponentSpec[] = [
 
 .sk-tree--compact .sk-tree__row { min-block-size: 1.75rem; }
 
-@media (prefers-reduced-motion: reduce) { .sk-tree__chevron { transition: none; } }`,
+@media (prefers-reduced-motion: reduce) { .sk-tree__chevron { transition: none; } }
+
+/* Same failure as the table: selection is a background tint. The indent guides
+   also vanish, and without them the hierarchy flattens. */
+@media (forced-colors: active) {
+  .sk-tree__item[aria-selected="true"] > .sk-tree__row { background-color: Highlight; color: HighlightText; }
+  .sk-tree ul[role="group"] { border-inline-start-color: CanvasText; }
+  .sk-tree__item:focus-visible > .sk-tree__row { outline-color: Highlight; }
+}
+`,
     related: ['side-nav', 'menu', 'checkbox'],
   },
 

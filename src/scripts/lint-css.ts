@@ -79,6 +79,28 @@ function lint(source: string, css: string): void {
     issues.push({ source, rule: 'unknown-token', detail: `--sk-${name}` });
   }
 
+  /* A forced-colors block that names a selector the component does not have is
+     dead CSS that reads as coverage. It is worse than no block: it makes the
+     component look handled in a grep and in a review. Everything a
+     forced-colors block targets must exist in the normal rules above it. */
+  const fcAt = css.indexOf('@media (forced-colors: active)');
+  if (fcAt !== -1) {
+    const block = css.slice(fcAt);
+    const before = css.slice(0, fcAt);
+    const targets = new Set<string>();
+    for (const m of block.matchAll(/\.(sk-[a-z0-9_-]+)/g)) targets.add(`.${m[1]!}`);
+    for (const m of block.matchAll(/(\[[a-z-]+(?:[~^|*$]?="[^"]*")?\])/g)) targets.add(m[1]!);
+    for (const m of block.matchAll(/(::[a-z-]+)/g)) targets.add(m[1]!);
+    for (const t of targets) {
+      if (before.includes(t)) continue;
+      issues.push({
+        source,
+        rule: 'dead-forced-colors-selector',
+        detail: `${t} — the forced-colors block targets something this component does not have`,
+      });
+    }
+  }
+
   /* Physical properties where a logical one exists — these break RTL. */
   const physical =
     /(?:^|[;{\s])(margin-(?:left|right)|padding-(?:left|right)|border-(?:left|right)(?:-color|-width|-style)?|(?:^|\s)(?:left|right))\s*:/gm;

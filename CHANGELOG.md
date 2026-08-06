@@ -51,6 +51,19 @@ the contrast audit proves nothing regressed.
 
 ### Added
 
+- **`forced-colors` coverage went from 10 components to 29.** Windows High
+  Contrast Mode discards author background colours and drops `box-shadow`
+  entirely, which breaks two things silently: state carried by a background
+  (the current nav item, a selected table row, the filled part of a slider
+  track) becomes invisible, and floating surfaces (dialog, drawer, popover,
+  menu, combobox, toast, command palette) lose the only thing separating them
+  from the page behind. Seventeen components were repaired, each with a block
+  written for what it specifically loses rather than a boilerplate paste.
+- **`dead-forced-colors-selector` lint rule.** A block naming a selector the
+  component does not have is worse than no block, because it reads as coverage
+  in a grep and in review. Writing these turned up exactly one such mistake in
+  my own work — a `.sk-command-palette__option` that has never existed — so the
+  rule now fails the build. 52 selectors checked.
 - **Disclosure and Accordion** — 57 components. The behaviours package has
   shipped `createDisclosure` and `createAccordion` since 1.0.0, `enhance()`
   already wired them, and the behaviour tests already covered them, but neither

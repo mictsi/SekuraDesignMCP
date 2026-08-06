@@ -228,7 +228,15 @@ export const overlayComponents: ComponentSpec[] = [
   .sk-dialog[open]::backdrop { animation: sk-fade var(--sk-duration-normal) var(--sk-easing-entrance); }
 }
 @keyframes sk-dialog-in { from { opacity: 0; scale: 0.97; translate: 0 var(--sk-space-8); } }
-@keyframes sk-fade { from { opacity: 0; } }`,
+@keyframes sk-fade { from { opacity: 0; } }
+
+/* Elevation is the only thing separating a dialog from the page behind it, and
+   HCM drops box-shadow. Without a border the panel and the page become one
+   surface. The backdrop is also discarded, so the border is doing all of it. */
+@media (forced-colors: active) {
+  .sk-dialog__panel { border: 1px solid CanvasText; }
+}
+`,
     related: ['drawer', 'alert', 'button', 'toast'],
   },
 
@@ -429,7 +437,14 @@ export const overlayComponents: ComponentSpec[] = [
 .sk-drawer--sm { flex-basis: 20rem; inline-size: min(20rem, 100vw); }
 .sk-drawer--lg { flex-basis: 40rem; inline-size: min(40rem, 100vw); }
 
-@media (prefers-reduced-motion: reduce) { .sk-drawer { transition: none; } }`,
+@media (prefers-reduced-motion: reduce) { .sk-drawer { transition: none; } }
+
+/* Same as the dialog: with the shadow gone, the drawer needs a drawn edge or it
+   bleeds into the content it slid over. */
+@media (forced-colors: active) {
+  .sk-drawer { border: 1px solid CanvasText; }
+}
+`,
     related: ['dialog', 'side-nav', 'popover'],
   },
 
@@ -586,7 +601,14 @@ export const overlayComponents: ComponentSpec[] = [
 
 @media (prefers-reduced-motion: no-preference) {
   .sk-popover:popover-open { animation: sk-menu-in var(--sk-duration-fast) var(--sk-easing-entrance); }
-}`,
+}
+
+/* A popover with no shadow and no border is a floating block of text with no
+   apparent relationship to anything. */
+@media (forced-colors: active) {
+  .sk-popover { border: 1px solid CanvasText; }
+}
+`,
     related: ['menu', 'tooltip', 'dialog', 'combobox'],
   },
 

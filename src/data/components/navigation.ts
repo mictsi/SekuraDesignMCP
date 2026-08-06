@@ -71,7 +71,14 @@ export const navigationComponents: ComponentSpec[] = [
 
 .sk-skip-link:focus { translate: 0 0; }
 
-@media (prefers-reduced-motion: reduce) { .sk-skip-link { transition: none; } }`,
+@media (prefers-reduced-motion: reduce) { .sk-skip-link { transition: none; } }
+
+/* The skip link is invisible until focused, and its focused appearance is a
+   background and a shadow. In HCM that leaves it readable only by luck. */
+@media (forced-colors: active) {
+  .sk-skip-link:focus { background-color: Canvas; color: CanvasText; border: 1px solid CanvasText; outline-color: Highlight; }
+}
+`,
     related: ['top-bar', 'side-nav'],
   },
 
@@ -253,7 +260,15 @@ export const navigationComponents: ComponentSpec[] = [
 .sk-top-bar--compact { min-block-size: 3rem; }
 
 /* A sticky bar must never cover the element the user just focused. */
-:target, [tabindex="-1"]:focus { scroll-margin-block-start: 5rem; }`,
+:target, [tabindex="-1"]:focus { scroll-margin-block-start: 5rem; }
+
+/* The scrolled state is announced by a shadow appearing, which HCM never
+   renders, so the bar needs a permanent bottom edge to stay distinct from the
+   content scrolling under it. */
+@media (forced-colors: active) {
+  .sk-top-bar { border-block-end: 1px solid CanvasText; }
+}
+`,
     related: ['side-nav', 'menu', 'search-field', 'avatar', 'theme-toggle'],
   },
 
@@ -462,7 +477,19 @@ export const navigationComponents: ComponentSpec[] = [
   [dir="rtl"] .sk-side-nav[data-open] { translate: 0 0; }
 }
 
-@media (prefers-reduced-motion: reduce) { .sk-side-nav { transition: none; } }`,
+@media (prefers-reduced-motion: reduce) { .sk-side-nav { transition: none; } }
+
+/* HCM discards the selected item's background and drops the rail's shadow, so
+   the current page becomes indistinguishable from its neighbours. The leading
+   bar is redrawn from Highlight, which is the one thing HCM guarantees stands
+   out against Canvas. */
+@media (forced-colors: active) {
+  .sk-side-nav { border-inline-end: 1px solid CanvasText; }
+  .sk-side-nav__item[aria-current="page"] { background-color: Highlight; color: HighlightText; }
+  .sk-side-nav__item[aria-current="page"]::before { background-color: HighlightText; }
+  .sk-side-nav__item:focus-visible { outline-color: Highlight; }
+}
+`,
     related: ['top-bar', 'app-shell', 'breadcrumbs', 'drawer'],
   },
 
@@ -759,7 +786,20 @@ export const navigationComponents: ComponentSpec[] = [
   border-color: var(--sk-color-border-default);
 }
 
-.sk-tabs--sm .sk-tabs__tab { min-block-size: 2rem; font-size: var(--sk-font-size-body-sm); }`,
+.sk-tabs--sm .sk-tabs__tab { min-block-size: 2rem; font-size: var(--sk-font-size-body-sm); }
+
+/* The active underline is a border, which survives — but its colour does not,
+   so the selected tab has to be re-marked. The enclosed variant relies on a
+   background to join the tab to its panel and needs a border instead. */
+@media (forced-colors: active) {
+  .sk-tabs__list { border-block-end-color: CanvasText; }
+  .sk-tabs__tab[aria-selected="true"],
+  .sk-tabs__tab[aria-current="page"] { border-block-end-color: Highlight; color: Highlight; }
+  .sk-tabs--enclosed .sk-tabs__tab[aria-selected="true"] { border-color: CanvasText; }
+  .sk-tabs__tab:focus-visible { outline-color: Highlight; }
+  .sk-tabs__tab[aria-disabled="true"] { color: GrayText; }
+}
+`,
     related: ['button-group', 'stepper', 'card', 'side-nav'],
   },
 
@@ -923,7 +963,17 @@ export const navigationComponents: ComponentSpec[] = [
   /* Page numbers are the first thing to go; Previous/Next and the status stay. */
   .sk-pagination__page:not([aria-current="page"]),
   .sk-pagination__ellipsis { display: none; }
-}`,
+}
+
+/* The current page is shown by a filled background, which HCM removes — leaving
+   ten identical numbers and no way to tell where you are. */
+@media (forced-colors: active) {
+  .sk-pagination__page[aria-current="page"] { background-color: Highlight; color: HighlightText; }
+  .sk-pagination__page:focus-visible,
+  .sk-pagination__control:focus-visible { outline-color: Highlight; }
+  .sk-pagination__control[aria-disabled="true"] { color: GrayText; }
+}
+`,
     related: ['table', 'search-field', 'select'],
   },
 
@@ -1114,7 +1164,18 @@ a.sk-stepper__link:focus-visible {
 
 .sk-stepper--vertical .sk-stepper__list { flex-direction: column; align-items: stretch; }
 .sk-stepper--vertical .sk-stepper__step { flex: 0 0 auto; }
-.sk-stepper--vertical .sk-stepper__step:not(:last-child)::after { display: none; }`,
+.sk-stepper--vertical .sk-stepper__step:not(:last-child)::after { display: none; }
+
+/* Step state is carried entirely by indicator fills. Without them a stepper is
+   a row of numbers with no progress information at all, so completed and
+   current are redrawn with system colours and a border. */
+@media (forced-colors: active) {
+  .sk-stepper__indicator { border: 1px solid CanvasText; }
+  .sk-stepper__step[data-complete] .sk-stepper__indicator { background-color: CanvasText; color: Canvas; }
+  .sk-stepper__step[aria-current="step"] .sk-stepper__indicator { background-color: Highlight; color: HighlightText; }
+  .sk-stepper__link:focus-visible { outline-color: Highlight; }
+}
+`,
     related: ['tabs', 'progress', 'button'],
   },
 
@@ -1319,7 +1380,20 @@ a.sk-stepper__link:focus-visible {
 @media (prefers-reduced-motion: no-preference) {
   .sk-menu { animation: sk-menu-in var(--sk-duration-fast) var(--sk-easing-entrance); }
 }
-@keyframes sk-menu-in { from { opacity: 0; translate: 0 -4px; scale: 0.98; } }`,
+@keyframes sk-menu-in { from { opacity: 0; translate: 0 -4px; scale: 0.98; } }
+
+/* A floating menu with no shadow merges into whatever is behind it, so it needs
+   a real border. The check mark on a checked item is a ::before background,
+   which HCM would erase along with every other background. */
+@media (forced-colors: active) {
+  .sk-menu { border: 1px solid CanvasText; }
+  .sk-menu__item:hover,
+  .sk-menu__item:focus-visible { background-color: Highlight; color: HighlightText; }
+  .sk-menu__item[aria-checked="true"]::before { background-color: CanvasText; }
+  .sk-menu__item[aria-disabled="true"] { color: GrayText; }
+  .sk-menu__separator { border-block-start-color: CanvasText; }
+}
+`,
     related: ['button', 'icon-button', 'split-button', 'popover', 'combobox'],
   },
 
@@ -1509,7 +1583,14 @@ a.sk-stepper__link:focus-visible {
 @media (max-width: 30rem) {
   .sk-command-palette { padding: 0; padding-block-start: 0; }
   .sk-command-palette__panel { flex: 1 1 auto; max-block-size: 100dvh; border-radius: 0; }
-}`,
+}
+
+/* The palette is a floating panel over a scrim, and both are backgrounds. */
+@media (forced-colors: active) {
+  .sk-command-palette__panel { border: 1px solid CanvasText; }
+  .sk-command-palette__item[data-active] { background-color: Highlight; color: HighlightText; }
+}
+`,
     related: ['search-field', 'dialog', 'combobox', 'menu'],
   },
 ];
