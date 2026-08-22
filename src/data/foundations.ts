@@ -1164,7 +1164,44 @@ Never ship a chart with only an alt text of "chart".
 
 The plot background is \`surface-base\`, not a raised surface — a chart on a lighter
 panel in dark mode makes the series colours read as washed out. Series step up the
-ramp exactly as brand colours do.`,
+ramp exactly as brand colours do.
+
+## What this system ships, and what it does not
+
+Sekura ships the **tokens and the rules**: eight audited categorical series, the
+grid, axis and label colours, the on-solid pairings for text drawn inside a
+fill, and the accessibility contract every chart owes its reader.
+
+It does **not** ship chart components, and that is a decision rather than a gap.
+
+A bar chart is a handful of rectangles; a chart *library* is scales, axes, tick
+algorithms, stacking, transitions, tooltips, brushing, legends and locale
+formatting. Building a mediocre one inside a design system produces something
+teams outgrow in a quarter and then have to fight. The parts genuinely worth
+standardising are the ones this system does own — because those are exactly the
+parts a charting library gets wrong by default.
+
+**Use any renderer.** Point it at the tokens:
+
+\`\`\`js
+const series = [1, 2, 3, 4, 5, 6, 7, 8].map(
+  (n) => getComputedStyle(document.documentElement).getPropertyValue(\`--sk-color-chart-\${n}\`)
+);
+\`\`\`
+
+Read them from the live document rather than importing constants, and the chart
+follows the theme, the density and any brand override for free. A chart that
+imports hex values is a chart that is wrong in dark mode.
+
+Whatever renders it, the chart still owes the reader:
+
+- a text alternative — a data table is the strongest one,
+- a distinguishing signal that is not colour,
+- an axis starting at zero on a bar chart,
+- values reachable without hovering.
+
+Those are in the rules above and they do not become optional because a third
+party drew the pixels.`,
     related: ['color', 'accessibility', 'dark-mode'],
   },
 

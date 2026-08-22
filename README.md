@@ -8,9 +8,9 @@ Point an agent at it and it can build a correct, accessible, dark-mode-first
 interface without guessing at a single value.
 
 ```
-55 components · 15 foundations · 15 UX patterns · 9 layout recipes
+64 components · 15 foundations · 15 UX patterns · 9 layout recipes
 120 semantic tokens · 4 themes · 3 densities · 8 target frameworks
-344 contrast checks · 45 colour · 63 behaviour · 73 RTL · 0 axe violations
+344 contrast checks · 45 colour · 107 behaviour · 73 RTL · 0 axe violations
 ```
 
 The human-readable specification is [`DESIGN.md`](./DESIGN.md), and there is an
@@ -346,6 +346,7 @@ non-zero, so a change that breaks a promise cannot merge green:
 | `test:color` | Colour maths against WCAG reference values |
 | `test:urls` | Path prefixes and proxy headers resolve to reachable URLs |
 | `test:behaviours` | Real key presses in a browser: focus, ARIA, Escape, inert |
+| `site:publish` | Static bundle is portable — nothing root-absolute |
 | `test:rtl` | Nothing clipped in either direction, at three widths, 12 pages |
 | `verify:sample` | Dangling references, broken links, markup lint |
 | `test:a11y` | axe-core, WCAG 2.2 AA, both themes |
@@ -584,6 +585,29 @@ curl -s https://example.com/design-system/manifest.json | jq .artefacts.styleshe
 
 The documentation site uses relative links throughout, so it is portable to any
 prefix with no rebuild.
+
+## Publishing the documentation as a static site
+
+```bash
+npm run site:publish        # -> dist-site/
+```
+
+`dist-site/` is self-contained: 96 pages, the assets, and a 404 page. Upload it
+anywhere. Every reference in it is relative, so the same bundle serves from a
+domain root or any subdirectory with no rebuild:
+
+```
+dist-site/  ->  https://example.com/
+            ->  https://example.com/design-system/
+```
+
+The command is a gate, not just a copy. It refuses to produce a bundle
+containing a root-absolute `href` or `src`, because that is the failure that
+works locally, works at a domain root, and 404s under a subdirectory — which is
+where most bundles end up.
+
+The running container serves the same site at `<app_path>/docs/`, so publishing
+statically is an alternative to it rather than a prerequisite.
 
 ## Licence
 

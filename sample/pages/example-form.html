@@ -95,9 +95,23 @@
               <div class="sk-cluster sk-cluster--gap-16 sk-cluster--align-start">
                 <div class="sk-field sk-cluster__grow">
                   <label class="sk-field__label" for="start-date">Start date</label>
-                  <p class="sk-field__hint" id="start-date-hint">Today if you leave it blank.</p>
-                  <input class="sk-input" id="start-date" name="startDate" type="date"
-                         value="2026-08-10" aria-describedby="start-date-hint" />
+                  <p class="sk-field__hint" id="start-date-hint">
+                    Format YYYY-MM-DD, or pick from the calendar. Today if you leave it blank.
+                  </p>
+                  <!-- Text input AND calendar, never one without the other.
+                       Typing a date is faster than fourteen arrow presses, and
+                       it is the only route for voice or switch input. -->
+                  <div class="sk-date-picker" data-sk-datepicker>
+                    <input class="sk-input" id="start-date" name="startDate" type="text"
+                           inputmode="numeric" value="2026-08-10" placeholder="2026-08-10"
+                           autocomplete="off" spellcheck="false"
+                           aria-describedby="start-date-hint" />
+                    <button type="button" class="sk-date-picker__trigger" data-sk-datepicker-trigger>
+                      <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-clock"></use></svg>
+                      <span class="sk-visually-hidden">Choose a start date from the calendar</span>
+                    </button>
+                    <div class="sk-date-picker__panel" data-sk-datepicker-panel aria-label="Choose a start date" hidden></div>
+                  </div>
                 </div>
 
                 <div class="sk-field sk-cluster__grow">
@@ -105,19 +119,28 @@
                   <p class="sk-field__hint" id="target-days-hint">
                     Working days from the start date. Between 1 and 260.
                   </p>
-                  <div class="sk-input-group">
-                    <!-- type="text" with inputmode="numeric": type="number" adds
-                         a spinner and scroll-wheel accidents, and silently
-                         rejects leading zeros. -->
+                  <div class="sk-number sk-number--stepped sk-input-group">
+                    <!-- type="text" with inputmode="numeric": type="number"
+                         changes value on scroll, discards invalid input before
+                         you can show it, and its spinners are unstyleable and
+                         below the minimum target size. role="spinbutton" gives
+                         the bounds without a separate hint. -->
                     <input class="sk-input" id="target-days" name="targetDays" type="text"
                            inputmode="numeric" value="45" required
+                           data-sk-number min="1" max="260" step="1"
                            aria-describedby="target-days-hint"
-                           data-sk-pattern="^(?:[1-9]|[1-9][0-9]|1[0-9]{2}|2[0-5][0-9]|260)$"
-                           data-sk-required-message="Enter a target length."
-                           data-sk-pattern-message="Enter a whole number of working days between 1 and 260." />
+                           data-sk-required-message="Enter a target length." />
                     <!-- Unit in a suffix rather than the label: "Target length"
                          with a "days" suffix beats "Target length (days)". -->
                     <span class="sk-input-group__suffix" aria-hidden="true">days</span>
+                    <span class="sk-number__steppers">
+                      <button type="button" class="sk-number__step" data-sk-step="1" tabindex="-1" aria-hidden="true">
+                        <svg focusable="false" width="12" height="12"><use href="#sk-icon-chevron-up"></use></svg>
+                      </button>
+                      <button type="button" class="sk-number__step" data-sk-step="-1" tabindex="-1" aria-hidden="true">
+                        <svg focusable="false" width="12" height="12"><use href="#sk-icon-chevron-down"></use></svg>
+                      </button>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -191,6 +214,25 @@
               </label>
             </div>
           </fieldset>
+
+          <div class="sk-field">
+            <label class="sk-field__label" for="labels">
+              Labels
+              <span class="sk-field__optional">Optional</span>
+            </label>
+            <p class="sk-field__hint" id="labels-hint">
+              Press Enter or comma to add. Backspace selects the last one; a second
+              press removes it, so nothing disappears on a single keystroke.
+            </p>
+            <div class="sk-tag-input">
+              <input class="sk-tag-input__input" id="labels" type="text"
+                     data-sk-tag-input="labels-list"
+                     data-sk-tags="design,q3"
+                     data-sk-options="design,q3,research,backend,marketing,urgent"
+                     aria-describedby="labels-hint" autocomplete="off" />
+            </div>
+            <ul class="sk-tag-input__list" id="labels-list" role="listbox" aria-label="Label suggestions" hidden></ul>
+          </div>
 
           <div class="sk-field">
             <label class="sk-field__label" for="summary">

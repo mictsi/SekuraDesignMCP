@@ -82,6 +82,40 @@ const CONTROLLERS: Record<string, ControllerBinding> = {
     handles:
       'a roving tabindex so the whole group is one tab stop rather than one per header, arrow navigation between headers, and optional single-open behaviour',
   },
+  'date-picker': {
+    factory: 'createDatePicker',
+    refs: ['input', 'trigger', 'panel'],
+    handles:
+      'the ARIA Date Picker Dialog pattern: grid navigation by day, week, month and year, a roving tabindex so the calendar is one tab stop, focus trapped while open and returned to the trigger on close, and a text input that stays authoritative',
+  },
+  'date-range-picker': {
+    factory: 'createDateRange',
+    refs: ['startInput', 'endInput', 'calendar'],
+    handles:
+      'two inputs sharing one grid, start-then-end selection, restarting rather than inverting when a date before the start is picked, and announcing the half-finished state',
+  },
+  'number-input': {
+    factory: 'createNumberInput',
+    refs: ['input'],
+    handles:
+      'the spinbutton contract, arrow and page stepping, snapping to the step grid, clamping on blur rather than per keystroke, and announcing a clamp instead of silently rewriting what was typed',
+  },
+  'tag-input': {
+    factory: 'createTagInput',
+    refs: ['input', 'list'],
+    handles:
+      'token rendering, two-step Backspace removal, arrow navigation into the tokens, duplicate and limit rejection with a spoken reason, and keeping the whole control to one tab stop',
+  },
+  toolbar: {
+    factory: 'createToolbar',
+    refs: ['container'],
+    handles: 'a roving tabindex so the whole bar is one tab stop, with RTL-aware arrow keys',
+  },
+  'segmented-control': {
+    factory: 'createSegmented',
+    refs: ['group'],
+    handles: 'radiogroup semantics with a roving tabindex and RTL-aware arrow keys',
+  },
   'button-group': {
     factory: 'createSegmented',
     refs: ['group'],

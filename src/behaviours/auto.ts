@@ -13,6 +13,8 @@
 
 import { type Cleanup } from './core/dom.js';
 import { createAccordion, createDisclosure } from './controllers/disclosure.js';
+import { createDatePicker, createDateRange, fromISO } from './controllers/datefield.js';
+import { createNumberInput, createTagInput, createToolbar } from './controllers/inputs.js';
 import { createSegmented, createTabs } from './controllers/tabs.js';
 import { createMenu } from './controllers/menu.js';
 import { createCombobox } from './controllers/combobox.js';
@@ -97,6 +99,54 @@ export function enhance(root: ParentNode = document): EnhanceResult {
   }, 'accordion');
 
   /* ---- Tabs ---- */
+  each<HTMLInputElement>('[data-sk-number]', (input) => {
+    const read = (name: string, fallback?: number) => {
+      const raw = input.getAttribute(name);
+      return raw === null ? fallback : Number(raw);
+    };
+    return createNumberInput(input, {
+      min: read('min'),
+      max: read('max'),
+      step: read('step', 1),
+      format: input.hasAttribute('data-sk-group'),
+    }).destroy;
+  }, 'number');
+
+  each<HTMLInputElement>('[data-sk-tag-input]', (input) => {
+    const list = resolve(input.getAttribute('data-sk-tag-input'), input) ?? input.nextElementSibling;
+    if (!(list instanceof HTMLElement)) return;
+    const raw = input.getAttribute('data-sk-tags');
+    const opts = input.getAttribute('data-sk-options');
+    return createTagInput(input, list, {
+      value: raw ? raw.split(',').map((s) => s.trim()).filter(Boolean) : [],
+      options: opts ? opts.split(',').map((s) => s.trim()).filter(Boolean) : [],
+      strict: input.hasAttribute('data-sk-strict'),
+    }).destroy;
+  }, 'tagInput');
+
+  each<HTMLElement>('[data-sk-toolbar]', (el) =>
+    createToolbar(el, {
+      orientation: el.getAttribute('aria-orientation') === 'vertical' ? 'vertical' : 'horizontal',
+    }).destroy, 'toolbar');
+
+  each<HTMLElement>('[data-sk-datepicker]', (wrapper) => {
+    const input = wrapper.querySelector<HTMLInputElement>('input');
+    const trigger = wrapper.querySelector<HTMLElement>('[data-sk-datepicker-trigger]');
+    const panel = wrapper.querySelector<HTMLElement>('[data-sk-datepicker-panel]');
+    if (!input || !trigger || !panel) return;
+    return createDatePicker(input, trigger, panel, {
+      min: fromISO(input.getAttribute('min') ?? ''),
+      max: fromISO(input.getAttribute('max') ?? ''),
+    }).destroy;
+  }, 'datepicker');
+
+  each<HTMLElement>('[data-sk-daterange]', (wrapper) => {
+    const inputs = wrapper.querySelectorAll<HTMLInputElement>('input');
+    const grid = wrapper.querySelector<HTMLElement>('[data-sk-calendar]');
+    if (inputs.length < 2 || !grid) return;
+    return createDateRange(inputs[0]!, inputs[1]!, grid).destroy;
+  }, 'daterange');
+
   each<HTMLElement>('[data-sk-tabs]', (tablist) => {
     return createTabs(tablist, {
       activation: tablist.dataset.skActivation === 'manual' ? 'manual' : 'automatic',

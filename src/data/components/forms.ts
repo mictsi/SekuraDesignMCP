@@ -2195,4 +2195,760 @@ export const formComponents: ComponentSpec[] = [
 .sk-fieldset:disabled .sk-fieldset__description { color: var(--sk-color-text-disabled); }`,
     related: ['form-field', 'checkbox', 'radio-group'],
   },
+
+  /* ------------------------------------------------------------------ *
+   * Number input
+   * ------------------------------------------------------------------ */
+  {
+    id: 'number-input',
+    name: 'Number input',
+    category: 'form',
+    status: 'stable',
+    summary:
+      'A numeric field with steppers, clamping and a spinbutton contract. Built on type="text" with inputmode="numeric", never type="number".',
+    whenToUse: [
+      'Quantities, limits, prices, durations — any value with a meaningful minimum, maximum or step.',
+      'Where the user may want to nudge a value rather than retype it.',
+    ],
+    whenNotToUse: [
+      'Identifiers that merely happen to be digits: a phone number, a postcode, a card number, a year. Those are text, and treating them as numbers strips leading zeros and offers arithmetic nobody wants.',
+      'A value from a small fixed set — use a Select or a Radio group.',
+      'A value best chosen by feel rather than by figure — use a Slider, or pair one with this.',
+    ],
+    anatomy: [
+      { part: 'Input', required: true, description: 'type="text" with inputmode="numeric" and role="spinbutton".' },
+      { part: 'Steppers', required: false, description: 'Increment and decrement buttons. aria-hidden and tabindex="-1" — the spinbutton already exposes the operation.' },
+      { part: 'Unit suffix', required: false, description: 'An adornment reading "days" or "kg", so the label need not carry the unit in brackets.' },
+    ],
+    variants: [
+      { name: 'Plain', className: 'sk-number', description: 'Input only.', use: 'Default. Keyboard and typing cover most cases.' },
+      { name: 'Stepped', className: 'sk-number--stepped', description: 'With increment and decrement buttons.', use: 'Small ranges a pointer user will nudge, such as a quantity from 1 to 10.' },
+      { name: 'Grouped', className: 'sk-number--grouped', description: 'Thousands separators while unfocused.', use: 'Large figures read more than edited. Off by default because grouping breaks copy-paste into a spreadsheet.' },
+    ],
+    sizes: [
+      { name: 'Small', className: 'sk-number--sm', height: '2rem', typeStyle: 'body-sm', description: 'Inside a table row or a toolbar.' },
+      { name: 'Medium', className: '', height: '2.75rem', typeStyle: 'body-md', description: 'Default.' },
+    ],
+    states: [
+      { name: 'Rest', description: 'Default border.', trigger: 'default' },
+      { name: 'Focus visible', description: 'Focus ring, brand border.', trigger: ':focus-visible' },
+      { name: 'Invalid', description: 'Danger border, message referenced by aria-describedby.', trigger: '[aria-invalid="true"]' },
+      { name: 'At a bound', description: 'The stepper for that direction is dimmed and a further press announces the bound rather than doing nothing.', trigger: '[data-at-min], [data-at-max]' },
+      { name: 'Disabled', description: 'Not focusable, no steppers.', trigger: ':disabled' },
+    ],
+    props: [
+      { name: 'min', type: 'number', description: 'Lower bound. Exposed as aria-valuemin.' },
+      { name: 'max', type: 'number', description: 'Upper bound. Exposed as aria-valuemax.' },
+      { name: 'step', type: 'number', default: '1', description: 'Arrow-key increment, and the grid values snap to.' },
+      { name: 'bigStep', type: 'number', default: 'step x 10', description: 'PageUp and PageDown increment.' },
+      { name: 'precision', type: 'number', description: 'Decimal places. Inferred from step when omitted.' },
+      { name: 'format', type: 'boolean', default: 'false', description: 'Group thousands while unfocused.' },
+    ],
+    tokensUsed: ['color-field-bg', 'color-field-border', 'color-text-primary', 'color-text-secondary', 'color-focus-ring'],
+    darkMode:
+      'The field background is surface-sunken on dark rather than a lighter step — an input is a recess, and recesses go darker as the page goes dark. The stepper divider uses border-subtle, which steps darker too, so it does not outrank the field border beside it.',
+    accessibility: {
+      role: 'role="spinbutton" on the input, which is what gives the user the bounds and the current value without a separate hint.',
+      keyboard: [
+        { keys: 'Arrow Up / Down', action: 'Increment or decrement by step.' },
+        { keys: 'Page Up / Page Down', action: 'By bigStep, ten steps by default.' },
+        { keys: 'Home / End', action: 'Jump to min or max, where those exist.' },
+        { keys: 'Typing', action: 'Free text entry. Clamping happens on blur, not per keystroke.' },
+      ],
+      aria: [
+        'aria-valuenow, aria-valuemin and aria-valuemax reflect the live state.',
+        'aria-valuetext carries the formatted value, so 1500 is announced as "1,500" when grouping is on.',
+        'Steppers are aria-hidden with tabindex="-1". They duplicate an operation the spinbutton already exposes, and announcing them makes every numeric field three controls instead of one.',
+        'aria-invalid when the field holds something unparseable.',
+      ],
+      wcag: [
+        '4.1.2 Name, Role, Value — the spinbutton contract is the value.',
+        '2.1.1 Keyboard',
+        '3.3.1 Error Identification — the clamp announces what it changed and why.',
+        '2.5.8 Target Size — steppers are 24x24 minimum, which the native type="number" spinners are not.',
+      ],
+      screenReader:
+        'Announced as "Target length, spin button, 45, minimum 1, maximum 260". Clamping on blur announces "Adjusted to 260, the nearest allowed value" rather than silently changing what was typed.',
+      targetSize: 'Steppers are 24x24 CSS px minimum at every density.',
+    },
+    content: [
+      'The label names the quantity, not the unit: "Target length" with a "days" suffix, not "Length (days)".',
+      'State the range in the hint before the user types, not in an error after: "Between 1 and 260".',
+      'Never write "Invalid number". Say what a valid one looks like.',
+    ],
+    dos: [
+      'Use type="text" with inputmode="numeric".',
+      'Clamp on blur so partial input stays typeable.',
+      'Announce a clamp rather than silently rewriting.',
+      'Put the unit in a suffix adornment.',
+    ],
+    donts: [
+      'Never use type="number". It changes value on scroll, discards invalid input before you can show it, and its spinners are unstyleable and too small.',
+      'Never bind the mouse wheel. Scrolling a page must not change a value the user is not looking at.',
+      'Never clamp on every keystroke — "10" becomes impossible to type when the minimum is 5.',
+      'Never use this for identifiers that merely look numeric.',
+    ],
+    html: `<div class="sk-field">
+  <label class="sk-field__label" for="target-days">Target length</label>
+  <p class="sk-field__hint" id="target-days-hint">Working days from the start date. Between 1 and 260.</p>
+  <div class="sk-number sk-number--stepped sk-input-group">
+    <!-- type="text" + inputmode, never type="number". -->
+    <input class="sk-input" id="target-days" name="targetDays" type="text"
+           inputmode="numeric" value="45"
+           data-sk-number min="1" max="260" step="1"
+           aria-describedby="target-days-hint" />
+    <span class="sk-input-group__suffix" aria-hidden="true">days</span>
+    <span class="sk-number__steppers">
+      <button type="button" class="sk-number__step" data-sk-step="1" tabindex="-1" aria-hidden="true">
+        <svg focusable="false" width="12" height="12"><use href="#sk-icon-chevron-up" /></svg>
+      </button>
+      <button type="button" class="sk-number__step" data-sk-step="-1" tabindex="-1" aria-hidden="true">
+        <svg focusable="false" width="12" height="12"><use href="#sk-icon-chevron-down" /></svg>
+      </button>
+    </span>
+  </div>
+</div>`,
+    css: `.sk-number { display: flex; align-items: stretch; }
+.sk-number .sk-input { flex: 1 1 auto; min-inline-size: 0; }
+
+.sk-number__steppers {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  border-inline-start: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle);
+}
+.sk-number__step {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 24x24 minimum per 2.5.8, which the native spinners miss. */
+  inline-size: 1.75rem;
+  block-size: 1.5rem;
+  min-block-size: 1.5rem;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--sk-color-text-secondary);
+  cursor: pointer;
+}
+.sk-number__step:hover { background-color: var(--sk-color-surface-hover); color: var(--sk-color-text-primary); }
+.sk-number__step svg { fill: currentColor; }
+.sk-number__step + .sk-number__step { border-block-start: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle); }
+
+.sk-number[data-at-max] .sk-number__step[data-sk-step="1"],
+.sk-number[data-at-min] .sk-number__step[data-sk-step="-1"] { color: var(--sk-color-text-disabled); }
+
+.sk-number--grouped .sk-input { font-variant-numeric: tabular-nums; }
+
+.sk-number--sm .sk-number__step { inline-size: 1.5rem; block-size: 1.25rem; min-block-size: 1.25rem; }
+
+@media (forced-colors: active) {
+  .sk-number__steppers { border-inline-start-color: CanvasText; }
+  .sk-number__step + .sk-number__step { border-block-start-color: CanvasText; }
+  .sk-number__step { color: CanvasText; }
+  .sk-number[data-at-max] .sk-number__step[data-sk-step="1"],
+  .sk-number[data-at-min] .sk-number__step[data-sk-step="-1"] { color: GrayText; }
+}`,
+    related: ['text-field', 'slider', 'form-field'],
+  },
+
+  /* ------------------------------------------------------------------ *
+   * Tag input
+   * ------------------------------------------------------------------ */
+  {
+    id: 'tag-input',
+    name: 'Tag input',
+    category: 'form',
+    status: 'stable',
+    summary:
+      'Multi-select as a list of removable tokens with a text field. The combobox for when the answer is more than one thing.',
+    whenToUse: [
+      'Labels, assignees, recipients, skills — any set-valued field.',
+      'Filters the user builds up and takes apart.',
+      'Free-form entry where the set is not known in advance.',
+    ],
+    whenNotToUse: [
+      'A single value — use a Combobox.',
+      'Fewer than about seven fixed options — a checkbox group shows them all without typing.',
+      'A very large fixed set where the user must browse rather than search — use a transfer list or a dedicated picker.',
+    ],
+    anatomy: [
+      { part: 'Tokens', required: true, description: 'One per value, each with a remove button naming its own tag.' },
+      { part: 'Input', required: true, description: 'role="combobox" with aria-autocomplete="list".' },
+      { part: 'Suggestions', required: false, description: 'role="listbox" of matches, filtered as the user types.' },
+      { part: 'Count', required: false, description: 'A live count where a maximum applies.' },
+    ],
+    variants: [
+      { name: 'Free', className: 'sk-tag-input', description: 'Any value may be added.', use: 'Labels and keywords the user invents.' },
+      { name: 'Strict', className: 'sk-tag-input--strict', description: 'Only values from the suggestion list.', use: 'People, projects, anything that must resolve to a real record.' },
+    ],
+    sizes: [
+      { name: 'Small', className: 'sk-tag-input--sm', height: '2rem', typeStyle: 'body-sm', description: 'Filter bars.' },
+      { name: 'Medium', className: '', height: '2.75rem', typeStyle: 'body-md', description: 'Default.' },
+    ],
+    states: [
+      { name: 'Rest', description: 'Tokens and an empty input.', trigger: 'default' },
+      { name: 'Focus within', description: 'The whole control takes the focus ring, not just the input inside it.', trigger: ':focus-within' },
+      { name: 'Armed', description: 'A token selected by Backspace or arrow key, awaiting a second press to remove.', trigger: '[data-armed]' },
+      { name: 'Suggesting', description: 'Listbox open, aria-expanded="true".', trigger: '[aria-expanded="true"]' },
+      { name: 'Full', description: 'The maximum is reached; adding announces the limit.', trigger: '[data-full]' },
+    ],
+    props: [
+      { name: 'value', type: 'string[]', required: true, description: 'Current tags.' },
+      { name: 'options', type: 'string[]', description: 'Suggestions.' },
+      { name: 'strict', type: 'boolean', default: 'false', description: 'Reject anything not in options.' },
+      { name: 'max', type: 'number', description: 'Maximum tags.' },
+      { name: 'normalise', type: '(raw: string) => string | null', description: 'Rewrite or reject a tag. Null rejects.' },
+    ],
+    tokensUsed: ['color-field-bg', 'color-field-border', 'color-surface-brand-subtle', 'color-text-brand', 'color-focus-ring', 'color-border-brand'],
+    darkMode:
+      'Tokens use surface-brand-subtle, which on dark is the 950 step of the brand ramp rather than a darkened 50 — a darkened light tint goes muddy and stops reading as brand. Each token also carries a border on dark, because a 950 tint on a 900 surface has almost no edge; this is the same rule tinted badges follow.',
+    accessibility: {
+      role: 'A combobox whose value is a list. Tokens are not focusable in the tab order; they are reached from the input with arrow keys, so the control is one tab stop however many tags it holds.',
+      keyboard: [
+        { keys: 'Typing', action: 'Filters suggestions.' },
+        { keys: 'Enter / Comma', action: 'Commits the typed value as a tag.' },
+        { keys: 'Backspace on an empty input', action: 'Selects the last token. A second press removes it — never the first.' },
+        { keys: 'Arrow toward the tokens', action: 'Moves selection through the tokens, following text direction.' },
+        { keys: 'Escape', action: 'Closes the suggestions.' },
+      ],
+      aria: [
+        'The input carries role="combobox", aria-expanded and aria-autocomplete="list".',
+        'Every remove button names its own tag: "Remove urgent", never a bare "Remove" repeated eight times.',
+        'Adding and removing are announced with the new total, because the visible change is somewhere the user is not looking.',
+        'A rejected value says why — duplicate, not allowed, or over the limit.',
+      ],
+      wcag: [
+        '4.1.2 Name, Role, Value',
+        '2.1.1 Keyboard — every token must be removable without a pointer.',
+        '4.1.3 Status Messages — additions and removals are announced.',
+        '3.3.1 Error Identification — a rejection states its reason.',
+      ],
+      screenReader:
+        'Adding announces "urgent added. 3 total." Backspace announces "urgent selected. Press Backspace again to remove it," which is what makes the two-step removal discoverable rather than merely safe.',
+      targetSize: 'Remove buttons are 24x24 CSS px minimum.',
+    },
+    content: [
+      'The hint says how to commit: "Press Enter or comma to add".',
+      'Where a maximum applies, show the count before it is reached, not only on rejection.',
+      'Remove buttons name their tag, always.',
+    ],
+    dos: [
+      'Make Backspace arm the last token, then remove on a second press.',
+      'Announce every add and remove with the running total.',
+      'Give the whole control the focus ring, so it reads as one field.',
+      'Accept comma and Enter — both are what people expect.',
+    ],
+    donts: [
+      'Never make each token a tab stop. Twelve labels would be twelve presses to get past.',
+      'Never delete on the first Backspace.',
+      'Never reject silently.',
+      'Never label every remove button "Remove".',
+    ],
+    html: `<div class="sk-field">
+  <label class="sk-field__label" for="labels">Labels</label>
+  <p class="sk-field__hint" id="labels-hint">Press Enter or comma to add. Up to 8.</p>
+  <div class="sk-tag-input">
+    <!-- Tokens are inserted before the input by the controller. -->
+    <input class="sk-tag-input__input" id="labels" type="text"
+           data-sk-tag-input="labels-list"
+           data-sk-tags="urgent,design"
+           data-sk-options="urgent,design,backend,research,blocked"
+           aria-describedby="labels-hint" autocomplete="off" />
+  </div>
+  <ul class="sk-tag-input__list" id="labels-list" role="listbox" aria-label="Label suggestions" hidden></ul>
+</div>`,
+    css: `.sk-tag-input {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sk-space-4);
+  min-block-size: var(--sk-control-height-md);
+  padding: var(--sk-space-4) var(--sk-space-8);
+  background-color: var(--sk-color-field-bg);
+  border: var(--sk-border-width-hairline) solid var(--sk-color-field-border);
+  border-radius: var(--sk-radius-md);
+}
+/* The ring goes on the whole control, so it reads as one field rather than a
+   text box that happens to sit beside some chips. */
+.sk-tag-input:focus-within {
+  border-color: var(--sk-color-border-interactive);
+  outline: var(--sk-focus-ring-width) solid var(--sk-color-focus-ring);
+  outline-offset: var(--sk-focus-ring-offset);
+}
+
+.sk-tag-input__tokens { display: contents; }
+
+.sk-tag-input__token {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sk-space-4);
+  padding-block: var(--sk-space-2);
+  padding-inline: var(--sk-space-8) var(--sk-space-4);
+  background-color: var(--sk-color-surface-brand-subtle);
+  color: var(--sk-color-text-brand);
+  /* On dark the tint is a 950 step on a 900 surface, which has almost no edge
+     of its own. The border is what makes it a discrete object. */
+  border: var(--sk-border-width-hairline) solid var(--sk-color-border-brand);
+  border-radius: var(--sk-radius-sm);
+  font-size: var(--sk-font-size-body-sm);
+}
+.sk-tag-input__token[data-armed] {
+  background-color: var(--sk-color-surface-selected);
+  outline: var(--sk-focus-ring-width) solid var(--sk-color-focus-ring);
+}
+
+.sk-tag-input__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: var(--sk-radius-sm);
+  color: inherit;
+  cursor: pointer;
+}
+.sk-tag-input__remove:hover { background-color: var(--sk-color-surface-hover); }
+.sk-tag-input__remove svg { fill: currentColor; }
+
+.sk-tag-input__input {
+  flex: 1 1 6rem;
+  min-inline-size: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--sk-color-text-primary);
+  font: inherit;
+}
+.sk-tag-input__input:focus { outline: none; }
+
+.sk-tag-input__list {
+  margin: var(--sk-space-4) 0 0;
+  padding: var(--sk-space-4);
+  list-style: none;
+  background-color: var(--sk-color-surface-overlay);
+  border: var(--sk-border-width-hairline) solid var(--sk-color-border-default);
+  border-radius: var(--sk-radius-md);
+  box-shadow: var(--sk-elevation-2);
+}
+.sk-tag-input__option {
+  padding: var(--sk-space-8);
+  border-radius: var(--sk-radius-sm);
+  cursor: pointer;
+}
+.sk-tag-input__option:hover,
+.sk-tag-input__option[aria-selected="true"] { background-color: var(--sk-color-surface-hover); }
+
+.sk-tag-input--sm { min-block-size: var(--sk-control-height-sm); }
+
+@media (forced-colors: active) {
+  .sk-tag-input { border-color: CanvasText; }
+  .sk-tag-input__token { border-color: CanvasText; }
+  .sk-tag-input__token[data-armed] { background-color: Highlight; color: HighlightText; }
+  .sk-tag-input__list { border-color: CanvasText; }
+  .sk-tag-input__option[aria-selected="true"] { background-color: Highlight; color: HighlightText; }
+}`,
+    related: ['combobox', 'badge', 'checkbox', 'search-field'],
+  },
+
+  /* ------------------------------------------------------------------ *
+   * Date picker
+   * ------------------------------------------------------------------ */
+  {
+    id: 'date-picker',
+    name: 'Date picker',
+    category: 'form',
+    status: 'stable',
+    summary:
+      'A text input paired with a calendar dialog. Typing and picking are both first-class; removing either one locks somebody out.',
+    whenToUse: [
+      'Any single calendar date: a due date, a start date, a birthday.',
+      'Dates the user may want to see in context — "the Tuesday after the bank holiday" is a calendar question, not a typing one.',
+    ],
+    whenNotToUse: [
+      'A date range — use the Date range picker, which shares one calendar between two inputs.',
+      'A year alone, or a month alone. A calendar grid to pick "2026" is twelve times more work than a select.',
+      'A moment in time with a timezone. That is a different problem and a naive date field will get it wrong.',
+    ],
+    anatomy: [
+      { part: 'Input', required: true, description: 'Text, ISO format. The source of truth — the calendar writes into it.' },
+      { part: 'Trigger', required: true, description: 'A button with aria-haspopup="dialog", opening the calendar.' },
+      { part: 'Calendar dialog', required: true, description: 'role="dialog" with aria-modal, containing the grid.' },
+      { part: 'Grid', required: true, description: 'role="grid", six rows always, so the panel never reflows between months.' },
+      { part: 'Month navigation', required: true, description: 'Previous and next, with an aria-live month heading.' },
+    ],
+    variants: [
+      { name: 'Default', className: 'sk-date-picker', description: 'Input plus calendar button.', use: 'Almost always.' },
+      { name: 'Inline', className: 'sk-date-picker--inline', description: 'Calendar always visible, no dialog.', use: 'A booking screen where choosing the date is the whole task.' },
+    ],
+    sizes: [
+      { name: 'Small', className: 'sk-date-picker--sm', height: '2rem', typeStyle: 'body-sm', description: 'Filter bars.' },
+      { name: 'Medium', className: '', height: '2.75rem', typeStyle: 'body-md', description: 'Default.' },
+    ],
+    states: [
+      { name: 'Closed', description: 'Input only; panel hidden and out of the tab order.', trigger: '[aria-expanded="false"]' },
+      { name: 'Open', description: 'Dialog shown, focus trapped, focus on the selected or focused day.', trigger: '[aria-expanded="true"]' },
+      { name: 'Invalid', description: 'The typed value did not parse. The field is marked, the value is left alone.', trigger: '[aria-invalid="true"]' },
+      { name: 'Out of range', description: 'A day outside min/max is aria-disabled and announces why when activated.', trigger: '[aria-disabled="true"]' },
+    ],
+    props: [
+      { name: 'value', type: 'string', description: 'ISO YYYY-MM-DD.' },
+      { name: 'min', type: 'string', description: 'Earliest selectable date.' },
+      { name: 'max', type: 'string', description: 'Latest selectable date.' },
+      { name: 'weekStartsOn', type: '0 | 1', default: '1', description: 'Monday by default: ISO-8601, and most of the world.' },
+      { name: 'isDisabled', type: '(date) => string | null', description: 'Block a date and give the reason, which is announced.' },
+      { name: 'locale', type: 'string', description: 'BCP 47 tag for month and weekday names.' },
+    ],
+    tokensUsed: ['color-field-bg', 'color-field-border', 'color-surface-overlay', 'color-action-primary-bg', 'color-text-on-brand', 'color-border-brand', 'color-focus-ring'],
+    darkMode:
+      'The panel is surface-overlay, the highest step, so it reads as floating above the page — on dark that is *lighter* than the field beneath it, the opposite of the light-mode instinct to darken a popup. The selected day keeps action-primary-bg, which steps up the brand ramp on dark so its label flips to near-black and stays at 4.5:1.',
+    accessibility: {
+      role: 'ARIA Date Picker Dialog. The input is a plain text field; the panel is a modal dialog containing a grid.',
+      keyboard: [
+        { keys: 'Tab', action: 'Moves to the input, then the calendar button. The open calendar is one tab stop, not forty-two.' },
+        { keys: 'Arrow keys', action: 'One day horizontally, one week vertically, following reading order — Left is the previous day in LTR and the next day in RTL.' },
+        { keys: 'Page Up / Page Down', action: 'One month. With Shift, one year.' },
+        { keys: 'Home / End', action: 'First or last day of the displayed week.' },
+        { keys: 'Enter / Space', action: 'Selects the focused day and closes.' },
+        { keys: 'Escape', action: 'Closes without selecting and returns focus to the trigger.' },
+      ],
+      aria: [
+        'The grid is role="grid" with a roving tabindex: exactly one day is tabbable.',
+        'Every day carries a full aria-label — "Friday, 21 August 2026" — because "21" alone is meaningless out of the grid.',
+        'The month heading is aria-live="polite", so paging announces where you have arrived.',
+        'aria-current="date" marks today. It is distinct from aria-selected, which marks the chosen date.',
+        'Focus is trapped in the open dialog and returns to the trigger on close.',
+        'A blocked day is aria-disabled and, when activated, announces the reason rather than doing nothing.',
+      ],
+      wcag: [
+        '2.1.1 Keyboard — a calendar reachable only by pointer excludes every keyboard and switch user.',
+        '2.1.2 No Keyboard Trap — Escape must always get out.',
+        '2.4.3 Focus Order — focus enters the grid on open and returns to the trigger on close.',
+        '4.1.2 Name, Role, Value',
+        '1.3.5 Identify Input Purpose — the input takes autocomplete="bday" where it is a birthday.',
+        '2.5.8 Target Size — day cells are 32x32.',
+      ],
+      screenReader:
+        'Opening announces "Choose a date, dialog". Arrowing announces each full date. Paging announces the new month from the live heading. Selecting announces the value through the input, because the input is what actually changed.',
+      targetSize: 'Day cells are 2rem square, past the 24x24 minimum with room for the focus ring.',
+    },
+    content: [
+      'Show the expected format in the hint, not only in the placeholder: a placeholder disappears the moment someone starts typing, which is exactly when they need it.',
+      'Use ISO YYYY-MM-DD as the stored and default typed format. It is unambiguous; 03/04/2026 is not.',
+      'Name the bounds when they exist: "Any date from today", not a silently dead half of the calendar.',
+    ],
+    dos: [
+      'Always ship the text input alongside the calendar.',
+      'Give every day cell a full date label.',
+      'Keep six rows always, so the panel does not resize between months.',
+      'Announce why a blocked date is blocked.',
+    ],
+    donts: [
+      'Never use <input type="date">. Its keyboard model, layout and format differ on every platform.',
+      'Never make the calendar the only route to a value.',
+      'Never make every day a tab stop.',
+      'Never mark today with a fill — it becomes indistinguishable from the selected date.',
+    ],
+    html: `<div class="sk-field">
+  <label class="sk-field__label" for="due">Due date</label>
+  <p class="sk-field__hint" id="due-hint">Format YYYY-MM-DD. Any date from today.</p>
+  <div class="sk-date-picker" data-sk-datepicker>
+    <input class="sk-input" id="due" name="due" type="text"
+           inputmode="numeric" placeholder="2026-08-21" min="2026-08-07"
+           autocomplete="off" spellcheck="false" aria-describedby="due-hint" />
+    <button type="button" class="sk-date-picker__trigger" data-sk-datepicker-trigger>
+      <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-clock" /></svg>
+      <span class="sk-visually-hidden">Choose a date from the calendar</span>
+    </button>
+    <!-- The controller renders the grid into here and manages the dialog. -->
+    <div class="sk-date-picker__panel" data-sk-datepicker-panel aria-label="Choose a date" hidden></div>
+  </div>
+</div>`,
+    css: `.sk-date-picker { position: relative; display: flex; align-items: stretch; }
+.sk-date-picker .sk-input { flex: 1 1 auto; min-inline-size: 0; }
+
+.sk-date-picker__trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.5rem;
+  flex: 0 0 auto;
+  background: none;
+  border: var(--sk-border-width-hairline) solid var(--sk-color-field-border);
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+  border-start-end-radius: var(--sk-radius-md);
+  border-end-end-radius: var(--sk-radius-md);
+  border-inline-start: none;
+  color: var(--sk-color-text-secondary);
+  cursor: pointer;
+}
+.sk-date-picker__trigger:hover { background-color: var(--sk-color-surface-hover); color: var(--sk-color-text-primary); }
+.sk-date-picker__trigger svg { fill: currentColor; }
+.sk-date-picker__trigger:focus-visible {
+  outline: var(--sk-focus-ring-width) solid var(--sk-color-focus-ring);
+  outline-offset: var(--sk-focus-ring-offset);
+}
+
+/* The panel floats, so it is surface-overlay — the highest step, which on dark
+   is LIGHTER than the field beneath it rather than darker. */
+.sk-date-picker__panel {
+  position: absolute;
+  inset-block-start: calc(100% + var(--sk-space-4));
+  inset-inline-start: 0;
+  z-index: var(--sk-z-popover);
+  padding: var(--sk-space-12);
+  background-color: var(--sk-color-surface-overlay);
+  border: var(--sk-border-width-hairline) solid var(--sk-color-border-default);
+  border-radius: var(--sk-radius-lg);
+  box-shadow: var(--sk-elevation-3);
+}
+.sk-date-picker__panel[hidden] { display: none !important; }
+
+.sk-date-picker--inline { display: block; }
+.sk-date-picker--inline .sk-date-picker__panel {
+  position: static;
+  box-shadow: none;
+}
+
+@media (forced-colors: active) {
+  .sk-date-picker__trigger { border-color: CanvasText; color: CanvasText; }
+  .sk-date-picker__panel { border-color: CanvasText; }
+}
+
+.sk-calendar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-8);
+  inline-size: max-content;
+}
+
+.sk-calendar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sk-space-8);
+}
+.sk-calendar__month {
+  margin: 0;
+  font-size: var(--sk-font-size-label-md);
+  font-weight: var(--sk-font-weight-semibold);
+  color: var(--sk-color-text-primary);
+}
+.sk-calendar__nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2rem;
+  block-size: 2rem;
+  background: none;
+  border: none;
+  border-radius: var(--sk-radius-sm);
+  color: var(--sk-color-text-secondary);
+  cursor: pointer;
+}
+.sk-calendar__nav:hover { background-color: var(--sk-color-surface-hover); color: var(--sk-color-text-primary); }
+.sk-calendar__nav svg { fill: currentColor; }
+.sk-calendar__nav:focus-visible {
+  outline: var(--sk-focus-ring-width) solid var(--sk-color-focus-ring);
+  outline-offset: var(--sk-focus-ring-offset);
+}
+
+.sk-calendar__grid { border-collapse: collapse; }
+.sk-calendar__weekday {
+  padding-block-end: var(--sk-space-4);
+  font-size: var(--sk-font-size-body-xs);
+  font-weight: var(--sk-font-weight-medium);
+  color: var(--sk-color-text-tertiary);
+}
+
+.sk-calendar__day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 2rem is 32px: past the 24x24 floor of 2.5.8 with room for the ring. */
+  inline-size: 2rem;
+  block-size: 2rem;
+  background: none;
+  border: none;
+  border-radius: var(--sk-radius-sm);
+  color: var(--sk-color-text-primary);
+  font-size: var(--sk-font-size-body-sm);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.sk-calendar__day:hover:not([aria-disabled="true"]) { background-color: var(--sk-color-surface-hover); }
+.sk-calendar__day:focus-visible {
+  outline: var(--sk-focus-ring-width) solid var(--sk-color-focus-ring);
+  outline-offset: calc(var(--sk-focus-ring-offset) * -1);
+}
+
+/* Days from the adjacent month are shown so the grid is always six rows and
+   never reflows, but they are quieter than the month being chosen. */
+.sk-calendar__day[data-outside] { color: var(--sk-color-text-tertiary); }
+
+.sk-calendar__day[aria-disabled="true"] { color: var(--sk-color-text-disabled); cursor: not-allowed; }
+
+/* Today is marked by a ring, not a fill — a fill here is indistinguishable
+   from selection, which is the mistake most calendars make. */
+.sk-calendar__day[aria-current="date"] {
+  box-shadow: inset 0 0 0 var(--sk-border-width-hairline) var(--sk-color-border-brand);
+  font-weight: var(--sk-font-weight-semibold);
+}
+
+.sk-calendar [aria-selected="true"] > .sk-calendar__day {
+  background-color: var(--sk-color-action-primary-bg);
+  color: var(--sk-color-text-on-brand);
+}
+.sk-calendar__day[data-in-range] { background-color: var(--sk-color-surface-brand-subtle); border-radius: 0; }
+
+@media (forced-colors: active) {
+  .sk-calendar__nav { color: CanvasText; }
+  .sk-calendar [aria-selected="true"] > .sk-calendar__day { background-color: Highlight; color: HighlightText; }
+  .sk-calendar__day[data-in-range] { background-color: Highlight; color: HighlightText; }
+  .sk-calendar__day[aria-current="date"] { outline: 1px solid CanvasText; outline-offset: -1px; }
+  .sk-calendar__day[aria-disabled="true"] { color: GrayText; }
+  .sk-calendar__day[data-outside] { color: GrayText; }
+}`,
+    related: ['date-range-picker', 'text-field', 'form-field', 'popover'],
+  },
+
+  /* ------------------------------------------------------------------ *
+   * Date range picker
+   * ------------------------------------------------------------------ */
+  {
+    id: 'date-range-picker',
+    name: 'Date range picker',
+    category: 'form',
+    status: 'stable',
+    summary:
+      'Two date inputs sharing one calendar. Picking a start then an end, with the span between them shown.',
+    whenToUse: [
+      'Report and dashboard filters — "1 to 31 August".',
+      'Bookings, leave requests, campaign windows.',
+      'Anywhere a preset like "Last 7 days" needs an "or choose your own" escape hatch.',
+    ],
+    whenNotToUse: [
+      'A single date — use the Date picker.',
+      'Where presets alone are enough. A segmented control reading 24h / 7d / 30d is less work than a calendar, and most dashboard users never leave the presets.',
+      'Open-ended ranges where one end is usually "now". Two fields imply both are required.',
+    ],
+    anatomy: [
+      { part: 'Start input', required: true, description: 'Its own labelled field.' },
+      { part: 'End input', required: true, description: 'Its own labelled field — never one combined box.' },
+      { part: 'Calendar', required: true, description: 'One grid serving both, highlighting the span between.' },
+      { part: 'Presets', required: false, description: 'Common ranges as buttons beside the calendar.' },
+    ],
+    variants: [
+      { name: 'Default', className: 'sk-date-range', description: 'Two inputs and one calendar.', use: 'Default.' },
+      { name: 'With presets', className: 'sk-date-range--presets', description: 'A preset list beside the grid.', use: 'Dashboards, where a preset answers most of the time.' },
+    ],
+    sizes: [
+      { name: 'Small', className: 'sk-date-range--sm', height: '2rem', typeStyle: 'body-sm', description: 'Filter bars.' },
+      { name: 'Medium', className: '', height: '2.75rem', typeStyle: 'body-md', description: 'Default.' },
+    ],
+    states: [
+      { name: 'Empty', description: 'Neither end chosen; the next click sets the start.', trigger: 'default' },
+      { name: 'Awaiting end', description: 'Start chosen. The calendar announces that an end is expected.', trigger: '[data-awaiting="end"]' },
+      { name: 'Complete', description: 'Both ends set; the span is tinted.', trigger: '[data-complete]' },
+      { name: 'Inverted', description: 'A date before the start restarts the range rather than producing a negative one.', trigger: 'handled by the controller' },
+    ],
+    props: [
+      { name: 'start', type: 'string', description: 'ISO date.' },
+      { name: 'end', type: 'string', description: 'ISO date.' },
+      { name: 'min', type: 'string', description: 'Earliest selectable.' },
+      { name: 'max', type: 'string', description: 'Latest selectable.' },
+      { name: 'presets', type: 'Array<{label, start, end}>', description: 'Common ranges.' },
+    ],
+    tokensUsed: ['color-surface-brand-subtle', 'color-action-primary-bg', 'color-text-on-brand', 'color-surface-overlay', 'color-focus-ring'],
+    darkMode:
+      'The in-range tint is surface-brand-subtle, the 950 brand step on dark rather than a darkened 50. A darkened light tint reads as grey and the span stops looking selected at all — the same failure tinted badges have.',
+    accessibility: {
+      role: 'Two text inputs and one grid. The grid is not a second set of controls; it writes into the inputs.',
+      keyboard: [
+        { keys: 'Tab', action: 'Start input, end input, then the calendar as one stop.' },
+        { keys: 'Arrow keys', action: 'Move within the grid exactly as in the single date picker.' },
+        { keys: 'Enter / Space', action: 'Sets the start, then the end.' },
+        { keys: 'Escape', action: 'Closes without changing either input.' },
+      ],
+      aria: [
+        'Two separately labelled inputs. One combined "12 Aug – 21 Aug" text box is announced as a single value and cannot be half-edited.',
+        'Selecting the start announces that an end is now expected — the state change is otherwise only visible in the tint.',
+        'Completing the range announces both ends together.',
+        'Days between the ends are marked so the span is not conveyed by colour alone.',
+      ],
+      wcag: [
+        '2.1.1 Keyboard',
+        '4.1.3 Status Messages — the half-finished state must be announced or it is invisible.',
+        '1.4.1 Use of Colour — the span carries a data attribute and the ends are aria-selected, not just tinted.',
+        '3.3.2 Labels or Instructions — both ends are labelled.',
+      ],
+      screenReader:
+        'Choosing the start announces "Start 2026-08-12 selected. Now choose an end date." Choosing the end announces the whole range. Picking a date before the start announces a new start rather than silently swapping the ends.',
+      targetSize: 'Day cells are 2rem square.',
+    },
+    content: [
+      'Label the ends "Start" and "End", or "From" and "To" — never "Date 1" and "Date 2".',
+      'Where presets exist, name the window rather than the mechanism: "Last 7 days", not "-7d".',
+      'State inclusivity if it matters: "1 to 31 August" should say whether the 31st is included.',
+    ],
+    dos: [
+      'Use two inputs.',
+      'Announce the half-finished state.',
+      'Restart the range when a date before the start is picked.',
+      'Offer presets where most users want one.',
+    ],
+    donts: [
+      'Never use one combined text box.',
+      'Never allow an end before the start to become a negative range.',
+      'Never convey the span by tint alone.',
+      'Never open two calendars side by side on a small screen — one grid, paged.',
+    ],
+    html: `<fieldset class="sk-fieldset">
+  <legend class="sk-fieldset__legend">Reporting period</legend>
+  <div class="sk-date-range" data-sk-daterange>
+    <div class="sk-cluster sk-cluster--gap-12 sk-cluster--align-start">
+      <div class="sk-field">
+        <label class="sk-field__label" for="range-start">From</label>
+        <input class="sk-input" id="range-start" type="text" inputmode="numeric"
+               value="2026-08-01" autocomplete="off" spellcheck="false" />
+      </div>
+      <div class="sk-field">
+        <label class="sk-field__label" for="range-end">To</label>
+        <input class="sk-input" id="range-end" type="text" inputmode="numeric"
+               value="2026-08-31" autocomplete="off" spellcheck="false" />
+      </div>
+    </div>
+    <div class="sk-date-range__calendar" data-sk-calendar></div>
+  </div>
+</fieldset>`,
+    css: `.sk-date-range { display: flex; flex-direction: column; gap: var(--sk-space-16); }
+.sk-date-range__calendar {
+  padding: var(--sk-space-12);
+  background-color: var(--sk-color-surface-base);
+  border: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle);
+  border-radius: var(--sk-radius-lg);
+  inline-size: max-content;
+  max-inline-size: 100%;
+}
+
+/* Presets sit beside the grid on a wide container and above it on a narrow
+   one, by wrapping rather than by a breakpoint. */
+.sk-date-range--presets .sk-date-range__body { display: flex; flex-wrap: wrap; gap: var(--sk-space-16); }
+.sk-date-range__presets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-4);
+  flex: 1 1 10rem;
+  min-inline-size: 0;
+}
+
+@media (forced-colors: active) {
+  .sk-date-range__calendar { border-color: CanvasText; }
+}`,
+    related: ['date-picker', 'button-group', 'popover'],
+  },
 ];

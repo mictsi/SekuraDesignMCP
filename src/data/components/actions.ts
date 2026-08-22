@@ -1023,4 +1023,319 @@ export const actionComponents: ComponentSpec[] = [
 }`,
     related: ['button', 'breadcrumbs', 'side-nav'],
   },
+
+  /* ------------------------------------------------------------------ *
+   * Toolbar
+   * ------------------------------------------------------------------ */
+  {
+    id: 'toolbar',
+    name: 'Toolbar',
+    category: 'action',
+    status: 'stable',
+    summary:
+      'A grouped set of controls that is one tab stop. Without it, a bar of twelve buttons costs twelve presses to get past — every time.',
+    whenToUse: [
+      'A formatting bar, a table action bar, a chart control strip.',
+      'Any row of three or more related controls a keyboard user would otherwise have to tab through to reach the content.',
+    ],
+    whenNotToUse: [
+      'Page-level actions in a page header. Those are few, and they are destinations rather than a tool set — making them one stop hides them.',
+      'A group of mutually exclusive options — that is a Segmented control.',
+      'Navigation. A toolbar acts on the current thing; navigation goes somewhere else.',
+      'Two controls. The roving tabindex costs more to understand than it saves.',
+    ],
+    anatomy: [
+      { part: 'Container', required: true, description: 'role="toolbar" with aria-orientation, owning the roving tabindex.' },
+      { part: 'Controls', required: true, description: 'Buttons, toggle buttons, or links.' },
+      { part: 'Groups', required: false, description: 'role="group" with its own label, for related runs of controls.' },
+      { part: 'Separators', required: false, description: 'role="separator" between groups. Decorative unless the groups are named.' },
+    ],
+    variants: [
+      { name: 'Horizontal', className: 'sk-toolbar', description: 'Left-to-right, wrapping.', use: 'Default.' },
+      { name: 'Vertical', className: 'sk-toolbar--vertical', description: 'Stacked; arrow keys run up and down.', use: 'A rail beside a canvas.' },
+      { name: 'Compact', className: 'sk-toolbar--compact', description: 'Icon-only buttons with tooltips.', use: 'Dense editing surfaces where labels would not fit.' },
+    ],
+    sizes: [
+      { name: 'Small', className: 'sk-toolbar--sm', height: '2rem', typeStyle: 'body-sm', description: 'Inside a card or a panel.' },
+      { name: 'Medium', className: '', height: '2.75rem', typeStyle: 'body-md', description: 'Default.' },
+    ],
+    states: [
+      { name: 'Rest', description: 'Exactly one control has tabindex="0".', trigger: 'default' },
+      { name: 'Roving', description: 'Focus moves the 0 with it.', trigger: '[tabindex="0"]' },
+      { name: 'Pressed', description: 'A toggle button reflects aria-pressed.', trigger: '[aria-pressed="true"]' },
+      { name: 'Disabled', description: 'aria-disabled, and skipped by the arrow keys but still announced.', trigger: '[aria-disabled="true"]' },
+      { name: 'Wrapped', description: 'Wraps to a second row rather than overflowing.', trigger: 'container width' },
+    ],
+    props: [
+      { name: 'orientation', type: "'horizontal' | 'vertical'", default: "'horizontal'", description: 'Which arrow keys navigate.' },
+      { name: 'label', type: 'string', required: true, description: 'Accessible name. A toolbar without one is announced as an unnamed group.' },
+    ],
+    tokensUsed: ['color-surface-base', 'color-border-subtle', 'color-text-secondary', 'color-surface-hover', 'color-focus-ring'],
+    darkMode:
+      'The separator between groups uses border-subtle, which steps darker on dark rather than lighter. A light rule between two dark button groups reads as a divider more important than the controls it separates.',
+    accessibility: {
+      role: 'role="toolbar" with a roving tabindex. This is the whole reason the component exists.',
+      keyboard: [
+        { keys: 'Tab', action: 'Into the toolbar, landing on the last-focused control, then straight out. One stop.' },
+        { keys: 'Arrow Left / Right', action: 'Move between controls, following text direction, wrapping at the ends.' },
+        { keys: 'Arrow Up / Down', action: 'The same, for a vertical toolbar.' },
+        { keys: 'Home / End', action: 'First or last control.' },
+        { keys: 'Enter / Space', action: 'Activates the focused control.' },
+      ],
+      aria: [
+        'aria-label or aria-labelledby on the container. "Toolbar" alone is not a name.',
+        'aria-orientation, so arrow keys and announcement agree.',
+        'Toggle buttons use aria-pressed, not aria-selected. Selected belongs to a set of options; pressed belongs to a switchable action.',
+        'Disabled controls use aria-disabled and stay announced, so their presence is discoverable even while unavailable.',
+        'Icon-only buttons carry a visually hidden label; a tooltip is not an accessible name.',
+      ],
+      wcag: [
+        '2.1.1 Keyboard',
+        '2.4.3 Focus Order — the roving tabindex must follow visual order, which means it must follow wrapping too.',
+        '4.1.2 Name, Role, Value',
+        '2.5.8 Target Size — 24x24 minimum even in the compact variant.',
+      ],
+      screenReader:
+        'Announced as "Text formatting, toolbar" on entry, then each control with its pressed state. A ten-button toolbar costs one Tab, not ten.',
+      targetSize: 'Controls are 24x24 CSS px minimum at every density and in the compact variant.',
+    },
+    content: [
+      'Name the toolbar for what it acts on: "Text formatting", "Table actions".',
+      'Icon-only buttons still need a verb-phrase hidden label: "Bold", "Align left".',
+      'Group labels describe the run: "Alignment", not "Group 2".',
+    ],
+    dos: [
+      'Give the container a real name.',
+      'Keep it to one tab stop.',
+      'Use aria-pressed for toggles.',
+      'Let it wrap rather than scroll where the controls are few.',
+    ],
+    donts: [
+      'Never make every control a tab stop.',
+      'Never use a toolbar for page navigation.',
+      'Never rely on a tooltip as the accessible name.',
+      'Never remove a disabled control from the arrow order without telling anyone it exists.',
+    ],
+    html: `<div class="sk-toolbar" data-sk-toolbar aria-label="Text formatting">
+  <div class="sk-toolbar__group" role="group" aria-label="Style">
+    <button type="button" class="sk-icon-button" aria-pressed="true">
+      <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-edit" /></svg>
+      <span class="sk-visually-hidden">Bold</span>
+    </button>
+    <button type="button" class="sk-icon-button" aria-pressed="false">
+      <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-copy" /></svg>
+      <span class="sk-visually-hidden">Italic</span>
+    </button>
+  </div>
+
+  <hr class="sk-toolbar__separator" role="separator" aria-orientation="vertical" />
+
+  <div class="sk-toolbar__group" role="group" aria-label="Actions">
+    <button type="button" class="sk-icon-button">
+      <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-download" /></svg>
+      <span class="sk-visually-hidden">Export</span>
+    </button>
+    <button type="button" class="sk-icon-button" aria-disabled="true">
+      <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-trash" /></svg>
+      <span class="sk-visually-hidden">Delete, unavailable until something is selected</span>
+    </button>
+  </div>
+</div>`,
+    css: `.sk-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sk-space-4);
+  padding: var(--sk-space-4);
+  background-color: var(--sk-color-surface-base);
+  border: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle);
+  border-radius: var(--sk-radius-md);
+}
+.sk-toolbar__group { display: flex; align-items: center; gap: var(--sk-space-2); }
+
+.sk-toolbar__separator {
+  flex: 0 0 auto;
+  inline-size: var(--sk-border-width-hairline);
+  block-size: 1.5rem;
+  margin-inline: var(--sk-space-4);
+  border: none;
+  background-color: var(--sk-color-border-subtle);
+}
+
+.sk-toolbar--vertical {
+  flex-direction: column;
+  align-items: stretch;
+  inline-size: max-content;
+}
+.sk-toolbar--vertical .sk-toolbar__group { flex-direction: column; }
+.sk-toolbar--vertical .sk-toolbar__separator {
+  inline-size: 100%;
+  block-size: var(--sk-border-width-hairline);
+  margin-inline: 0;
+  margin-block: var(--sk-space-4);
+}
+
+.sk-toolbar--compact { padding: var(--sk-space-2); }
+.sk-toolbar--sm { padding: var(--sk-space-2); gap: var(--sk-space-2); }
+
+@media (forced-colors: active) {
+  .sk-toolbar { border-color: CanvasText; }
+  .sk-toolbar__separator { background-color: CanvasText; }
+}`,
+    related: ['button-group', 'icon-button', 'segmented-control', 'menu'],
+  },
+
+  /* ------------------------------------------------------------------ *
+   * Segmented control
+   * ------------------------------------------------------------------ */
+  {
+    id: 'segmented-control',
+    name: 'Segmented control',
+    category: 'action',
+    status: 'stable',
+    summary:
+      'Two to five mutually exclusive options, all visible at once. A radio group that looks like a control rather than a form field.',
+    whenToUse: [
+      'A view switch: list or grid, day or week or month.',
+      'A short filter with a clear default: 24h / 7d / 30d.',
+      'Density, theme, or any preference with few values and an obvious current state.',
+    ],
+    whenNotToUse: [
+      'More than about five options — use a Select. Segments shrink until their labels truncate, and a truncated option is unreadable.',
+      'Options with long labels. The control has to fit them all on one row.',
+      'A real form field submitted with the form — use a Radio group, which is what this is a compact presentation of.',
+      'Actions rather than options. Three buttons that *do* things are a Button group or a Toolbar.',
+    ],
+    anatomy: [
+      { part: 'Group', required: true, description: 'role="radiogroup" with a label, owning the roving tabindex.' },
+      { part: 'Segments', required: true, description: 'role="radio" with aria-checked. Never buttons with aria-pressed.' },
+      { part: 'Indicator', required: true, description: 'The selected segment gets a raised surface, not just a tint.' },
+      { part: 'Icons', required: false, description: 'Leading icons. Decorative — the label remains the name.' },
+    ],
+    variants: [
+      { name: 'Default', className: 'sk-segmented', description: 'Equal-width segments.', use: 'Default.' },
+      { name: 'Fitted', className: 'sk-segmented--fitted', description: 'Segments size to their content.', use: 'Labels of very different lengths.' },
+      { name: 'Icon only', className: 'sk-segmented--icon', description: 'Icons with hidden labels.', use: 'View switches where the icons are unambiguous — list versus grid.' },
+    ],
+    sizes: [
+      { name: 'Small', className: 'sk-segmented--sm', height: '2rem', typeStyle: 'body-sm', description: 'Toolbars and filter bars.' },
+      { name: 'Medium', className: '', height: '2.75rem', typeStyle: 'body-md', description: 'Default.' },
+    ],
+    states: [
+      { name: 'Rest', description: 'Sunken track, no segment raised.', trigger: 'default' },
+      { name: 'Selected', description: 'Raised surface plus aria-checked="true".', trigger: '[aria-checked="true"]' },
+      { name: 'Hover', description: 'Unselected segments take primary text.', trigger: ':hover' },
+      { name: 'Focus visible', description: 'Ring on the focused segment.', trigger: ':focus-visible' },
+      { name: 'Disabled', description: 'aria-disabled, skipped by arrows.', trigger: '[aria-disabled="true"]' },
+    ],
+    props: [
+      { name: 'options', type: 'Array<{value, label, icon?}>', required: true, description: 'Two to five.' },
+      { name: 'value', type: 'string', required: true, description: 'Selected value.' },
+      { name: 'label', type: 'string', required: true, description: 'Group name. Without it the whole control is unnamed.' },
+    ],
+    tokensUsed: ['color-surface-sunken', 'color-surface-raised', 'color-text-secondary', 'color-text-primary', 'color-border-subtle', 'color-focus-ring'],
+    darkMode:
+      'The track is surface-sunken and the selected segment is surface-raised, so selection is conveyed by *elevation* rather than by hue. That inverts correctly with no second rule: on dark the track goes darker than the page and the selected segment goes lighter, which is exactly the relationship light mode has. A brand tint here would need a separate dark treatment; elevation does not.',
+    accessibility: {
+      role: 'role="radiogroup" containing role="radio". Not a group of toggle buttons: aria-pressed on several buttons does not tell anyone only one may be on.',
+      keyboard: [
+        { keys: 'Tab', action: 'Into the group, landing on the selected segment. One tab stop.' },
+        { keys: 'Arrow Left / Right', action: 'Move and select, following text direction, wrapping.' },
+        { keys: 'Home / End', action: 'First or last segment.' },
+        { keys: 'Space', action: 'Selects the focused segment, where selection does not follow focus.' },
+      ],
+      aria: [
+        'aria-checked on each segment, exactly one true.',
+        'A roving tabindex: the selected segment is 0, the rest -1.',
+        'The group carries aria-label or aria-labelledby.',
+        'Icon-only segments carry a visually hidden label each.',
+      ],
+      wcag: [
+        '2.1.1 Keyboard',
+        '4.1.2 Name, Role, Value — the radiogroup contract is what conveys "one of these".',
+        '1.4.1 Use of Colour — selection is elevation plus aria-checked, never hue alone.',
+        '2.5.8 Target Size',
+      ],
+      screenReader:
+        'Announced as "Time range, radio group, 7d, selected, 2 of 3". The position in the set is what tells a user how many options exist without arrowing through them all.',
+      targetSize: 'Segments are at least 24px tall and as wide as their content plus padding.',
+    },
+    content: [
+      'Labels are one or two words: "Day", "Week", "Month".',
+      'Keep them parallel in form and roughly equal in length.',
+      'Order them the way the user thinks — smallest to largest, never alphabetically.',
+    ],
+    dos: [
+      'Use radiogroup and radio roles.',
+      'Convey selection with elevation as well as colour.',
+      'Keep it to five options at most.',
+      'Give the group a name.',
+    ],
+    donts: [
+      'Never build it from toggle buttons with aria-pressed.',
+      'Never let a label truncate.',
+      'Never use it for actions.',
+      'Never leave more than one segment checked.',
+    ],
+    html: `<div class="sk-segmented" role="radiogroup" aria-label="Time range" data-sk-segmented>
+  <button type="button" class="sk-segmented__option" role="radio" aria-checked="false" tabindex="-1">24h</button>
+  <button type="button" class="sk-segmented__option" role="radio" aria-checked="true" tabindex="0">7d</button>
+  <button type="button" class="sk-segmented__option" role="radio" aria-checked="false" tabindex="-1">30d</button>
+</div>`,
+    css: `.sk-segmented {
+  display: inline-flex;
+  align-items: stretch;
+  gap: var(--sk-space-2);
+  padding: var(--sk-space-2);
+  /* Sunken track, raised selection. Elevation inverts correctly between themes
+     on its own; a brand tint would need a second dark-mode rule. */
+  background-color: var(--sk-color-surface-sunken);
+  border: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle);
+  border-radius: var(--sk-radius-md);
+}
+
+.sk-segmented__option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sk-space-4);
+  min-block-size: 1.75rem;
+  padding-inline: var(--sk-space-12);
+  background: none;
+  border: none;
+  border-radius: var(--sk-radius-sm);
+  color: var(--sk-color-text-secondary);
+  font: inherit;
+  font-size: var(--sk-font-size-body-sm);
+  font-weight: var(--sk-font-weight-medium);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.sk-segmented__option:hover { color: var(--sk-color-text-primary); }
+.sk-segmented__option[aria-checked="true"] {
+  background-color: var(--sk-color-surface-raised);
+  color: var(--sk-color-text-primary);
+  box-shadow: var(--sk-elevation-1);
+}
+.sk-segmented__option:focus-visible {
+  outline: var(--sk-focus-ring-width) solid var(--sk-color-focus-ring);
+  outline-offset: calc(var(--sk-focus-ring-offset) * -1);
+}
+.sk-segmented__option[aria-disabled="true"] { color: var(--sk-color-text-disabled); cursor: not-allowed; }
+.sk-segmented__option svg { fill: currentColor; }
+
+/* Equal width by default, so the control does not jump as the label changes. */
+.sk-segmented:not(.sk-segmented--fitted) .sk-segmented__option { flex: 1 1 0; min-inline-size: 0; }
+
+.sk-segmented--icon .sk-segmented__option { padding-inline: var(--sk-space-8); }
+.sk-segmented--sm .sk-segmented__option { min-block-size: 1.5rem; padding-inline: var(--sk-space-8); }
+
+@media (forced-colors: active) {
+  .sk-segmented { border-color: CanvasText; }
+  /* Elevation is dropped in HCM, so selection has to be repainted. */
+  .sk-segmented__option[aria-checked="true"] { background-color: Highlight; color: HighlightText; }
+  .sk-segmented__option[aria-disabled="true"] { color: GrayText; }
+}`,
+    related: ['button-group', 'radio-group', 'tabs', 'toolbar'],
+  },
 ];

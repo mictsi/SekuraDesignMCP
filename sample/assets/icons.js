@@ -26,6 +26,7 @@
 
     // Direction
     'chevron-down': '<path d="M6 9.5l6 6 6-6"/>',
+  'chevron-up': '<path d="M6 14.5l6-6 6 6"/>',
     'chevron-right': '<path d="M9.5 6l6 6-6 6"/>',
     'chevron-left': '<path d="M14.5 6l-6 6 6 6"/>',
     'arrow-right': '<path d="M4 12h15M13.5 6.5L20 12l-6.5 5.5"/>',

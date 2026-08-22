@@ -66,6 +66,36 @@ const FIXTURES: Record<string, string> = {
     <button id="trigger" data-sk-disclosure="panel">Advanced</button>
     <div id="panel"><button id="inner">inside</button></div>`,
 
+  number: `
+    <span class="sk-number">
+      <input id="n" data-sk-number min="1" max="10" step="1" value="5" />
+      <button data-sk-step="1">up</button>
+      <button data-sk-step="-1">down</button>
+    </span>`,
+
+  tags: `
+    <div class="sk-tag-input">
+      <input id="t" data-sk-tag-input="tl" data-sk-tags="alpha,beta"
+             data-sk-options="alpha,beta,gamma,delta" />
+    </div>
+    <ul id="tl" hidden></ul>`,
+
+  toolbar: `
+    <div id="tb" data-sk-toolbar aria-label="Actions">
+      <button id="b1">One</button>
+      <button id="b2">Two</button>
+      <button id="b3">Three</button>
+    </div>
+    <button id="after">after</button>`,
+
+  datepicker: `
+    <div class="sk-date-picker" data-sk-datepicker>
+      <input id="d" value="2026-08-21" min="2026-08-10" />
+      <button id="dt" data-sk-datepicker-trigger>Pick</button>
+      <div id="dp" data-sk-datepicker-panel hidden></div>
+    </div>
+    <button id="after">after</button>`,
+
   accordion: `
     <div id="acc" data-sk-accordion="single">
       <button data-sk-accordion-trigger aria-controls="ap1" id="ah1">One</button>
@@ -397,6 +427,171 @@ async function main(): Promise<void> {
     await p.goto(url('menu'));
     const second = await p.evaluate(() => (window as any).Sekura.enhance().count);
     check('enhance: idempotent — re-running wires nothing new', second === 0, `wired ${second}`);
+    await p.close();
+  }
+
+
+  /* ---------------- Number input ---------------- */
+  {
+    const p = await ctx.newPage();
+    await p.goto(url('number'));
+
+    check('number: is a spinbutton, not a bare text box',
+      (await attr(p, '#n', 'role')) === 'spinbutton');
+    check('number: bounds are exposed',
+      (await attr(p, '#n', 'aria-valuemin')) === '1' && (await attr(p, '#n', 'aria-valuemax')) === '10');
+
+    await p.focus('#n');
+    await p.keyboard.press('ArrowUp');
+    check('number: ArrowUp steps by step', (await p.inputValue('#n')) === '6');
+    await p.keyboard.press('ArrowDown');
+    await p.keyboard.press('ArrowDown');
+    check('number: ArrowDown steps back', (await p.inputValue('#n')) === '4');
+
+    await p.keyboard.press('End');
+    check('number: End jumps to max', (await p.inputValue('#n')) === '10');
+    await p.keyboard.press('ArrowUp');
+    check('number: cannot exceed max', (await p.inputValue('#n')) === '10');
+    await p.keyboard.press('Home');
+    check('number: Home jumps to min', (await p.inputValue('#n')) === '1');
+
+    // The whole reason type="number" is rejected.
+    await p.evaluate(() => {
+      const el = document.getElementById('n') as HTMLInputElement;
+      el.dispatchEvent(new WheelEvent('wheel', { deltaY: -100, bubbles: true }));
+    });
+    check('number: the wheel does NOT change the value', (await p.inputValue('#n')) === '1');
+
+    // Clamp on blur, not per keystroke, or "10" is untypeable when min is 5.
+    await p.fill('#n', '99');
+    check('number: mid-typing value is left alone', (await p.inputValue('#n')) === '99');
+    await p.evaluate(() => (document.getElementById('n') as HTMLElement).blur());
+    check('number: clamps on blur', (await p.inputValue('#n')) === '10');
+    await p.close();
+  }
+
+  /* ---------------- Tag input ---------------- */
+  {
+    const p = await ctx.newPage();
+    await p.goto(url('tags'));
+
+    const tokens = () => p.$$eval('.sk-tag-input__token', (els: Element[]) => els.length);
+    check('tags: initial tags rendered as tokens', (await tokens()) === 2);
+    check('tags: each remove button names its own tag',
+      await p.$$eval('.sk-tag-input__remove', (els: Element[]) =>
+        els.every((e) => /Remove \S+/.test(e.getAttribute('aria-label') ?? ''))));
+
+    await p.focus('#t');
+    await p.keyboard.type('gamma');
+    await p.keyboard.press('Enter');
+    check('tags: Enter commits a tag', (await tokens()) === 3);
+    check('tags: input cleared after commit', (await p.inputValue('#t')) === '');
+
+    await p.keyboard.type('gamma');
+    await p.keyboard.press('Enter');
+    check('tags: duplicates rejected', (await tokens()) === 3);
+    // The rejected text stays so it can be edited rather than retyped.
+    check('tags: a rejected value is left in the field', (await p.inputValue('#t')) === 'gamma');
+
+    // Backspace ARMS, it does not delete. Deleting on the first press is how a
+    // tag disappears without the user meaning it.
+    await p.fill('#t', '');
+    await p.keyboard.press('Backspace');
+    check('tags: first Backspace arms rather than removes', (await tokens()) === 3);
+    check('tags: the armed token is marked',
+      await p.$$eval('.sk-tag-input__token[data-armed]', (els: Element[]) => els.length === 1));
+    await p.keyboard.press('Backspace');
+    check('tags: second Backspace removes', (await tokens()) === 2);
+
+    check('tags: the whole control is one tab stop',
+      await p.evaluate(() => {
+        const stops = Array.from(
+          document.querySelectorAll('.sk-tag-input [tabindex]:not([tabindex="-1"]), .sk-tag-input input, .sk-tag-input button')
+        ).filter((el) => (el as HTMLElement).tabIndex >= 0);
+        return stops.length === 1;
+      }));
+    await p.close();
+  }
+
+  /* ---------------- Toolbar ---------------- */
+  {
+    const p = await ctx.newPage();
+    await p.goto(url('toolbar'));
+
+    check('toolbar: has the role', (await attr(p, '#tb', 'role')) === 'toolbar');
+    check('toolbar: exactly one control is tabbable',
+      await p.$$eval('#tb button', (els: Element[]) => els.filter((e) => (e as HTMLElement).tabIndex === 0).length === 1));
+
+    await p.focus('#b1');
+    await p.keyboard.press('ArrowRight');
+    check('toolbar: ArrowRight moves focus', (await active(p)) === 'b2');
+    await p.keyboard.press('End');
+    check('toolbar: End goes to the last control', (await active(p)) === 'b3');
+    await p.keyboard.press('ArrowRight');
+    check('toolbar: arrows wrap', (await active(p)) === 'b1');
+
+    // The entire point: Tab leaves the toolbar rather than walking it.
+    await p.keyboard.press('Tab');
+    check('toolbar: Tab exits rather than visiting every button', (await active(p)) === 'after');
+    await p.close();
+  }
+
+  /* ---------------- Date picker ---------------- */
+  {
+    const p = await ctx.newPage();
+    await p.goto(url('datepicker'));
+
+    check('datepicker: closed initially', (await attr(p, '#dt', 'aria-expanded')) === 'false');
+    check('datepicker: panel is a modal dialog',
+      (await attr(p, '#dp', 'role')) === 'dialog' && (await attr(p, '#dp', 'aria-modal')) === 'true');
+
+    await p.click('#dt');
+    check('datepicker: opens', (await attr(p, '#dt', 'aria-expanded')) === 'true');
+    check('datepicker: focus lands inside the grid',
+      await p.evaluate(() => document.activeElement?.classList.contains('sk-calendar__day') ?? false));
+    check('datepicker: grid is one tab stop',
+      await p.$$eval('.sk-calendar__day', (els: Element[]) => els.filter((e) => (e as HTMLElement).tabIndex === 0).length === 1));
+    check('datepicker: every day carries a full date label',
+      await p.$$eval('.sk-calendar__day', (els: Element[]) =>
+        els.every((e) => (e.getAttribute('aria-label') ?? '').length > 8)));
+    check('datepicker: six rows always, so the panel does not reflow',
+      await p.$$eval('.sk-calendar__grid tbody tr', (els: Element[]) => els.length === 6));
+
+    await p.keyboard.press('ArrowRight');
+    check('datepicker: ArrowRight moves a day',
+      await p.evaluate(() => document.activeElement?.getAttribute('data-date') === '2026-08-22'));
+    await p.keyboard.press('ArrowDown');
+    check('datepicker: ArrowDown moves a week',
+      await p.evaluate(() => document.activeElement?.getAttribute('data-date') === '2026-08-29'));
+    await p.keyboard.press('PageDown');
+    check('datepicker: PageDown moves a month',
+      await p.evaluate(() => document.activeElement?.getAttribute('data-date') === '2026-09-29'));
+
+    await p.keyboard.press('Enter');
+    check('datepicker: Enter writes the value into the input',
+      (await p.inputValue('#d')) === '2026-09-29');
+    check('datepicker: selecting closes', (await attr(p, '#dt', 'aria-expanded')) === 'false');
+    check('datepicker: focus returns to the trigger', (await active(p)) === 'dt');
+
+    await p.click('#dt');
+    await p.keyboard.press('Escape');
+    check('datepicker: Escape closes', (await attr(p, '#dt', 'aria-expanded')) === 'false');
+    check('datepicker: Escape restores focus', (await active(p)) === 'dt');
+    check('datepicker: closed panel is hidden',
+      await p.evaluate(() => (document.getElementById('dp') as HTMLElement).hidden));
+    // The meaningful test is not "no tabindex=0 exists" — a tabindex inside a
+    // hidden element is already out of the tab order. It is whether Tab from
+    // the trigger reaches the next control instead of falling into the panel.
+    await p.focus('#dt');
+    await p.keyboard.press('Tab');
+    check('datepicker: Tab past a closed picker skips the calendar', (await active(p)) === 'after');
+
+    await p.click('#dt');
+    check('datepicker: days before min are disabled and say why',
+      await p.evaluate(() => {
+        const el = document.querySelector('[data-date="2026-08-09"]');
+        return !el || (el.getAttribute('aria-disabled') === 'true' && Boolean(el.getAttribute('data-why')));
+      }));
     await p.close();
   }
 

@@ -186,6 +186,15 @@ function main(): void {
     write(page.file, renderDocsPage(page, ctx));
   }
 
+  /* ---- Examples index ---- *
+     Generated from EXAMPLES, so it cannot drift from the pages it lists. */
+  {
+    const page = pages.examplesIndexPage(
+      EXAMPLES.map((e) => ({ file: e.file, title: e.title, description: e.description }))
+    );
+    write(page.file, renderDocsPage(page, ctx));
+  }
+
   /* ---- Examples ---- */
   for (const ex of EXAMPLES) {
     const path = join(PAGES_DIR, ex.file);

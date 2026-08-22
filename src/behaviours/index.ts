@@ -90,7 +90,39 @@ export {
 } from './controllers/tabs.js';
 
 export { createMenu, type Menu, type MenuOptions } from './controllers/menu.js';
+
+export {
+  addDays,
+  addMonths,
+  compare,
+  createCalendar,
+  createDatePicker,
+  createDateRange,
+  fromISO,
+  isSame,
+  toISO,
+  today,
+  type Calendar,
+  type CalendarOptions,
+  type DatePicker,
+  type DatePickerOptions,
+  type DateRange,
+  type DateRangeOptions,
+  type PlainDate,
+} from './controllers/datefield.js';
 export { createCombobox, type Combobox, type ComboboxOptions } from './controllers/combobox.js';
+
+export {
+  createNumberInput,
+  createTagInput,
+  createToolbar,
+  type NumberInput,
+  type NumberInputOptions,
+  type TagInput,
+  type TagInputOptions,
+  type Toolbar,
+  type ToolbarOptions,
+} from './controllers/inputs.js';
 
 export {
   createDialog,

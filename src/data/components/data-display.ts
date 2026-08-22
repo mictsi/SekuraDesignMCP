@@ -13,7 +13,8 @@ export const dataDisplayComponents: ComponentSpec[] = [
       'Layout. Never.',
       'A single attribute per item — use a list.',
       'Rich, image-led items — use a card grid.',
-    ],
+          'A spreadsheet. Column resizing and reordering, frozen columns, inline editing, grouping and row virtualisation are a **data grid**, which this system deliberately does not ship — see the note below.',
+],
     anatomy: [
       { part: 'Caption or heading', required: true, description: 'Identifies the dataset. Visually hidden if a nearby heading already does the job.' },
       { part: 'Scroll container', required: true, description: 'A focusable, labelled region so keyboard users can scroll a wide table.' },
@@ -50,6 +51,25 @@ export const dataDisplayComponents: ComponentSpec[] = [
       { name: 'density', type: "'dense' | 'compact' | 'medium'", default: "'medium'", description: 'Row height.' },
     ],
     tokensUsed: ['color-surface-raised', 'color-surface-subtle', 'color-border-subtle', 'color-surface-hover', 'color-surface-selected', 'color-border-brand', 'color-text-secondary'],
+    /*
+     * On data grids.
+     *
+     * This is a table: semantic markup, sorting, selection, a scroll container
+     * and a caption. It is not a data grid, and the system does not ship one.
+     *
+     * A grid with resizable and reorderable columns, frozen columns, inline
+     * editing, grouping and virtualisation is a product in its own right —
+     * TanStack Table and AG Grid exist because it takes years to get right, and
+     * a half-built one inside a design system is something teams outgrow in a
+     * quarter and then have to work around.
+     *
+     * What the system does own is the part those libraries get wrong by
+     * default: they are headless or canvas-based and ship no accessible
+     * markup. Style them with these tokens, keep `role="grid"` and its
+     * `aria-rowcount`/`aria-colcount` contract, keep the scroll container
+     * focusable and named, and keep sort state on `aria-sort` — the rules in
+     * this component apply whichever library draws the cells.
+     */
     darkMode:
       'Row separators use border-subtle, which must go *darker* on dark (neutral-800) rather than lighter. This is counter-intuitive and is the most common dark-mode table bug: reusing a light-mode neutral-200 rule on a dark page produces bright lines that visually dominate the data. The sticky header uses surface-subtle plus an explicit bottom border, because in dark mode a shadow alone will not separate it from the rows scrolling beneath. Striping uses a 4% white overlay rather than a fixed grey, so it composites correctly over both selected and hovered rows.',
     accessibility: {

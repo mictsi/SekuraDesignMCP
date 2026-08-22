@@ -1002,4 +1002,155 @@ export const feedbackComponents: ComponentSpec[] = [
 }`,
     related: ['badge', 'alert', 'table'],
   },
+
+  /* ------------------------------------------------------------------ *
+   * Meter
+   * ------------------------------------------------------------------ */
+  {
+    id: 'meter',
+    name: 'Meter',
+    category: 'feedback',
+    status: 'stable',
+    summary:
+      'A measurement within a known range: storage used, seats taken, budget spent. Not a progress bar — nothing is happening.',
+    whenToUse: [
+      'A quantity out of a capacity: 7.2 GB of 10 GB, 18 of 25 seats.',
+      'A score or rating on a fixed scale.',
+      'Anything with a threshold where crossing it matters.',
+    ],
+    whenNotToUse: [
+      'A task in flight — that is a Progress bar. The distinction is real: progress always ends, a meter just is. Announcing a meter as progress makes a screen reader user wait for something to finish.',
+      'A value with no meaningful maximum. Without a ceiling the bar length means nothing.',
+      'A single figure with no range — use a Stat tile.',
+    ],
+    anatomy: [
+      { part: 'Label', required: true, description: 'What is being measured.' },
+      { part: 'Value text', required: true, description: 'The figure in words: "7.2 GB of 10 GB". The bar is the illustration, not the data.' },
+      { part: 'Track', required: true, description: 'role="meter" with aria-valuenow, min, max.' },
+      { part: 'Fill', required: true, description: 'The measured portion.' },
+      { part: 'Threshold marker', required: false, description: 'A tick where a limit sits.' },
+    ],
+    variants: [
+      { name: 'Default', className: 'sk-meter', description: 'Neutral fill.', use: 'A measurement with no judgement attached.' },
+      { name: 'Graded', className: 'sk-meter--graded', description: 'Fill takes a status colour past each threshold.', use: 'Capacity, where nearly full is a warning and full is a problem.' },
+      { name: 'Segmented', className: 'sk-meter--segmented', description: 'Discrete blocks rather than a continuous bar.', use: 'Small whole counts — 4 of 5 licences.' },
+    ],
+    sizes: [
+      { name: 'Small', className: 'sk-meter--sm', height: '0.25rem', typeStyle: 'body-xs', description: 'In a table row or a list.' },
+      { name: 'Medium', className: '', height: '0.5rem', typeStyle: 'body-sm', description: 'Default.' },
+    ],
+    states: [
+      { name: 'Normal', description: 'Below every threshold.', trigger: 'default' },
+      { name: 'Warning', description: 'Past the first threshold.', trigger: '[data-level="warning"]' },
+      { name: 'Critical', description: 'Past the second, or at capacity.', trigger: '[data-level="critical"]' },
+      { name: 'Empty', description: 'Zero. The track still shows, so the control does not vanish.', trigger: '[aria-valuenow="0"]' },
+      { name: 'Over', description: 'Above the maximum. The bar clamps and the text tells the truth.', trigger: '[data-over]' },
+    ],
+    props: [
+      { name: 'value', type: 'number', required: true, description: 'Current measurement.' },
+      { name: 'min', type: 'number', default: '0', description: 'Range floor.' },
+      { name: 'max', type: 'number', required: true, description: 'Range ceiling.' },
+      { name: 'valueText', type: 'string', required: true, description: 'Human reading: "7.2 GB of 10 GB". Not a percentage on its own.' },
+      { name: 'thresholds', type: '{ warning?: number; critical?: number }', description: 'Where the graded variant changes colour.' },
+    ],
+    tokensUsed: ['color-surface-sunken', 'color-action-primary-bg', 'color-status-warning-solid', 'color-status-danger-solid', 'color-text-primary', 'color-text-secondary'],
+    darkMode:
+      'The track is surface-sunken, which goes *darker* than the page on dark — a meter is a recess, and treating it as a raised element makes an empty meter look like a filled one. The status fills use the solid steps, which move up their ramps on dark so they stay at 3:1 against the darker track.',
+    accessibility: {
+      role: 'role="meter". Deliberately not role="progressbar" — progress implies a task that will finish, and assistive technology treats them differently.',
+      keyboard: [
+        { keys: 'None', action: 'A meter is not interactive and takes no focus. If a user can change it, it is a Slider.' },
+      ],
+      aria: [
+        'aria-valuenow, aria-valuemin and aria-valuemax define the range.',
+        'aria-valuetext carries the human reading. Without it a screen reader announces a bare number with no unit, which for "7.2 of 10" is nearly useless.',
+        'aria-labelledby points at the visible label rather than duplicating it in aria-label.',
+        'The graded variant sets a data attribute as well as a colour, so the level is not conveyed by hue alone.',
+        'A meter that changes rarely is not a live region. Announcing every storage tick would be noise.',
+      ],
+      wcag: [
+        '1.4.1 Use of Colour — the level must be readable from the text, not only from the fill colour.',
+        '1.4.11 Non-text Contrast — the fill holds 3:1 against the track.',
+        '4.1.2 Name, Role, Value',
+      ],
+      screenReader:
+        'Announced as "Storage, meter, 7.2 GB of 10 GB". The valueText is what makes that a sentence rather than "72".',
+      targetSize: 'Not interactive, so no target applies.',
+    },
+    content: [
+      'Give both numbers: "18 of 25 seats", not "72%". A percentage hides the scale, and the scale is usually what the reader needs.',
+      'Name the unit every time.',
+      'Say what happens at the limit before it is reached: "2 seats left" beats a red bar with no explanation.',
+    ],
+    dos: [
+      'Use role="meter", not progressbar.',
+      'Always set aria-valuetext.',
+      'Show the figures as text beside the bar.',
+      'Pair the graded colour with a data attribute.',
+    ],
+    donts: [
+      'Never use a meter for a running task.',
+      'Never show only a percentage.',
+      'Never rely on fill colour alone to say "nearly full".',
+      'Never animate a meter as though it were filling up.',
+    ],
+    html: `<div class="sk-meter sk-meter--graded" data-level="warning">
+  <div class="sk-meter__header">
+    <span class="sk-meter__label" id="storage-label">Storage</span>
+    <span class="sk-meter__value">7.2 GB of 10 GB</span>
+  </div>
+  <div class="sk-meter__track" role="meter"
+       aria-labelledby="storage-label"
+       aria-valuenow="7.2" aria-valuemin="0" aria-valuemax="10"
+       aria-valuetext="7.2 gigabytes of 10 gigabytes used">
+    <div class="sk-meter__fill" style="inline-size: 72%"></div>
+  </div>
+  <p class="sk-meter__note">2.8 GB left. Uploads stop at the limit.</p>
+</div>`,
+    css: `.sk-meter { display: flex; flex-direction: column; gap: var(--sk-space-4); }
+
+.sk-meter__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sk-space-8);
+  flex-wrap: wrap;
+}
+.sk-meter__label { font-size: var(--sk-font-size-body-sm); font-weight: var(--sk-font-weight-medium); color: var(--sk-color-text-primary); }
+.sk-meter__value { font-size: var(--sk-font-size-body-sm); color: var(--sk-color-text-secondary); font-variant-numeric: tabular-nums; }
+
+/* Sunken, not raised. An empty meter must read as an empty channel. */
+.sk-meter__track {
+  block-size: 0.5rem;
+  background-color: var(--sk-color-surface-sunken);
+  border-radius: var(--sk-radius-full);
+  overflow: hidden;
+}
+.sk-meter__fill {
+  block-size: 100%;
+  background-color: var(--sk-color-action-primary-bg);
+  border-radius: inherit;
+}
+
+.sk-meter--graded[data-level="warning"] .sk-meter__fill { background-color: var(--sk-color-status-warning-solid); }
+.sk-meter--graded[data-level="critical"] .sk-meter__fill { background-color: var(--sk-color-status-danger-solid); }
+
+.sk-meter__note { margin: 0; font-size: var(--sk-font-size-body-xs); color: var(--sk-color-text-secondary); }
+
+.sk-meter--segmented .sk-meter__track { display: flex; gap: var(--sk-space-2); background: none; overflow: visible; }
+.sk-meter__segment { flex: 1 1 0; block-size: 0.5rem; background-color: var(--sk-color-surface-sunken); border-radius: var(--sk-radius-sm); }
+.sk-meter__segment[data-filled] { background-color: var(--sk-color-action-primary-bg); }
+
+.sk-meter--sm .sk-meter__track { block-size: 0.25rem; }
+
+@media (forced-colors: active) {
+  /* Backgrounds are discarded, so the track needs an outline or the meter
+     disappears entirely, and the fill needs a system colour to stay visible. */
+  .sk-meter__track { outline: 1px solid CanvasText; }
+  .sk-meter__fill { background-color: Highlight; }
+  .sk-meter__segment { outline: 1px solid CanvasText; }
+  .sk-meter__segment[data-filled] { background-color: Highlight; }
+}`,
+    related: ['progress', 'stat-tile', 'slider'],
+  },
 ];

@@ -57,6 +57,35 @@ export function validateMarkup(html: string, componentId?: string): Finding[] {
   let m: RegExpExecArray | null;
   while ((m = buttonRe.exec(html)) !== null) {
     const [full, attrs = '', inner = ''] = m;
+
+    /*
+     * A button removed from the accessibility tree needs no name, because
+     * nothing can reach it: `aria-hidden="true"` plus `tabindex="-1"` is the
+     * correct way to render a decorative control whose operation is already
+     * exposed by something else — a number input's steppers duplicate what
+     * `role="spinbutton"` announces, and naming them makes every numeric field
+     * read as three controls instead of one.
+     *
+     * `aria-hidden` WITHOUT `tabindex="-1"` is the opposite: a focusable
+     * element invisible to assistive technology, which is a worse defect than
+     * a missing name. That still fails, below.
+     */
+    const ariaHidden = /\baria-hidden\s*=\s*["']true["']/i.test(attrs);
+    const notFocusable = /\btabindex\s*=\s*["']-\d+["']/i.test(attrs) || /\bdisabled\b/i.test(attrs);
+    if (ariaHidden && notFocusable) continue;
+    if (ariaHidden && !notFocusable) {
+      add({
+        severity: 'error',
+        rule: 'aria-hidden-focusable',
+        message:
+          'A <button> is aria-hidden but still focusable. Keyboard users can reach a control that screen reader users cannot perceive at all.',
+        snippet: snip(full),
+        fix: 'Add tabindex="-1" if the button is genuinely decorative, or remove aria-hidden and give it a name.',
+        wcag: '4.1.2 Name, Role, Value; 2.4.3 Focus Order',
+      });
+      continue;
+    }
+
     if (!hasAccessibleName(attrs, inner)) {
       add({
         severity: 'error',

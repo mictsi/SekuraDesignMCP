@@ -66,12 +66,28 @@
           </button>
         </span>
 
+        <!-- A date range is two inputs, never one combined "12 Aug – 21 Aug"
+             box: a screen reader announces that as a single value and a
+             keyboard user cannot edit half of it. -->
+        <div class="sk-cluster sk-cluster--gap-8 sk-cluster--align-start" data-sk-daterange>
+          <div class="sk-field">
+            <label class="sk-field__label sk-visually-hidden" for="due-from">Due from</label>
+            <input class="sk-input sk-input--sm" id="due-from" type="text" inputmode="numeric"
+                   placeholder="From" autocomplete="off" spellcheck="false" />
+          </div>
+          <div class="sk-field">
+            <label class="sk-field__label sk-visually-hidden" for="due-to">Due to</label>
+            <input class="sk-input sk-input--sm" id="due-to" type="text" inputmode="numeric"
+                   placeholder="To" autocomplete="off" spellcheck="false" />
+          </div>
+        </div>
+
         <span class="sk-cluster__push"></span>
 
-        <div class="sk-button-group sk-button-group--segmented" role="radiogroup" aria-label="Row density">
-          <button type="button" class="sk-button-group__segment" role="radio" data-sk-density-option="comfortable">Comfortable</button>
-          <button type="button" class="sk-button-group__segment" role="radio" data-sk-density-option="compact">Compact</button>
-          <button type="button" class="sk-button-group__segment" role="radio" data-sk-density-option="dense">Dense</button>
+        <div class="sk-segmented" role="radiogroup" aria-label="Row density" data-sk-segmented>
+          <button type="button" class="sk-segmented__option" role="radio" data-sk-density-option="comfortable">Comfortable</button>
+          <button type="button" class="sk-segmented__option" role="radio" data-sk-density-option="compact">Compact</button>
+          <button type="button" class="sk-segmented__option" role="radio" data-sk-density-option="dense">Dense</button>
         </div>
       </div>
 

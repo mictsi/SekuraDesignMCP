@@ -64,6 +64,41 @@ the contrast audit proves nothing regressed.
   in a grep and in review. Writing these turned up exactly one such mistake in
   my own work — a `.sk-command-palette__option` that has never existed — so the
   rule now fails the build. 52 selectors checked.
+- **Seven components: date picker, date range picker, number input, tag input,
+  toolbar, segmented control and meter.** 64 components. Each has a real
+  controller in the behaviours package, not just CSS.
+
+  The **date picker** is the largest: a calendar grid on the ARIA Date Picker
+  Dialog pattern, with day/week/month/year keyboard navigation, a roving
+  tabindex so the calendar is one tab stop rather than forty-two, focus trapped
+  while open and returned to the trigger on close, and a text input that stays
+  authoritative — typing a date beats fourteen arrow presses and is the only
+  route for voice or switch input. `<input type="date">` is rejected on purpose:
+  its layout, keyboard model and format differ on every platform.
+
+  The **number input** exists because the system already told people not to use
+  `type="number"` and then offered nothing in its place. It does not bind the
+  wheel, and it clamps on blur rather than per keystroke so "10" stays typeable
+  when the minimum is 5.
+
+  The **tag input** arms the last token on Backspace and removes it only on a
+  second press. The **toolbar** and **segmented control** are one tab stop each.
+  The **meter** is `role="meter"`, deliberately not `progressbar` — progress
+  implies a task that finishes, and a screen reader treats the two differently.
+
+  Behaviours bundle: 9.1 KB → 13.6 KB gzipped. Behaviour assertions: 63 → 107.
+- **Charts and data grids are documented as deliberate non-goals**, which is
+  different from being missing. The data-visualisation foundation now says the
+  system ships the palette, the tokens and the accessibility contract but not
+  chart components, and shows how to point any renderer at the live tokens so
+  the chart follows the theme. The Table component carries the equivalent note
+  about data grids: keep the ARIA contract, let TanStack or AG Grid draw cells.
+- **`examples.html`** — an index of the worked examples, generated from the same
+  list that builds them so it cannot advertise a page that does not exist.
+- **`npm run site:publish`** — a self-contained static bundle in `dist-site/`,
+  including a 404 page. It is a gate: it refuses to produce a bundle containing
+  a root-absolute reference, which is the failure that works at a domain root
+  and 404s in a subdirectory.
 - **Disclosure and Accordion** — 57 components. The behaviours package has
   shipped `createDisclosure` and `createAccordion` since 1.0.0, `enhance()`
   already wired them, and the behaviour tests already covered them, but neither
@@ -132,6 +167,19 @@ the contrast audit proves nothing regressed.
 
 ### Fixed
 
+- **`validate_markup` flagged decorative buttons.** A `<button>` that is
+  `aria-hidden="true"` with `tabindex="-1"` is removed from the accessibility
+  tree and needs no name — that is the correct way to render a number input's
+  steppers, whose operation `role="spinbutton"` already announces. The linter
+  now recognises it, and gained a stronger rule in exchange:
+  `aria-hidden-focusable` fails a button that is `aria-hidden` but still
+  reachable, which is a worse defect than a missing name.
+- **`dead-forced-colors-selector` only checked the first block** in a component.
+  The date picker has two, so selectors defined between them were reported as
+  dead. It now collects every block and checks them all against everything
+  outside all of them.
+- **`chevron-up` was missing from the icon sprite** — down, left and right were
+  all present.
 - **`./run.sh start` no longer starts a second documentation server on port
   4173.** The MCP endpoint, the health check and the docs are all served from
   one port under one path prefix; a separate copy on another port both

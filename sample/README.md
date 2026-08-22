@@ -46,13 +46,13 @@ the full narrative in a collapsible section.
 | Page | |
 |---|---|
 | `tokens.html` | All 120 semantic tokens, filterable, with the value in each of the four themes |
-| `components.html` | 55 components grouped by category |
+| `components.html` | 64 components grouped by category |
 | `component-*.html` | One page each: anatomy, variants, states, props, dark-mode note, full keyboard and ARIA contract, CSS |
 | `patterns.html` | 15 UX patterns with their anti-patterns |
 | `recipes.html` | 9 page blueprints with markup |
 
 ### Examples
-Nine pages showing the system in a real product — a team project workspace,
+Nine pages, indexed at `examples.html`, showing the system in a real product — a team project workspace,
 chosen because every designer has built one and none of it needs explaining.
 
 | Page | What it is for |

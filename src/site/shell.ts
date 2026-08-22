@@ -68,6 +68,7 @@ export const NAV: NavGroup[] = [
   {
     label: 'Examples',
     items: [
+      { file: 'examples.html', label: 'All examples' },
       { file: 'example-dashboard.html', label: 'Dashboard' },
       { file: 'example-list.html', label: 'List page' },
       { file: 'example-detail.html', label: 'Detail page' },

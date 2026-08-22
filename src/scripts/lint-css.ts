@@ -82,17 +82,45 @@ function lint(source: string, css: string): void {
   /* A forced-colors block that names a selector the component does not have is
      dead CSS that reads as coverage. It is worse than no block: it makes the
      component look handled in a grep and in a review. Everything a
-     forced-colors block targets must exist in the normal rules above it. */
-  const fcAt = css.indexOf('@media (forced-colors: active)');
-  if (fcAt !== -1) {
-    const block = css.slice(fcAt);
-    const before = css.slice(0, fcAt);
+     forced-colors block targets must exist in the normal rules.
+
+     A component may have several such blocks — one per concern — so all of them
+     are collected and checked against everything outside all of them, rather
+     than against whatever happens to precede the first. */
+  const fcBlocks: string[] = [];
+  let normal = '';
+  {
+    let i = 0;
+    while (i < css.length) {
+      const at = css.indexOf('@media (forced-colors: active)', i);
+      if (at === -1) {
+        normal += css.slice(i);
+        break;
+      }
+      normal += css.slice(i, at);
+      // Walk to the matching close brace of the at-rule.
+      let depth = 0;
+      let j = css.indexOf('{', at);
+      const bodyStart = j;
+      for (; j < css.length; j += 1) {
+        if (css[j] === '{') depth += 1;
+        else if (css[j] === '}') {
+          depth -= 1;
+          if (depth === 0) break;
+        }
+      }
+      fcBlocks.push(css.slice(bodyStart, j + 1));
+      i = j + 1;
+    }
+  }
+
+  for (const block of fcBlocks) {
     const targets = new Set<string>();
     for (const m of block.matchAll(/\.(sk-[a-z0-9_-]+)/g)) targets.add(`.${m[1]!}`);
     for (const m of block.matchAll(/(\[[a-z-]+(?:[~^|*$]?="[^"]*")?\])/g)) targets.add(m[1]!);
     for (const m of block.matchAll(/(::[a-z-]+)/g)) targets.add(m[1]!);
     for (const t of targets) {
-      if (before.includes(t)) continue;
+      if (normal.includes(t)) continue;
       issues.push({
         source,
         rule: 'dead-forced-colors-selector',

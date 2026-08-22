@@ -17,10 +17,14 @@
             </p>
           </div>
           <div class="sk-page-header__actions">
-            <div class="sk-button-group sk-button-group--segmented" role="radiogroup" aria-label="Time range">
-              <button type="button" class="sk-button-group__segment" role="radio" aria-checked="false" tabindex="-1">24h</button>
-              <button type="button" class="sk-button-group__segment" role="radio" aria-checked="true"  tabindex="0">7d</button>
-              <button type="button" class="sk-button-group__segment" role="radio" aria-checked="false" tabindex="-1">30d</button>
+            <!-- A radiogroup, not three toggle buttons: aria-pressed on several
+                 buttons never says that only one may be on. Selection is shown
+                 by elevation as well as colour, which inverts correctly between
+                 themes with no second rule. -->
+            <div class="sk-segmented" role="radiogroup" aria-label="Time range" data-sk-segmented>
+              <button type="button" class="sk-segmented__option" role="radio" aria-checked="false" tabindex="-1">24h</button>
+              <button type="button" class="sk-segmented__option" role="radio" aria-checked="true"  tabindex="0">7d</button>
+              <button type="button" class="sk-segmented__option" role="radio" aria-checked="false" tabindex="-1">30d</button>
             </div>
             <a class="sk-button sk-button--primary" href="example-form.html">
               <svg class="sk-button__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-plus"></use></svg>
@@ -326,6 +330,40 @@
                 <span class="sk-status__label">Q4 research</span>
                 <span class="sk-status__detail">Not started</span>
               </span>
+            </div>
+          </section>
+          <!-- Meters, not progress bars. Nothing is happening: these are
+               measurements against a capacity. role="meter" matters, because a
+               screen reader treats progress as a task that will finish. -->
+          <section class="sk-card">
+            <div class="sk-card__header"><h2 class="sk-card__title">Workspace usage</h2></div>
+            <div class="sk-card__body sk-stack sk-stack--gap-16">
+              <div class="sk-meter">
+                <div class="sk-meter__header">
+                  <span class="sk-meter__label" id="seats-label">Seats</span>
+                  <span class="sk-meter__value">18 of 25</span>
+                </div>
+                <div class="sk-meter__track" role="meter" aria-labelledby="seats-label"
+                     aria-valuenow="18" aria-valuemin="0" aria-valuemax="25"
+                     aria-valuetext="18 of 25 seats used">
+                  <div class="sk-meter__fill" style="inline-size:72%"></div>
+                </div>
+              </div>
+
+              <div class="sk-meter sk-meter--graded" data-level="warning">
+                <div class="sk-meter__header">
+                  <span class="sk-meter__label" id="files-label">File storage</span>
+                  <span class="sk-meter__value">8.6 GB of 10 GB</span>
+                </div>
+                <div class="sk-meter__track" role="meter" aria-labelledby="files-label"
+                     aria-valuenow="8.6" aria-valuemin="0" aria-valuemax="10"
+                     aria-valuetext="8.6 gigabytes of 10 gigabytes used">
+                  <div class="sk-meter__fill" style="inline-size:86%"></div>
+                </div>
+                <!-- Both figures in words. A percentage alone hides the scale,
+                     and the scale is what the reader needs to act. -->
+                <p class="sk-meter__note">1.4 GB left. Uploads stop at the limit.</p>
+              </div>
             </div>
           </section>
         </aside>

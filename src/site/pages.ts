@@ -2430,3 +2430,71 @@ enhance: idempotent — re-running wires nothing new`, { lang: 'bash', label: 'A
 
   return p;
 }
+
+/* ------------------------------------------------------------------ *
+ * Examples index
+ * ------------------------------------------------------------------ */
+
+export interface ExampleEntry {
+  file: string;
+  title: string;
+  description: string;
+}
+
+/**
+ * A gallery of the worked examples.
+ *
+ * Built from the same list that generates the pages, so it cannot advertise one
+ * that does not exist or quietly omit one that does.
+ */
+export function examplesIndexPage(entries: ExampleEntry[]): Page {
+  const p = new Page({
+    file: 'examples.html',
+    title: 'Examples',
+    eyebrow: 'Examples',
+    lead:
+      `${entries.length} complete pages built only from this system — every pixel from a token, ` +
+      `no page-specific colour, size or spacing anywhere. They are a real product, not a component gallery: ` +
+      `the point is how the pieces behave together.`,
+  });
+
+  p.section(
+    'The pages',
+    `<div class="sk-grid sk-grid--min-18 sk-grid--gap-16">${entries
+      .map(
+        (e) => `<article class="sk-card sk-card--interactive">
+      <div class="sk-card__body sk-stack sk-stack--gap-8">
+        <h3 class="sk-card__title" style="font-size:var(--sk-font-size-heading-xs)">
+          <a class="sk-link sk-link--quiet" href="${escapeHtml(e.file)}">${escapeHtml(e.title)}</a>
+        </h3>
+        <p style="margin:0;color:var(--sk-color-text-secondary);font-size:var(--sk-font-size-body-sm)">
+          ${escapeHtml(e.description)}
+        </p>
+      </div>
+    </article>`
+      )
+      .join('')}</div>`
+  );
+
+  p.section(
+    'Where to start',
+    `<div class="docs-prose">
+      <p>
+        If you are adopting the system, read
+        <a class="sk-link" href="example-states.html">Loading, empty &amp; error</a> first. The
+        others show components; that one shows the decisions — the three empty states that
+        routinely get identical copy, the difference between a recoverable failure and a
+        forbidden one, and why <code class="sk-code">disabled</code> and
+        <code class="sk-code">aria-disabled</code> are not interchangeable.
+      </p>
+      <p>
+        Every page works at 320px without a horizontal scrollbar, mirrors correctly in
+        right-to-left, and renders in light, dark and both high-contrast themes. Use the theme
+        control in the top bar — the examples are the fastest way to see the elevation
+        inversion, where a raised surface gets <em>lighter</em> as the page goes dark.
+      </p>
+    </div>`
+  );
+
+  return p;
+}

@@ -108,6 +108,11 @@ jobs:
         # hard-coded colours, then the design system's own markup linter.
         run: npm run verify:sample
 
+      - name: Static bundle is portable
+        # Produces dist-site/ and refuses if anything is root-absolute — the
+        # failure that works at a domain root and 404s in a subdirectory.
+        run: npm run site:publish
+
       - name: RTL regression
         # Logical properties are claimed to make RTL work with no extra CSS.
         # This drives the built site, so it runs after site:build — running it
