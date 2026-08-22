@@ -235,9 +235,14 @@ jobs:
             echo "$p -> $code"
             [ "$code" = "200" ] || { echo "::error::$p returned $code under the prefix"; exit 1; }
           done
-          # The old root paths must be gone, not silently still served.
-          code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8081/health)
-          [ "$code" = "404" ] || { echo "::error::/health still answers at the root ($code)"; exit 1; }
+          # Nothing may answer outside the app path — including the root, which
+          # used to redirect. Two addresses for one deployment is how a link
+          # ends up pointing at the one that is not the real one.
+          for p in / /health /docs/ /mcp /manifest.json /css/sekura.css; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:8081$p")
+            [ "$code" = "404" ] || { echo "::error::$p answers outside the app path ($code)"; exit 1; }
+          done
+          echo "nothing is served outside /design-system"
           curl -fsS http://127.0.0.1:8081/design-system/manifest.json | node -e "
             let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{
               const m=JSON.parse(s);

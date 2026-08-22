@@ -29,7 +29,12 @@ import { exportTokens } from './lib/exporters.js';
 import { publishedUrls, readUrlConfig } from './lib/urls.js';
 import { createServer, SERVER_NAME, SERVER_VERSION } from './server.js';
 
-const PORT = Number(process.env.PORT ?? process.env.SEKURA_MCP_PORT ?? 8080);
+/*
+ * The port inside the container. The published port is a host concern — it is
+ * set on the port mapping, never in here, so there is exactly one place each
+ * lives and they cannot disagree.
+ */
+const PORT = Number(process.env.PORT ?? 8080);
 const HOST = process.env.HOST ?? '0.0.0.0';
 
 /**
@@ -221,19 +226,15 @@ export async function startHttpServer(): Promise<void> {
   api.get(cfg.mcpPath, methodNotAllowed);
   api.delete(cfg.mcpPath, methodNotAllowed);
 
-  app.use(cfg.basePath || '/', api);
-
-  /**
-   * Mounted under a prefix, a request to `/` is a misconfiguration somewhere —
-   * usually a proxy that was meant to pass the prefix through and stripped it,
-   * or a person with the wrong URL. Redirecting is friendlier than a bare 404
-   * and makes the mistake self-explaining.
+  /*
+   * Everything this server exposes lives on this router, and the router is
+   * mounted at exactly one place. There is deliberately no route outside the
+   * app path — not even a redirect from `/`. A prefixed deployment that also
+   * answered at the root would be reachable by two different URLs, which is
+   * how a link, a bookmark or a proxy rule ends up pointing at the one that is
+   * not the real address.
    */
-  if (cfg.basePath) {
-    app.get('/', (_req: Request, res: Response) => {
-      res.redirect(302, `${cfg.basePath}/`);
-    });
-  }
+  app.use(cfg.basePath || '/', api);
 
   await new Promise<void>((done) => {
     const httpServer = app.listen(PORT, HOST, () => {

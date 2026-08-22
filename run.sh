@@ -9,7 +9,6 @@
 #   ./run.sh restart        Stop, then start
 #   ./run.sh logs [target]  Follow logs
 #   ./run.sh status         What is running, and whether it is healthy
-#   ./run.sh docs           Standalone docs server, for iterating on the site
 #   ./run.sh verify         Run every build gate
 #   ./run.sh clean          Remove build output, container and image
 #
@@ -54,11 +53,8 @@ EXTERNAL_URL="${SEKURA_EXTERNAL_URL:-}"
 # Normalised once: leading slash, no trailing slash, empty for the root.
 BASE_PATH="$(printf '%s' "$BASE_PATH" | sed -E 's#/+$##; s#^([^/])#/\1#')"
 [[ "$BASE_PATH" == "/" ]] && BASE_PATH=""
-SAMPLE_PORT="${SAMPLE_PORT:-4173}"
 
 RUN_DIR=".run"
-SAMPLE_PID="$RUN_DIR/sample.pid"
-SAMPLE_LOG="$RUN_DIR/sample.log"
 LOCAL_PID="$RUN_DIR/mcp.pid"
 LOCAL_LOG="$RUN_DIR/mcp.log"
 
@@ -290,33 +286,6 @@ start_mcp_local() {
 # iterating on the site without the MCP server running. `./run.sh start` no
 # longer launches it — the server publishes /docs on its own port, and a second
 # copy on 4173 is both a duplicate and a contradiction of "one port, one path".
-start_sample() {
-  if pid_alive "$SAMPLE_PID"; then
-    info "Sample site already running"
-    return 0
-  fi
-  if [[ ! -f sample/index.html ]]; then
-    warn "Sample not built — skipping. Run: ./run.sh build"
-    return 0
-  fi
-  if port_in_use "$SAMPLE_PORT"; then
-    warn "Port ${SAMPLE_PORT} is already in use — skipping the sample site."
-    return 0
-  fi
-
-  need_node
-  mkdir -p "$RUN_DIR"
-  SAMPLE_PORT="$SAMPLE_PORT" \
-    spawn_detached "$SAMPLE_PID" "$SAMPLE_LOG" node dist/scripts/serve-sample.js
-
-  if wait_for_http "http://127.0.0.1:${SAMPLE_PORT}/" "Sample site"; then
-    ok "Sample site http://localhost:${SAMPLE_PORT}/       (pid $(cat "$SAMPLE_PID"))"
-  else
-    tail -n 20 "$SAMPLE_LOG" 2>/dev/null | sed 's/^/    /'
-    stop_pidfile "$SAMPLE_PID" "Sample site"
-    warn "Sample site failed to start."
-  fi
-}
 
 cmd_start() {
   mkdir -p "$RUN_DIR"
@@ -362,7 +331,6 @@ cmd_stop() {
     stop_pidfile "$LOCAL_PID" "MCP server"
   fi
 
-  stop_pidfile "$SAMPLE_PID" "Sample site"
   ok "All stopped"
 }
 
@@ -379,10 +347,6 @@ cmd_logs() {
   [[ "${1:-}" == "--no-follow" ]] && target="all"
 
   case "$target" in
-    sample)
-      [[ -f "$SAMPLE_LOG" ]] || die "No sample log yet. Start it first."
-      exec tail ${follow} -n 100 "$SAMPLE_LOG"
-      ;;
     server|mcp|all)
       local hint=""
       [[ -n "$follow" ]] && hint=" (Ctrl+C to stop)"
@@ -440,13 +404,6 @@ cmd_status() {
     info "MCP server   not running"
   fi
 
-  # --- Sample ---
-  if pid_alive "$SAMPLE_PID"; then
-    ok "Sample site  running — http://localhost:${SAMPLE_PORT}/ (pid $(cat "$SAMPLE_PID"))"
-  else
-    info "Sample site  not running"
-  fi
-
   # --- Artefacts ---
   printf '\n'
   [[ -d dist ]]          && ok "dist/         built"          || info "dist/         missing"
@@ -500,7 +457,6 @@ cmd_clean() {
     image_exists && docker rmi -f "$IMAGE" >/dev/null 2>&1 && ok "Removed image" || true
   fi
 
-  stop_pidfile "$SAMPLE_PID" "Sample site" >/dev/null 2>&1 || true
   stop_pidfile "$LOCAL_PID" "MCP server" >/dev/null 2>&1 || true
 
   rm -rf dist dist-css dist-js "$RUN_DIR"
@@ -526,14 +482,13 @@ ${BOLD}USAGE${RESET}
   ./run.sh <command> [options]
 
 ${BOLD}COMMANDS${RESET}
-  ${BOLD}build${RESET}              Compile, run gates, emit CSS, build the sample and the image
+  ${BOLD}build${RESET}              Compile, run gates, emit CSS, build the docs and the image
   ${BOLD}start${RESET}              Start the server — MCP, health and docs on one port
   ${BOLD}start-build${RESET}        Build, then start          ${DIM}(alias: startandbuild, bs)${RESET}
   ${BOLD}restart${RESET}            Stop, then start
-  ${BOLD}stop${RESET}               Stop the server and any standalone docs server
-  ${BOLD}logs${RESET} [target]      Follow logs                ${DIM}target: server | sample${RESET}
+  ${BOLD}stop${RESET}               Stop the server
+  ${BOLD}logs${RESET}               Follow the server log
   ${BOLD}status${RESET}             What is running, plus a live contrast-audit check
-  ${BOLD}docs${RESET}               Standalone docs server on SAMPLE_PORT ${DIM}(alias: sample)${RESET}
   ${BOLD}verify${RESET}             Run every gate without starting anything
   ${BOLD}clean${RESET} [-y] [--all] Remove build output, container and image
   ${BOLD}help${RESET}               This message
@@ -547,8 +502,7 @@ ${BOLD}ENVIRONMENT${RESET}
   Settings are read from ${BOLD}.env${RESET} — copy .env.example to start. Anything already
   exported wins, so SEKURA_PORT=9000 ./run.sh start works without editing it.
 
-  SEKURA_PORT          Host port                ${DIM}(default 8080)${RESET}
-  SAMPLE_PORT          Standalone docs port     ${DIM}(default 4173, ./run.sh docs only)${RESET}
+  SEKURA_PORT          Published port           ${DIM}(host side, default 8080)${RESET}
   SEKURA_IMAGE         Docker image tag         ${DIM}(default sekura-design-mcp:<package.json version>)${RESET}
   SEKURA_CONTAINER     Container name           ${DIM}(default sekura-design-mcp)${RESET}
   NO_COLOR             Disable coloured output
@@ -580,7 +534,6 @@ main() {
     stop)                           cmd_stop "$@" ;;
     logs|log)                       cmd_logs "$@" ;;
     status|ps)                      cmd_status "$@" ;;
-    docs|sample)                    start_sample ;;
     verify|check|test)              cmd_verify "$@" ;;
     clean)                          cmd_clean "$@" ;;
     help|-h|--help)                 cmd_help ;;

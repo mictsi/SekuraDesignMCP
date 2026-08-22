@@ -1,7 +1,7 @@
 {
   "name": "sekura-design-mcp",
   "version": "1.0.0",
-  "description": "Sekura Design System — MCP server exposing the complete design, UX, accessibility and dark-mode specification as machine-readable tools.",
+  "description": "Sekura Design System \u2014 MCP server exposing the complete design, UX, accessibility and dark-mode specification as machine-readable tools.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -21,7 +21,6 @@
     "smoke": "node dist/scripts/smoke.js",
     "test:errors": "node dist/scripts/test-errors.js",
     "verify": "npm run build && npm run check:version && npm run check:deps && npm run check:env && npm run test:color && npm run test:urls && npm run audit:contrast && npm run lint:css && npm run smoke && npm run test:errors && npm run build:behaviours && npm run test:behaviours && npm run emit:css && npm run site:build && npm run verify:sample && npm run site:publish && npm run test:rtl && npm run test:announce",
-    "sample": "node dist/scripts/serve-sample.js",
     "verify:sample": "node dist/scripts/verify-sample.js",
     "site:build": "node dist/scripts/build-site.js",
     "site:publish": "npm run site:build && node dist/scripts/publish-site.js",

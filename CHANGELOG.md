@@ -201,6 +201,24 @@ the contrast audit proves nothing regressed.
   been referencing this class since 1.0.0 without it existing anywhere, so they
   were rendering with browser defaults.
 
+### Removed
+
+- **`SAMPLE_PORT` and the standalone documentation server.** There are now
+  exactly two ports: `SEKURA_PORT` (published, host side) and `PORT` (internal,
+  container side). A third port serving the same documentation the server
+  already publishes at `<app_path>/docs/` was a second address for one thing.
+  `npm run sample`, `./run.sh docs` and `src/scripts/serve-sample.ts` are gone
+  with it.
+- **The redirect from `/` on a prefixed deployment.** Nothing is served outside
+  the app path any more. The redirect was a convenience, but it made a prefixed
+  deployment answer at two URLs, and the one that is not the real address is the
+  one that ends up in a bookmark or a proxy rule.
+- **`SEKURA_MCP_PORT`.** It was an alias for `PORT` with no behaviour of its
+  own, so every deployment had two ways to say one thing and a reader had to
+  check which one won. `PORT` is the only port now. Anything setting the alias
+  falls back to the default 8080, which `check:env` would not have caught — so
+  it is called out here rather than left to be discovered.
+
 ### Fixed
 
 - **`validate_markup` flagged decorative buttons.** A `<button>` that is

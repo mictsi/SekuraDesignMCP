@@ -12,17 +12,20 @@ they document.
 ## Run it
 
 ```bash
-./run.sh build && ./run.sh start     # http://localhost:4173
+./run.sh build && ./run.sh start     # http://localhost:8080/docs/
 ```
 
-Or, without Docker:
+The running server publishes this site at `<app_path>/docs/` on the same port as
+everything else — there is no separate documentation server and no second port.
+
+To build the pages without running anything:
 
 ```bash
 npm run build && npm run emit:css && npm run site:build
-npm run sample
 ```
 
-It also works opened straight from the filesystem.
+They work opened straight from the filesystem, and `npm run site:publish`
+produces a self-contained bundle in `dist-site/` for any static host.
 
 ## What is here
 

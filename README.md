@@ -43,9 +43,9 @@ and the docs on `:4173`.
 ```
 
 The MCP server runs in Docker when Docker is available and falls back to a local
-Node process when it is not, so the script behaves the same either way. Ports and
-image names are overridable: `SEKURA_PORT`, `SAMPLE_PORT`, `SEKURA_IMAGE`,
-`SEKURA_CONTAINER`.
+Node process when it is not, so the script behaves the same either way. The
+published port and the image names are overridable: `SEKURA_PORT`,
+`SEKURA_IMAGE`, `SEKURA_CONTAINER`.
 
 `./run.sh status` is a real check rather than a liveness ping — `/health`
 re-runs the full contrast audit, so a server quietly using a broken palette
@@ -560,9 +560,24 @@ honoured automatically. Set `SEKURA_TRUST_PROXY=false` if the container is
 exposed directly to the internet, so a forged `X-Forwarded-Host` cannot rewrite
 the links it hands out.
 
+### Ports
+
+Two, and only two:
+
+| | |
+|---|---|
+| `SEKURA_PORT` | **Published port** — what the outside world connects to |
+| `PORT` | **Internal port** — what the server listens on in the container |
+
+They meet at the port mapping (`-p ${SEKURA_PORT}:8080`). Change the published
+one; leave the internal one alone, or the healthcheck, the `EXPOSE` and the
+mapping have to be kept in step by hand.
+
 ### What gets published
 
-Every path below is relative to the mount point.
+Every path below is relative to the mount point. **There is no route outside it
+— not even a redirect from `/`.** A deployment reachable at two addresses is one
+where a link, a bookmark or a proxy rule eventually points at the wrong one.
 
 | Path | What |
 |---|---|
