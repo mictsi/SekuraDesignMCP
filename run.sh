@@ -287,6 +287,36 @@ cmd_build() {
   printf '\n%sBuild complete.%s Run %s./run.sh start%s\n' "$GREEN$BOLD" "$RESET" "$BOLD" "$RESET"
 }
 
+# Why the health probe failed, in the order worth checking. "did not become
+# healthy" on its own is not something anyone can act on.
+diagnose_unhealthy() {
+  local url="$1" source="$2"
+  printf '    %sProbed:%s %s\n' "$BOLD" "$RESET" "$url"
+
+  if printf '%s' "$source" | grep -qE 'listening on http://(127\.|localhost|\[?::1)'; then
+    printf '    %sHOST is a loopback address.%s\n' "$YELLOW$BOLD" "$RESET"
+    printf '    A published port forwards to the container external interface, and a\n'
+    printf '    loopback address is not on it — so nothing on the host can connect, even\n'
+    printf '    though the container own health check passes and Docker reports it\n'
+    printf '    healthy. Set HOST=0.0.0.0 in %s unless you use --network host.\n' "$ENV_FILE"
+    return
+  fi
+
+  local banner_path
+  banner_path="$(printf '%s' "$source" | sed -n 's|.*listening on http://[^/]*\(/[^ ]*\)/mcp.*|\1|p' | head -1)"
+  if [[ -n "$banner_path" && "$banner_path" != "$BASE_PATH" ]]; then
+    printf '    %sPath mismatch: server is under %s, probe used %s.%s\n' \
+      "$YELLOW$BOLD" "$banner_path" "${BASE_PATH:-/}" "$RESET"
+    printf '    SEKURA_BASE_PATH disagrees between the server and this script.\n'
+    return
+  fi
+
+  printf '    Things worth checking:\n'
+  printf '      - HOST must be 0.0.0.0 in a container, not a loopback address\n'
+  printf '      - SEKURA_PORT (published) must map to PORT (internal, 8080)\n'
+  printf '      - nothing else already holds port %s\n' "$MCP_PORT"
+}
+
 start_mcp_docker() {
   if container_running; then
     info "MCP server already running"
@@ -314,8 +344,12 @@ start_mcp_docker() {
   if wait_for_http "http://127.0.0.1:${MCP_PORT}${BASE_PATH}/health" "MCP server"; then
     ok "MCP server  http://localhost:${MCP_PORT}${BASE_PATH}/mcp   (Docker)"
   else
-    printf '\n%s\n' "${RED}MCP server did not become healthy. Recent logs:${RESET}"
-    docker logs --tail 30 "$CONTAINER" 2>&1 | sed 's/^/    /'
+    printf '\n%s\n' "${RED}MCP server did not become healthy.${RESET}"
+    local logs
+    logs="$(docker logs --tail 30 "$CONTAINER" 2>&1 || true)"
+    printf '%s\n' "$logs" | sed 's/^/    /'
+    printf '\n'
+    diagnose_unhealthy "http://127.0.0.1:${MCP_PORT}${BASE_PATH}/health" "$logs"
     die "Startup failed."
   fi
 }
@@ -336,8 +370,12 @@ start_mcp_local() {
   if wait_for_http "http://127.0.0.1:${MCP_PORT}${BASE_PATH}/health" "MCP server"; then
     ok "MCP server  http://localhost:${MCP_PORT}${BASE_PATH}/mcp   (Node, pid $(cat "$LOCAL_PID"))"
   else
-    printf '\n%s\n' "${RED}MCP server did not become healthy. Recent logs:${RESET}"
-    tail -n 30 "$LOCAL_LOG" 2>/dev/null | sed 's/^/    /'
+    printf '\n%s\n' "${RED}MCP server did not become healthy.${RESET}"
+    local logs
+    logs="$(tail -n 30 "$LOCAL_LOG" 2>/dev/null || true)"
+    printf '%s\n' "$logs" | sed 's/^/    /'
+    printf '\n'
+    diagnose_unhealthy "http://127.0.0.1:${MCP_PORT}${BASE_PATH}/health" "$logs"
     stop_pidfile "$LOCAL_PID" "MCP server"
     die "Startup failed."
   fi

@@ -214,6 +214,21 @@ the contrast audit proves nothing regressed.
 
 ### Fixed
 
+- **A container bound to loopback reported itself healthy while being
+  unreachable.** `HOST=127.0.0.1` binds the container's own loopback, so a
+  published port has nothing to forward to — but the container's `HEALTHCHECK`
+  probes from inside, passes, and Docker reports the container healthy. A green
+  light on a dead deployment is the worst outcome available, and nothing in the
+  output pointed at the cause: `./run.sh start` printed the banner containing
+  the clue and then said only "did not become healthy".
+
+  The server now warns at startup when it binds a loopback address inside a
+  container, naming the symptom. `./run.sh start` diagnoses a failed health
+  probe instead of dumping logs: it prints the URL it probed, detects a loopback
+  bind from the banner, and separately detects a `SEKURA_BASE_PATH` mismatch
+  between the server and the script. Not fatal, because `--network host` makes a
+  loopback bind legitimate.
+
 - **`./run.sh build` failed with `sh: 1: tsc: not found` on a fresh checkout.**
   A trap of my own making: `.env.example` set `NODE_ENV=production`, `run.sh`
   exported everything in `.env`, and `NODE_ENV=production` makes npm omit

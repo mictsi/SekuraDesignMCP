@@ -591,6 +591,17 @@ honoured automatically. Set `SEKURA_TRUST_PROXY=false` if the container is
 exposed directly to the internet, so a forged `X-Forwarded-Host` cannot rewrite
 the links it hands out.
 
+### If it starts but never becomes healthy
+
+Almost always `HOST`. A published port forwards to the container's *external*
+interface; `HOST=127.0.0.1` binds the container's own loopback instead, so
+nothing on the host can connect — while the container's health check, probing
+from inside, passes and Docker reports it **healthy**.
+
+`./run.sh start` now names this when it happens, and the server warns at
+startup. To restrict access, leave `HOST=0.0.0.0` and narrow the mapping
+instead: `-p 127.0.0.1:8080:8080`.
+
 ### Ports
 
 Two, and only two:

@@ -14,7 +14,7 @@
  * separate settings rather than one.
  */
 
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve as resolvePath } from 'node:path';
 
 import express, { type Request, type Response, type Router } from 'express';
@@ -36,6 +36,42 @@ import { createServer, SERVER_NAME, SERVER_VERSION } from './server.js';
  */
 const PORT = Number(process.env.PORT ?? 8080);
 const HOST = process.env.HOST ?? '0.0.0.0';
+
+/** Docker sets /.dockerenv; Podman sets /run/.containerenv. */
+function inContainer(): boolean {
+  if (existsSync('/.dockerenv') || existsSync('/run/.containerenv')) return true;
+  try {
+    return /docker|containerd|kubepods/.test(readFileSync('/proc/self/cgroup', 'utf8'));
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Binding a container to its own loopback is always a mistake, and it is a
+ * mistake that looks fine from every angle except the one that matters.
+ *
+ * `-p 8080:8080` forwards to the container's *external* interface. A server
+ * listening on 127.0.0.1 inside the container is not on that interface, so the
+ * mapping has nothing to forward to and every connection from the host is
+ * refused — while the container's own HEALTHCHECK, which probes 127.0.0.1 from
+ * inside, passes. Docker then reports the container healthy and the service is
+ * unreachable, which is the worst pairing available.
+ *
+ * Not fatal, because `--network host` is a legitimate arrangement where a
+ * loopback bind does work. So: say it loudly, and name the symptom.
+ */
+function warnIfUnreachable(): void {
+  const loopback = /^(127\.|::1$|localhost$)/.test(HOST);
+  if (!loopback || !inContainer()) return;
+  process.stderr.write(
+    `\nWARNING: HOST is ${HOST}, and this process is running in a container.\n` +
+      `A published port (-p) forwards to the container's external interface, and\n` +
+      `${HOST} is not on it — so connections from the host will be refused even\n` +
+      `though the container's own health check passes and Docker reports it\n` +
+      `healthy. Set HOST=0.0.0.0 unless you are using --network host.\n\n`
+  );
+}
 
 /**
  * Static roots. Present in the container image; when running from a source
@@ -237,6 +273,7 @@ export async function startHttpServer(): Promise<void> {
   app.use(cfg.basePath || '/', api);
 
   await new Promise<void>((done) => {
+    warnIfUnreachable();
     const httpServer = app.listen(PORT, HOST, () => {
       const u = publishedUrls(cfg);
       process.stderr.write(
