@@ -163,7 +163,17 @@ export const layoutComponents: ComponentSpec[] = [
   .sk-app-shell__nav,
   .sk-app-shell__detail { position: fixed; z-index: var(--sk-z-drawer); }
   .sk-app-shell__content { padding-block: var(--sk-space-16); }
-}`,
+}
+
+/* The shell's regions are distinguished only by surface colour, which HCM
+   flattens to one. Without borders the nav, the main area and the detail pane
+   become a single undifferentiated page. */
+@media (forced-colors: active) {
+  .sk-app-shell__header { border-block-end: 1px solid CanvasText; }
+  .sk-app-shell__nav { border-inline-end: 1px solid CanvasText; }
+  .sk-app-shell__detail { border-inline-start: 1px solid CanvasText; }
+}
+`,
     related: ['top-bar', 'side-nav', 'page-header', 'drawer'],
   },
 
@@ -322,7 +332,14 @@ export const layoutComponents: ComponentSpec[] = [
   background-color: var(--sk-color-surface-base);
 }
 .sk-page-header--sticky[data-condensed] .sk-page-header__description { display: none; }
-.sk-page-header--sticky[data-condensed] .sk-page-header__title { font-size: var(--sk-font-size-heading-md); }`,
+.sk-page-header--sticky[data-condensed] .sk-page-header__title { font-size: var(--sk-font-size-heading-md); }
+
+/* Sticky headers separate from the scrolling content by background and shadow,
+   both discarded. */
+@media (forced-colors: active) {
+  .sk-page-header--sticky { border-block-end: 1px solid CanvasText; background-color: Canvas; }
+}
+`,
     related: ['breadcrumbs', 'tabs', 'button', 'badge'],
   },
 
@@ -422,7 +439,13 @@ export const layoutComponents: ComponentSpec[] = [
 
 /* Pushes the last child to the far end — a card footer that sits at the bottom
    no matter how short the body is. */
-.sk-stack--split > :last-child { margin-block-start: auto; }`,
+.sk-stack--split > :last-child { margin-block-start: auto; }
+
+/* The divided variant is the only part of Stack that draws anything. */
+@media (forced-colors: active) {
+  .sk-stack--divided > * + * { border-block-start-color: CanvasText; }
+}
+`,
     related: ['cluster', 'grid', 'divider'],
   },
 
@@ -540,7 +563,10 @@ export const layoutComponents: ComponentSpec[] = [
    horizontal scrollbars get shipped. */
 .sk-cluster--nowrap { flex-wrap: nowrap; }
 .sk-cluster--nowrap.sk-cluster--scroll { overflow-x: auto; scrollbar-width: thin; }
-.sk-cluster--nowrap.sk-cluster--truncate > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }`,
+.sk-cluster--nowrap.sk-cluster--truncate > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* forced-colors: nothing to repair — a flex container with gaps; it sets no colour, border or shadow at all. */
+`,
     related: ['stack', 'grid', 'button-group'],
   },
 
@@ -648,7 +674,10 @@ export const layoutComponents: ComponentSpec[] = [
   align-self: flex-start;
   max-block-size: calc(100dvh - var(--sk-space-48));
   overflow-y: auto;
-}`,
+}
+
+/* forced-colors: nothing to repair — a flex container with widths and gaps; it sets no colour at all. */
+`,
     related: ['app-shell', 'stack', 'grid', 'drawer'],
   },
 
@@ -759,7 +788,10 @@ export const layoutComponents: ComponentSpec[] = [
 }
 
 .sk-grid__span-full { grid-column: 1 / -1; }
-.sk-grid__span-2 { grid-column: span 2; }`,
+.sk-grid__span-2 { grid-column: span 2; }
+
+/* forced-colors: nothing to repair — a grid container with track sizing and gaps; it sets no colour at all. */
+`,
     related: ['card', 'stat-tile', 'cluster', 'stack'],
   },
 
@@ -850,7 +882,16 @@ export const layoutComponents: ComponentSpec[] = [
   block-size: var(--sk-border-width-hairline);
   background-color: var(--sk-color-border-subtle);
 }
-.sk-divider__label { flex: 0 0 auto; font-size: var(--sk-font-size-body-sm); color: var(--sk-color-text-tertiary); }`,
+.sk-divider__label { flex: 0 0 auto; font-size: var(--sk-font-size-body-sm); color: var(--sk-color-text-tertiary); }
+
+/* A divider is entirely a background colour, so in HCM it disappears and the
+   sections it separated run together. */
+@media (forced-colors: active) {
+  .sk-divider { background-color: CanvasText; }
+  .sk-divider--labelled::before,
+  .sk-divider--labelled::after { background-color: CanvasText; }
+}
+`,
     related: ['stack', 'menu', 'cluster'],
   },
 ];

@@ -79,6 +79,12 @@ jobs:
         # colours, no unknown tokens, no physical properties.
         run: npm run lint:css
 
+      - name: Tool error contract
+        # Every failing tool call must be marked isError with a semantic code,
+        # a standard recovery hint and the closest valid values. A friendly
+        # sentence in a success envelope is what makes a model hallucinate.
+        run: npm run test:errors
+
       - name: MCP smoke test
         # Exercises every tool, component, framework and export format through a
         # real MCP client.
@@ -154,6 +160,12 @@ jobs:
         # Both themes, because a dark-mode contrast failure is invisible to a
         # light-mode-only scan.
         run: npm run test:a11y
+
+      - name: Accessible names
+        # Name uniqueness within a region, which axe does not check. It is the
+        # failure that turns a column of row actions into "Inspect, Inspect,
+        # Inspect". NOT a screen reader test — see the script's header.
+        run: npm run test:announce
 
   docker:
     name: Docker image

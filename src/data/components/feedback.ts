@@ -421,7 +421,14 @@ export const feedbackComponents: ComponentSpec[] = [
 .sk-inline-message--info    { color: var(--sk-color-status-info-text); }
 .sk-inline-message--success { color: var(--sk-color-status-success-text); }
 .sk-inline-message--warning { color: var(--sk-color-status-warning-text); }
-.sk-inline-message--danger  { color: var(--sk-color-status-danger-text); }`,
+.sk-inline-message--danger  { color: var(--sk-color-status-danger-text); }
+/* Intent is carried by colour and an icon. HCM removes the colour, so the icon
+   must still render — and the message text always states the problem, which is
+   why losing the tint is survivable here. */
+@media (forced-colors: active) {
+  .sk-inline-message > svg { fill: CanvasText; }
+}
+`,
     related: ['alert', 'form-field', 'tooltip'],
   },
 
@@ -552,7 +559,16 @@ export const feedbackComponents: ComponentSpec[] = [
 @media (prefers-reduced-motion: reduce) {
   .sk-progress__fill { transition: none; }
   .sk-progress[data-indeterminate] .sk-progress__fill { animation: none; inline-size: 100%; opacity: 0.5; }
-}`,
+}
+/* The fill IS the information. A background-only bar reads as 0% at every
+   value once HCM discards it, so the track gets an outline and the fill a
+   system colour. */
+@media (forced-colors: active) {
+  .sk-progress__track { outline: 1px solid CanvasText; }
+  .sk-progress__fill { background-color: Highlight; }
+  .sk-progress[data-error] .sk-progress__fill { background-color: CanvasText; }
+}
+`,
     related: ['spinner', 'skeleton', 'file-upload', 'stepper'],
   },
 
@@ -650,7 +666,15 @@ export const feedbackComponents: ComponentSpec[] = [
 @media (prefers-reduced-motion: reduce) {
   /* Slowed, not stopped: it is the only signal that work is in progress. */
   .sk-spinner { animation-duration: 2s; }
-}`,
+}
+/* The spinner is a partly-transparent border ring. HCM forces every border to
+   one colour, which turns the ring into a solid circle that does not appear to
+   move. Forcing only the leading edge keeps the rotation legible. */
+@media (forced-colors: active) {
+  .sk-spinner { border-color: CanvasText; border-block-start-color: Highlight; }
+  .sk-spinner__label { color: CanvasText; }
+}
+`,
     related: ['progress', 'skeleton', 'button'],
   },
 
@@ -748,7 +772,14 @@ export const feedbackComponents: ComponentSpec[] = [
     background-image: none;
   }
 }
-@keyframes sk-skeleton-pulse { 50% { opacity: 0.6; } }`,
+@keyframes sk-skeleton-pulse { 50% { opacity: 0.6; } }
+/* Skeletons are pure background. In HCM they vanish, so a loading region looks
+   simply empty — indistinguishable from "there is nothing here". An outline
+   keeps the reserved space visible. */
+@media (forced-colors: active) {
+  .sk-skeleton { outline: 1px solid GrayText; background-color: Canvas; }
+}
+`,
     related: ['spinner', 'progress', 'table', 'card'],
   },
 
@@ -885,7 +916,11 @@ export const feedbackComponents: ComponentSpec[] = [
 .sk-empty-state--compact .sk-empty-state__heading { font-size: var(--sk-font-size-heading-sm); }
 
 .sk-empty-state--error .sk-empty-state__icon { color: var(--sk-color-status-danger-text); }
-.sk-empty-state--no-access .sk-empty-state__icon { color: var(--sk-color-text-tertiary); }`,
+.sk-empty-state--no-access .sk-empty-state__icon { color: var(--sk-color-text-tertiary); }
+@media (forced-colors: active) {
+  .sk-empty-state__icon { color: CanvasText; }
+}
+`,
     related: ['skeleton', 'alert', 'search-field', 'table'],
   },
 
@@ -1152,5 +1187,481 @@ export const feedbackComponents: ComponentSpec[] = [
   .sk-meter__segment[data-filled] { background-color: Highlight; }
 }`,
     related: ['progress', 'stat-tile', 'slider'],
+  },
+
+  /* ------------------------------------------------------------------ *
+   * Loading screen
+   * ------------------------------------------------------------------ */
+  {
+    id: 'loading-screen',
+    name: 'Loading screen',
+    category: 'feedback',
+    status: 'stable',
+    summary:
+      'A whole page or region that has nothing to show yet. The only loading treatment that takes over the viewport, and the one most often reached for too early.',
+    whenToUse: [
+      'First paint of an application shell, before any route has resolved.',
+      'A blocking operation the user must not interrupt — a payment being taken, a migration running.',
+      'A region whose entire contents are pending and whose shape is unknown.',
+    ],
+    whenNotToUse: [
+      'A route change where the shell is already correct. Replacing a working page with a spinner throws away context the user still needs, and makes a fast navigation feel slower than leaving the old content up.',
+      'Anything whose shape you know — use a Skeleton, which reserves the space so nothing jumps.',
+      'A single control acting — use a busy button.',
+      'Waits under about 300ms. A flash of spinner reads as a fault, not as progress.',
+    ],
+    anatomy: [
+      { part: 'Region', required: true, description: 'aria-busy="true" on the container being replaced.' },
+      { part: 'Indicator', required: true, description: 'A spinner, or a progress bar when the total is known.' },
+      { part: 'Message', required: true, description: 'What is loading. "Loading" alone tells nobody anything.' },
+      { part: 'Slow notice', required: false, description: 'Appears after several seconds, acknowledging the wait and offering a way out.' },
+      { part: 'Cancel', required: false, description: 'Wherever the operation can be abandoned safely.' },
+    ],
+    variants: [
+      { name: 'Region', className: 'sk-loading', description: 'Fills its container.', use: 'A panel or a card whose content is pending.' },
+      { name: 'Page', className: 'sk-loading--page', description: 'Fills the viewport.', use: 'Application boot only.' },
+      { name: 'Blocking', className: 'sk-loading--blocking', description: 'Over a scrim, with focus held.', use: 'An operation that must not be interrupted. Rare, and worth resisting.' },
+    ],
+    sizes: [
+      { name: 'Small', className: 'sk-loading--sm', height: 'auto', typeStyle: 'body-sm', description: 'Inside a card.' },
+      { name: 'Medium', className: '', height: 'auto', typeStyle: 'body-md', description: 'Default.' },
+    ],
+    states: [
+      { name: 'Loading', description: 'Indicator turning, message shown.', trigger: '[aria-busy="true"]' },
+      { name: 'Slow', description: 'After ~5s an acknowledgement appears. Silence past that point reads as a hang.', trigger: '[data-slow]' },
+      { name: 'Failed', description: 'Replaced by an error state, never left spinning. A spinner that never resolves is the worst outcome of all.', trigger: 'replaced' },
+    ],
+    props: [
+      { name: 'label', type: 'string', required: true, description: 'What is loading. Specific.' },
+      { name: 'progress', type: 'number', description: 'Where the total is known, renders a determinate bar instead of a spinner.' },
+      { name: 'slowAfter', type: 'number', default: '5000', description: 'Milliseconds before the slow notice.' },
+      { name: 'onCancel', type: '() => void', description: 'Shows a cancel control.' },
+    ],
+    tokensUsed: ['color-surface-base', 'color-surface-scrim', 'color-text-primary', 'color-text-secondary', 'color-action-primary-bg'],
+    darkMode:
+      'The page variant uses surface-base rather than a darker "loading" shade, so first paint matches the app that replaces it — a loading screen a shade off from the real page produces a visible flash at the exact moment the user is judging speed. The blocking scrim is surface-scrim, which on dark is a heavier alpha, because a light-mode scrim over a dark page barely reads.',
+    accessibility: {
+      role: 'aria-busy on the region, plus one polite status message. Not an alert: loading is not an emergency.',
+      keyboard: [
+        { keys: 'Tab', action: 'Blocking variant only: focus is held inside, so Tab cannot reach the frozen page behind.' },
+        { keys: 'Escape', action: 'Cancels, where cancelling is safe.' },
+      ],
+      aria: [
+        'aria-busy="true" on the container, removed when content arrives.',
+        'One visually hidden role="status" carrying the message. The spinner itself is aria-hidden — announcing a rotating shape adds nothing.',
+        'The message is announced once, not on every frame.',
+        'Arrival is announced too. A screen reader user who hears "Loading projects" and then silence has no way to know it finished.',
+        'The blocking variant traps focus; the others do not, because the rest of the page still works.',
+      ],
+      wcag: [
+        '4.1.3 Status Messages — both the start and the end of the wait.',
+        '2.2.1 Timing Adjustable — nothing may time out silently.',
+        '2.3.1 Three Flashes — spinners never exceed 3Hz.',
+        '1.4.13 Content on Hover or Focus',
+      ],
+      screenReader:
+        'Hears "Loading projects" once, then the content when it arrives. Not a per-frame percentage: a determinate bar updates aria-valuenow but only announces at meaningful intervals.',
+      targetSize: 'A cancel control is 24x24 CSS px minimum.',
+    },
+    content: [
+      'Name what is loading: "Loading your projects", not "Loading" and never "Please wait".',
+      'The slow notice acknowledges rather than apologises: "Still working — larger workspaces take longer." A cheerful message on a long wait reads as mockery.',
+      'Never promise a time you cannot keep. "Almost done" that lasts a minute destroys trust in every later estimate.',
+    ],
+    dos: [
+      'Prefer a Skeleton wherever the shape is known.',
+      'Announce arrival as well as departure.',
+      'Show something different after several seconds.',
+      'Always have a failure path — never leave a spinner running forever.',
+    ],
+    donts: [
+      'Never replace a working page on a route change.',
+      'Never show one for a wait under about 300ms.',
+      'Never use role="alert".',
+      'Never block the whole viewport for something that could load in place.',
+    ],
+    html: `<div class="sk-loading" aria-busy="true">
+  <span class="sk-spinner sk-spinner--lg" aria-hidden="true"></span>
+  <p class="sk-loading__label">Loading your projects…</p>
+  <!-- One polite announcement, not one per frame. -->
+  <p class="sk-visually-hidden" role="status">Loading your projects</p>
+
+  <!-- Appears after ~5s. Silence past that point reads as a hang. -->
+  <div class="sk-loading__slow" hidden data-slow-notice>
+    <p class="sk-loading__slow-text">Still working — larger workspaces take longer.</p>
+    <button type="button" class="sk-button sk-button--secondary sk-button--sm">Cancel</button>
+  </div>
+</div>`,
+    css: `.sk-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sk-space-12);
+  padding: var(--sk-space-48) var(--sk-space-16);
+  min-block-size: 12rem;
+  text-align: center;
+}
+.sk-loading__label { margin: 0; color: var(--sk-color-text-secondary); }
+
+.sk-loading__slow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sk-space-8);
+}
+.sk-loading__slow-text { margin: 0; font-size: var(--sk-font-size-body-sm); color: var(--sk-color-text-tertiary); }
+
+/* Page variant uses surface-base, not a dimmer "loading" shade: a loading
+   screen a shade off from the real page flashes at exactly the moment the
+   user is judging how fast the app is. */
+.sk-loading--page {
+  position: fixed;
+  inset: 0;
+  z-index: var(--sk-z-modal);
+  background-color: var(--sk-color-surface-base);
+  min-block-size: 100dvh;
+}
+
+.sk-loading--blocking {
+  position: fixed;
+  inset: 0;
+  z-index: var(--sk-z-modal);
+  background-color: var(--sk-color-surface-scrim);
+}
+.sk-loading--blocking .sk-loading__label { color: var(--sk-color-text-on-inverse); }
+
+.sk-loading--sm { min-block-size: 6rem; padding: var(--sk-space-24) var(--sk-space-16); }
+
+@media (forced-colors: active) {
+  .sk-loading--page,
+  .sk-loading--blocking { background-color: Canvas; }
+  .sk-loading--blocking .sk-loading__label { color: CanvasText; }
+}`,
+    related: ['spinner', 'skeleton', 'progress', 'empty-state'],
+  },
+
+  /* ------------------------------------------------------------------ *
+   * Error page
+   * ------------------------------------------------------------------ */
+  {
+    id: 'error-page',
+    name: 'Error page',
+    category: 'feedback',
+    status: 'stable',
+    summary:
+      'A whole page that could not be produced: 404, 403, 500. The last thing between a user and the back button, so it has to offer a route forward.',
+    whenToUse: [
+      'A URL that does not resolve.',
+      'A page the user is not permitted to see.',
+      'A server failure that prevented the page being rendered at all.',
+      'A maintenance window.',
+    ],
+    whenNotToUse: [
+      'A failure confined to one region — use an Error boundary, so everything that did load stays usable.',
+      'A form that failed validation — use the error summary. Replacing a filled-in form with an error page destroys the work.',
+      'A search returning nothing — that is an Empty state, and nothing went wrong.',
+      'A permission problem that is expected. If most users hit it, it is a normal state and belongs in the flow.',
+    ],
+    anatomy: [
+      { part: 'Heading', required: true, description: 'What happened, in the user\'s terms. The status code is not the heading.' },
+      { part: 'Explanation', required: true, description: 'Why, and whether it is likely to be their doing or ours.' },
+      { part: 'Actions', required: true, description: 'At least one route forward. A dead end is what generates support tickets.' },
+      { part: 'Reference', required: false, description: 'A correlation ID for support. Selectable text, never an image.' },
+      { part: 'Status code', required: false, description: 'Secondary, for the people who find it useful.' },
+    ],
+    variants: [
+      { name: 'Not found', className: 'sk-error-page--not-found', description: '404.', use: 'A URL that does not resolve.' },
+      { name: 'Forbidden', className: 'sk-error-page--forbidden', description: '403.', use: 'Signed in, but not permitted. Say who can grant access.' },
+      { name: 'Server', className: 'sk-error-page--server', description: '500.', use: 'Our fault. Say so, and give a reference.' },
+      { name: 'Offline', className: 'sk-error-page--offline', description: 'No connection.', use: 'Say what still works offline, if anything does.' },
+    ],
+    sizes: [
+      { name: 'Medium', className: '', height: 'auto', typeStyle: 'body-md', description: 'The only size. An error page is not a component to tune.' },
+    ],
+    states: [
+      { name: 'Static', description: 'Present on load. No role="alert" — the user navigated here, so announcing it is redundant.', trigger: 'default' },
+      { name: 'Retrying', description: 'The retry control shows a busy state rather than appearing to do nothing.', trigger: '[aria-busy="true"]' },
+    ],
+    props: [
+      { name: 'kind', type: "'not-found' | 'forbidden' | 'server' | 'offline'", required: true, description: 'Which failure.' },
+      { name: 'heading', type: 'string', required: true, description: 'Plain-language summary.' },
+      { name: 'body', type: 'string', required: true, description: 'Why, and what it means for them.' },
+      { name: 'reference', type: 'string', description: 'Correlation ID.' },
+      { name: 'actions', type: 'Array<{label, href, primary?}>', required: true, description: 'At least one.' },
+    ],
+    tokensUsed: ['color-surface-base', 'color-text-primary', 'color-text-secondary', 'color-text-tertiary', 'color-status-danger-text'],
+    darkMode:
+      'The illustration and icon use text-tertiary rather than a status colour: a full page of danger red is alarming out of proportion to a mistyped URL. Only the server-failure variant tints its icon, and it uses status-danger-text, which steps lighter on dark to hold 4.5:1.',
+    accessibility: {
+      role: 'A normal page with a single h1. Deliberately not role="alert" — the user navigated here deliberately, and an alert would interrupt a screen reader mid-announcement to say what the heading already says.',
+      keyboard: [
+        { keys: 'Tab', action: 'Reaches every action. The primary action is first in DOM order.' },
+      ],
+      aria: [
+        'The heading is the page h1 and the document title, so a screen reader user knows where they are from the title alone.',
+        'The status code is supplementary, not the accessible name.',
+        'A correlation ID is real selectable text so it can be copied. An image of an ID cannot be read out or pasted.',
+        'The icon is decorative and aria-hidden.',
+      ],
+      wcag: [
+        '2.4.2 Page Titled — the title says what went wrong, not just the product name.',
+        '1.3.1 Info and Relationships',
+        '2.4.4 Link Purpose — "Back to projects", not "click here".',
+        '3.3.1 Error Identification',
+      ],
+      screenReader:
+        'The document title announces the failure on arrival. The heading repeats it, the body explains it, and the actions are reachable in one Tab.',
+      targetSize: 'Actions are full-size buttons.',
+    },
+    content: [
+      'The heading is what happened, not the code: "We cannot find that page", not "404 Not Found".',
+      'Say whose fault it is. For a 500, "Something went wrong at our end" is honest and stops the user re-checking their own input.',
+      'Never blame the user for a URL they followed from inside the product.',
+      'Give a real route forward, and make it specific — "Back to projects" beats "Go home".',
+      'Skip the joke. Someone reading this is already blocked.',
+    ],
+    dos: [
+      'Offer at least one route forward.',
+      'Give a correlation ID for server failures.',
+      'Set the document title to the failure.',
+      'Say who can grant access on a 403.',
+    ],
+    donts: [
+      'Never use role="alert" on a page the user navigated to.',
+      'Never show a stack trace or an internal identifier.',
+      'Never make the status code the heading.',
+      'Never leave the user with no link at all.',
+    ],
+    html: `<main class="sk-error-page" id="main">
+  <svg class="sk-error-page__icon" aria-hidden="true" focusable="false" width="48" height="48"><use href="#sk-icon-search" /></svg>
+
+  <!-- What happened, not the status code. -->
+  <h1 class="sk-error-page__heading">We cannot find that page</h1>
+  <p class="sk-error-page__body">
+    The link may be out of date, or the project may have been deleted. Your other
+    projects are unaffected.
+  </p>
+
+  <div class="sk-error-page__actions">
+    <a class="sk-button sk-button--primary" href="/projects">Back to projects</a>
+    <a class="sk-link" href="/search">Search instead</a>
+  </div>
+
+  <!-- Real, selectable text. An image of a reference cannot be copied or read out. -->
+  <p class="sk-error-page__reference">
+    Reference <code class="sk-code">7f3a-91bc</code> · Status 404
+  </p>
+</main>`,
+    css: `.sk-error-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sk-space-16);
+  min-block-size: 60dvh;
+  padding: var(--sk-space-48) var(--sk-space-16);
+  text-align: center;
+}
+
+/* Tertiary, not a status colour. A full page of danger red is out of all
+   proportion to a mistyped URL. */
+.sk-error-page__icon { color: var(--sk-color-text-tertiary); fill: currentColor; }
+.sk-error-page--server .sk-error-page__icon { color: var(--sk-color-status-danger-text); }
+
+.sk-error-page__heading {
+  margin: 0;
+  font-size: var(--sk-font-size-heading-xl);
+  line-height: var(--sk-line-height-heading-xl);
+  font-weight: var(--sk-font-weight-bold);
+  color: var(--sk-color-text-primary);
+  max-inline-size: var(--sk-container-prose);
+}
+.sk-error-page__body {
+  margin: 0;
+  color: var(--sk-color-text-secondary);
+  max-inline-size: var(--sk-container-prose);
+}
+.sk-error-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sk-space-12);
+}
+.sk-error-page__reference {
+  margin: 0;
+  font-size: var(--sk-font-size-body-xs);
+  color: var(--sk-color-text-tertiary);
+}
+
+@media (forced-colors: active) {
+  .sk-error-page__icon { color: CanvasText; }
+}`,
+    related: ['empty-state', 'error-boundary', 'alert'],
+  },
+
+  /* ------------------------------------------------------------------ *
+   * Error boundary
+   * ------------------------------------------------------------------ */
+  {
+    id: 'error-boundary',
+    name: 'Error boundary',
+    category: 'feedback',
+    status: 'stable',
+    summary:
+      'One region that failed inside a page that did not. Contains the damage, so everything that loaded correctly stays usable.',
+    whenToUse: [
+      'A widget, panel or card whose data failed to load.',
+      'A component that threw while rendering.',
+      'A third-party embed that did not come back.',
+      'Any part of a dashboard that can fail independently of the rest.',
+    ],
+    whenNotToUse: [
+      'A failure that makes the whole page meaningless — use an Error page.',
+      'An expected empty result — that is an Empty state.',
+      'A form validation failure — that is the error summary.',
+      'Around every component indiscriminately. A page of eight identical "Something went wrong" boxes tells the user nothing about what is actually broken.',
+    ],
+    anatomy: [
+      { part: 'Container', required: true, description: 'Replaces the failed region and keeps its footprint, so the layout does not jump.' },
+      { part: 'Heading', required: true, description: 'Names the region that failed — "Activity could not be loaded", not "Error".' },
+      { part: 'Explanation', required: true, description: 'What is unaffected. This is what stops the user distrusting the whole page.' },
+      { part: 'Retry', required: true, description: 'Retries this region alone, not the page.' },
+      { part: 'Reference', required: false, description: 'Correlation ID.' },
+    ],
+    variants: [
+      { name: 'Inline', className: 'sk-error-boundary', description: 'Fills the failed region.', use: 'Default.' },
+      { name: 'Compact', className: 'sk-error-boundary--compact', description: 'One line with a retry.', use: 'A small widget where a full block would dominate.' },
+      { name: 'Degraded', className: 'sk-error-boundary--degraded', description: 'Stale content kept, with a notice above it.', use: 'A refresh failed but the previous data is still worth showing. Say how old it is.' },
+    ],
+    sizes: [
+      { name: 'Small', className: 'sk-error-boundary--sm', height: 'auto', typeStyle: 'body-sm', description: 'Inside a card.' },
+      { name: 'Medium', className: '', height: 'auto', typeStyle: 'body-md', description: 'Default.' },
+    ],
+    states: [
+      { name: 'Failed', description: 'Replaces the region.', trigger: 'default' },
+      { name: 'Retrying', description: 'The retry control is busy; the message stays so the user knows what is being retried.', trigger: '[aria-busy="true"]' },
+      { name: 'Failed again', description: 'Says the retry did not work rather than silently resetting, and offers a different route.', trigger: '[data-retries]' },
+      { name: 'Degraded', description: 'Stale content shown with its age stated.', trigger: '[data-stale]' },
+    ],
+    props: [
+      { name: 'region', type: 'string', required: true, description: 'What failed, in the user\'s words.' },
+      { name: 'onRetry', type: '() => void', description: 'Retries this region only.' },
+      { name: 'reference', type: 'string', description: 'Correlation ID.' },
+      { name: 'stale', type: 'boolean', default: 'false', description: 'Keep the previous content below the notice.' },
+    ],
+    tokensUsed: ['color-status-danger-surface', 'color-status-danger-border', 'color-status-danger-text', 'color-text-secondary', 'color-surface-base'],
+    darkMode:
+      'The tinted surface is status-danger-surface, the 950 step on dark rather than a darkened 50 — a darkened light tint reads as brown and stops looking like a warning. The border is what defines the box on dark, where a 950 tint on a 900 surface has almost no edge.',
+    accessibility: {
+      role: 'role="alert" when the failure happens after load, because the user did something and this is the answer. Plain markup when it is present on first paint — announcing a failure the user did not cause interrupts them to report something they were not waiting for.',
+      keyboard: [
+        { keys: 'Tab', action: 'Reaches the retry control. Focus is not moved automatically — a region failing elsewhere on the page must not steal focus from what the user is doing.' },
+      ],
+      aria: [
+        'role="alert" only for a failure that follows a user action.',
+        'The heading names the region, so several boundaries on one page are distinguishable by ear.',
+        'aria-busy on the container while retrying.',
+        'A second failure changes the message. Resetting to the identical text makes the retry look like it did nothing.',
+        'The degraded variant states the age of what is shown, so nobody acts on stale data believing it current.',
+      ],
+      wcag: [
+        '4.1.3 Status Messages',
+        '3.3.1 Error Identification',
+        '2.4.3 Focus Order — the boundary must not take focus from elsewhere.',
+        '1.4.1 Use of Colour — the failure is stated in text, not implied by a red border.',
+      ],
+      screenReader:
+        'Announced as "Activity could not be loaded. The activity service did not respond. Everything else on this page is up to date." Naming the region is what makes several failures on one page distinguishable.',
+      targetSize: 'The retry control is a full-size button.',
+    },
+    content: [
+      'Name the region: "Activity could not be loaded", never a bare "Something went wrong".',
+      'Say what still works. "Everything else on this page is up to date" is the sentence that stops the user reloading and losing their place.',
+      'On a second failure, say so and offer something else — reloading, or support with the reference.',
+      'Never expose the exception. "Cannot read property of undefined" helps nobody who is reading it.',
+    ],
+    dos: [
+      'Keep the failed region\'s footprint so the layout does not jump.',
+      'Retry the region, not the page.',
+      'Name what failed and what did not.',
+      'Change the message when a retry fails.',
+    ],
+    donts: [
+      'Never wrap every component in one indiscriminately.',
+      'Never move focus into a boundary the user did not trigger.',
+      'Never show a stack trace.',
+      'Never leave stale content on screen without saying how old it is.',
+    ],
+    html: `<!-- role="alert" because this failure followed a user action. A boundary
+     present on first paint uses plain markup instead. -->
+<div class="sk-error-boundary" role="alert">
+  <svg class="sk-error-boundary__icon" aria-hidden="true" focusable="false" width="20" height="20"><use href="#sk-icon-warning" /></svg>
+  <div class="sk-error-boundary__content">
+    <h3 class="sk-error-boundary__heading">Activity could not be loaded</h3>
+    <p class="sk-error-boundary__body">
+      The activity service did not respond within 10 seconds.
+      Everything else on this page is up to date.
+    </p>
+    <div class="sk-error-boundary__actions">
+      <button type="button" class="sk-button sk-button--secondary sk-button--sm">
+        <svg class="sk-button__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-refresh" /></svg>
+        <span class="sk-button__label">Try again</span>
+      </button>
+      <span class="sk-error-boundary__reference">Reference <code class="sk-code">7f3a-91bc</code></span>
+    </div>
+  </div>
+</div>`,
+    css: `.sk-error-boundary {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sk-space-12);
+  padding: var(--sk-space-16);
+  background-color: var(--sk-color-status-danger-surface);
+  /* The border is what defines the box on dark, where a 950 tint sits on a
+     900 surface and has almost no edge of its own. */
+  border: var(--sk-border-width-hairline) solid var(--sk-color-status-danger-border);
+  border-radius: var(--sk-radius-md);
+}
+.sk-error-boundary__icon { flex: 0 0 auto; color: var(--sk-color-status-danger-text); fill: currentColor; }
+.sk-error-boundary__content { flex: 1 1 auto; min-inline-size: 0; display: flex; flex-direction: column; gap: var(--sk-space-8); }
+
+.sk-error-boundary__heading {
+  margin: 0;
+  font-size: var(--sk-font-size-body-md);
+  font-weight: var(--sk-font-weight-semibold);
+  color: var(--sk-color-status-danger-text);
+}
+.sk-error-boundary__body { margin: 0; color: var(--sk-color-text-secondary); font-size: var(--sk-font-size-body-sm); }
+
+.sk-error-boundary__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sk-space-12);
+}
+.sk-error-boundary__reference { font-size: var(--sk-font-size-body-xs); color: var(--sk-color-text-tertiary); }
+
+.sk-error-boundary--compact { padding: var(--sk-space-8) var(--sk-space-12); align-items: center; }
+.sk-error-boundary--compact .sk-error-boundary__content { flex-direction: row; align-items: center; }
+
+/* Degraded keeps the stale content below the notice, so the failure is a
+   band rather than a replacement. */
+.sk-error-boundary--degraded {
+  background-color: var(--sk-color-surface-base);
+  border-color: var(--sk-color-border-default);
+}
+.sk-error-boundary--degraded .sk-error-boundary__icon { color: var(--sk-color-status-warning-text); }
+.sk-error-boundary--degraded .sk-error-boundary__heading { color: var(--sk-color-text-primary); }
+
+.sk-error-boundary--sm { padding: var(--sk-space-12); }
+
+@media (forced-colors: active) {
+  .sk-error-boundary { border-color: CanvasText; }
+  .sk-error-boundary__icon,
+  .sk-error-boundary__heading { color: CanvasText; }
+}`,
+    related: ['alert', 'empty-state', 'error-page', 'loading-screen'],
   },
 ];

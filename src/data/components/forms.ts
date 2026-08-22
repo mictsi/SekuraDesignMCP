@@ -209,7 +209,16 @@ export const formComponents: ComponentSpec[] = [
   }
   .sk-field--horizontal .sk-field__label { flex: 0 0 14rem; padding-block-start: var(--sk-space-8); }
   .sk-field--horizontal > :not(.sk-field__label) { flex: 1 1 auto; min-inline-size: 0; }
-}`,
+}
+/* The error message is red text with a red icon. HCM discards both, so the
+   only remaining signal is the words — which is why the message always states
+   the problem rather than relying on its colour. The icon still needs a
+   forced colour or it disappears entirely. */
+@media (forced-colors: active) {
+  .sk-field__error { color: CanvasText; }
+  .sk-field__error svg { fill: CanvasText; }
+}
+`,
     related: ['text-field', 'textarea', 'select', 'checkbox', 'radio-group', 'switch'],
   },
 
@@ -583,7 +592,13 @@ export const formComponents: ComponentSpec[] = [
 .sk-textarea--lg { min-block-size: calc(var(--sk-line-height-body-md) * 8); }
 
 .sk-field__counter[data-counter-state="warning"] { color: var(--sk-color-status-warning-text); }
-.sk-field__counter[data-counter-state="over"] { color: var(--sk-color-status-danger-text); font-weight: var(--sk-font-weight-medium); }`,
+.sk-field__counter[data-counter-state="over"] { color: var(--sk-color-status-danger-text); font-weight: var(--sk-font-weight-medium); }
+@media (forced-colors: active) {
+  .sk-textarea { border-color: CanvasText; }
+  .sk-textarea:focus-visible { outline-color: Highlight; }
+  .sk-textarea:disabled { color: GrayText; border-color: GrayText; }
+}
+`,
     related: ['form-field', 'text-field', 'code-block'],
   },
 
@@ -745,7 +760,15 @@ export const formComponents: ComponentSpec[] = [
 .sk-select--quiet:hover:not(:disabled) { background-color: var(--sk-color-surface-hover); border-color: var(--sk-color-border-subtle); }
 
 .sk-select--sm { min-block-size: var(--sk-control-height-sm); font-size: var(--sk-font-size-body-sm); padding-inline: var(--sk-space-8) var(--sk-space-28); }
-.sk-select--lg { min-block-size: var(--sk-control-height-lg); }`,
+.sk-select--lg { min-block-size: var(--sk-control-height-lg); }
+/* The chevron is a background-image data URI, which HCM discards outright,
+   leaving a select with no affordance that it opens anything. */
+@media (forced-colors: active) {
+  .sk-select { border-color: CanvasText; }
+  .sk-select:focus-visible { outline-color: Highlight; }
+  .sk-select:disabled { color: GrayText; border-color: GrayText; }
+}
+`,
     related: ['form-field', 'combobox', 'radio-group'],
   },
 
@@ -1709,7 +1732,13 @@ export const formComponents: ComponentSpec[] = [
 .sk-search__clear > svg { fill: currentColor; }
 
 .sk-search--sm { min-block-size: var(--sk-control-height-sm); flex-basis: 14rem; }
-.sk-search--sm .sk-search__input { font-size: var(--sk-font-size-body-sm); }`,
+.sk-search--sm .sk-search__input { font-size: var(--sk-font-size-body-sm); }
+@media (forced-colors: active) {
+  .sk-search { border-color: CanvasText; }
+  .sk-search:focus-within { outline-color: Highlight; }
+  .sk-search__icon { color: CanvasText; }
+}
+`,
     related: ['text-field', 'combobox', 'command-palette', 'empty-state'],
   },
 
@@ -2069,7 +2098,17 @@ export const formComponents: ComponentSpec[] = [
 }
 .sk-upload__file-meta { flex: 0 0 auto; font-size: var(--sk-font-size-body-xs); color: var(--sk-color-text-tertiary); font-variant-numeric: tabular-nums; }
 .sk-upload__file[data-rejected] { border-color: var(--sk-color-field-border-error); }
-.sk-upload__file-error { flex: 1 0 100%; font-size: var(--sk-font-size-body-xs); color: var(--sk-color-status-danger-text); }`,
+.sk-upload__file-error { flex: 1 0 100%; font-size: var(--sk-font-size-body-xs); color: var(--sk-color-status-danger-text); }
+/* The drop zone is a dashed border and a tinted background. The tint goes, so
+   the border is the whole component; the drag state needs its own signal
+   because a background change alone would be invisible. */
+@media (forced-colors: active) {
+  .sk-upload__zone { border-color: CanvasText; }
+  .sk-upload[data-dragover] .sk-upload__zone { border-color: Highlight; background-color: Highlight; color: HighlightText; }
+  .sk-upload__input:focus-visible ~ .sk-upload__zone { outline-color: Highlight; }
+  .sk-upload__icon { color: CanvasText; }
+}
+`,
     related: ['form-field', 'progress', 'alert'],
   },
 
@@ -2192,7 +2231,12 @@ export const formComponents: ComponentSpec[] = [
 }
 
 .sk-fieldset:disabled .sk-fieldset__legend,
-.sk-fieldset:disabled .sk-fieldset__description { color: var(--sk-color-text-disabled); }`,
+.sk-fieldset:disabled .sk-fieldset__description { color: var(--sk-color-text-disabled); }
+@media (forced-colors: active) {
+  .sk-fieldset--bordered { border-color: CanvasText; }
+  .sk-fieldset:disabled .sk-fieldset__legend { color: GrayText; }
+}
+`,
     related: ['form-field', 'checkbox', 'radio-group'],
   },
 

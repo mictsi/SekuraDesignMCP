@@ -597,7 +597,10 @@ export const navigationComponents: ComponentSpec[] = [
 .sk-breadcrumbs__item [aria-current="page"] {
   color: var(--sk-color-text-primary);
   font-weight: var(--sk-font-weight-medium);
-}`,
+}
+
+/* forced-colors: nothing to repair — text and links only — HCM forces LinkText and CanvasText correctly, and the separator is a character rather than a drawn line. */
+`,
     related: ['side-nav', 'page-header', 'link'],
   },
 

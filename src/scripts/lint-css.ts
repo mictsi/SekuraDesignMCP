@@ -129,6 +129,25 @@ function lint(source: string, css: string): void {
     }
   }
 
+  /* Every component must have decided about Windows High Contrast Mode: either
+     it repairs what HCM discards, or it states that it draws nothing HCM can
+     discard. Silence is the third case, and it is indistinguishable from
+     nobody having looked — which is exactly what this rule removes. */
+  if (source.startsWith('component:')) {
+    const decided =
+      css.includes('@media (forced-colors: active)') ||
+      /forced-colors:\s*nothing to repair/.test(css);
+    if (!decided) {
+      issues.push({
+        source,
+        rule: 'forced-colors-undecided',
+        detail:
+          'no forced-colors block and no note saying none is needed — add one, or ' +
+          'a `/* forced-colors: nothing to repair — <why>. */` comment',
+      });
+    }
+  }
+
   /* Physical properties where a logical one exists — these break RTL. */
   const physical =
     /(?:^|[;{\s])(margin-(?:left|right)|padding-(?:left|right)|border-(?:left|right)(?:-color|-width|-style)?|(?:^|\s)(?:left|right))\s*:/gm;

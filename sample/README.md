@@ -46,7 +46,7 @@ the full narrative in a collapsible section.
 | Page | |
 |---|---|
 | `tokens.html` | All 120 semantic tokens, filterable, with the value in each of the four themes |
-| `components.html` | 64 components grouped by category |
+| `components.html` | 67 components grouped by category |
 | `component-*.html` | One page each: anatomy, variants, states, props, dark-mode note, full keyboard and ARIA contract, CSS |
 | `patterns.html` | 15 UX patterns with their anti-patterns |
 | `recipes.html` | 9 page blueprints with markup |

@@ -51,6 +51,22 @@ the contrast audit proves nothing regressed.
 
 ### Added
 
+- **`forced-colors` is now decided for every component** — 63 with a repair
+  block, 4 with an explicit note that they draw nothing High Contrast Mode can
+  discard. A new `forced-colors-undecided` lint rule fails the build on silence,
+  because silence is indistinguishable from nobody having looked. Writing the
+  last 24 found a real bug in my own earlier work: the description list's
+  divider is `border-block-start`, and I had set the end edge — a rule that
+  would have looked like coverage while doing nothing.
+- **`npm run test:announce`** — an accessible-name audit. It is explicitly *not*
+  a screen reader test and says so in its own output; phrasing, timing and
+  reading order still need a person with NVDA, JAWS or VoiceOver, and that pass
+  has still not happened. What it does check is what axe does not: name
+  *uniqueness within a region*. It immediately found the detail example
+  breaking this system's own rule — six identical "Inspect" buttons in a task
+  table, which a screen reader reads as "Inspect, Inspect, Inspect" with no way
+  to tell which task. Also fixed several "Show markup" buttons on the docs
+  pages.
 - **`forced-colors` coverage went from 10 components to 29.** Windows High
   Contrast Mode discards author background colours and drops `box-shadow`
   entirely, which breaks two things silently: state carried by a background
@@ -64,6 +80,26 @@ the contrast audit proves nothing regressed.
   in a grep and in review. Writing these turned up exactly one such mistake in
   my own work — a `.sk-command-palette__option` that has never existed — so the
   rule now fails the build. 52 selectors checked.
+- **LLM-friendly tool errors.** The server never set `isError`. A bad component
+  id returned a *success* response reading "Unknown component" — which a model
+  has no way to distinguish from an answer, so it carries on and invents the
+  component. Following the semantic-error guidance in Kumaran Srinivasan's
+  "LLM-Friendly Error Handling: Designing MCP Servers for AI", every failure now
+  carries a machine-branchable `code`, a `hint` from a fixed vocabulary
+  (`RETRY_LATER`, `CHECK_INPUT`, `TRY_ALTERNATIVE`, `REPORT_TO_USER`), a
+  `traceId`, an explicit retryability statement, and the closest valid values by
+  Damerau-Levenshtein distance rather than a dump of all 67 ids.
+
+  Empty results are now explicitly *not* errors: they say so and give
+  `count: 0`, because a model cannot otherwise tell "there genuinely are none"
+  from "something broke and substituted a default" — the article's
+  No-Fake-Empty-Data principle. `npm run test:errors` enforces the contract in
+  94 checks, including that no stack trace ever reaches the model.
+- **Three components for failure and waiting: loading screen, error page and
+  error boundary.** 67 components. The boundary is the one most products lack:
+  it contains a failure to one region and states what still works, which is the
+  sentence that stops a user reloading and losing their place. `role="alert"`
+  only when the failure followed a user action.
 - **Seven components: date picker, date range picker, number input, tag input,
   toolbar, segmented control and meter.** 64 components. Each has a real
   controller in the behaviours package, not just CSS.

@@ -864,7 +864,16 @@ export const actionComponents: ComponentSpec[] = [
   min-block-size: var(--sk-control-height-sm);
   font-size: var(--sk-font-size-label-sm);
 }
-.sk-split-button--sm .sk-split-button__trigger { inline-size: var(--sk-control-height-sm); }`,
+.sk-split-button--sm .sk-split-button__trigger { inline-size: var(--sk-control-height-sm); }
+/* The hairline between the action and the trigger is a border, whose colour is
+   dropped in HCM — leaving what looks like one wide button. */
+@media (forced-colors: active) {
+  .sk-split-button__action,
+  .sk-split-button__trigger { border-color: CanvasText; }
+  .sk-split-button__action:focus-visible,
+  .sk-split-button__trigger:focus-visible { outline-color: Highlight; }
+}
+`,
     related: ['button', 'menu', 'button-group'],
   },
 
@@ -1020,7 +1029,15 @@ export const actionComponents: ComponentSpec[] = [
 
 @media (prefers-reduced-motion: reduce) {
   .sk-link--standalone:hover svg { translate: none; }
-}`,
+}
+/* HCM forces link colour to LinkText, which is the correct behaviour — but a
+   link distinguished only by colour then becomes indistinguishable from body
+   text if the author also removed the underline. */
+@media (forced-colors: active) {
+  .sk-link { text-decoration: underline; }
+  .sk-link:focus-visible { outline-color: Highlight; }
+}
+`,
     related: ['button', 'breadcrumbs', 'side-nav'],
   },
 

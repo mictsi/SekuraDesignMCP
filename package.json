@@ -1,7 +1,7 @@
 {
   "name": "sekura-design-mcp",
   "version": "1.0.0",
-  "description": "Sekura Design System \u2014 MCP server exposing the complete design, UX, accessibility and dark-mode specification as machine-readable tools.",
+  "description": "Sekura Design System — MCP server exposing the complete design, UX, accessibility and dark-mode specification as machine-readable tools.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -19,7 +19,8 @@
     "lint:css": "node dist/scripts/lint-css.js",
     "emit:css": "node dist/scripts/emit-css.js",
     "smoke": "node dist/scripts/smoke.js",
-    "verify": "npm run build && npm run check:version && npm run check:deps && npm run check:env && npm run test:color && npm run test:urls && npm run audit:contrast && npm run lint:css && npm run smoke && npm run build:behaviours && npm run test:behaviours && npm run emit:css && npm run site:build && npm run verify:sample && npm run site:publish && npm run test:rtl",
+    "test:errors": "node dist/scripts/test-errors.js",
+    "verify": "npm run build && npm run check:version && npm run check:deps && npm run check:env && npm run test:color && npm run test:urls && npm run audit:contrast && npm run lint:css && npm run smoke && npm run test:errors && npm run build:behaviours && npm run test:behaviours && npm run emit:css && npm run site:build && npm run verify:sample && npm run site:publish && npm run test:rtl && npm run test:announce",
     "sample": "node dist/scripts/serve-sample.js",
     "verify:sample": "node dist/scripts/verify-sample.js",
     "site:build": "node dist/scripts/build-site.js",
@@ -30,6 +31,7 @@
     "check:deps": "node dist/scripts/check-deps.js",
     "check:env": "node dist/scripts/check-env.js",
     "test:a11y": "node src/scripts/test-a11y.mjs",
+    "test:announce": "node src/scripts/test-announce.mjs",
     "test:color": "node dist/scripts/test-color.js",
     "test:urls": "node dist/scripts/test-urls.js",
     "test:rtl": "node dist/scripts/test-rtl.js"

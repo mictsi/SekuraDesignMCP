@@ -646,7 +646,15 @@ export const dataDisplayComponents: ComponentSpec[] = [
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(12rem, 100%), 1fr));
   gap: var(--sk-space-16);
-}`,
+}
+/* The delta arrow's colour carries "good" or "bad", and HCM removes it. The
+   direction and the visually hidden wording survive, which is why both are
+   always present rather than colour alone. */
+@media (forced-colors: active) {
+  .sk-stat--carded { border-color: CanvasText; }
+  .sk-stat__delta > svg { fill: CanvasText; }
+}
+`,
     related: ['card', 'progress', 'grid'],
   },
 
@@ -751,7 +759,16 @@ export const dataDisplayComponents: ComponentSpec[] = [
   padding-inline: var(--sk-space-4);
   justify-content: center;
   font-variant-numeric: tabular-nums;
-}`,
+}
+/* A tinted badge is a background plus a border. The tint goes; the border is
+   what keeps it a discrete object rather than loose text. A solid badge loses
+   its fill entirely and needs one back, or it reads as unstyled. */
+@media (forced-colors: active) {
+  .sk-badge { border-color: CanvasText; }
+  .sk-badge--solid { background-color: CanvasText; color: Canvas; }
+  .sk-badge > svg { fill: currentColor; }
+}
+`,
     related: ['status-indicator', 'card', 'table'],
   },
 
@@ -876,7 +893,14 @@ export const dataDisplayComponents: ComponentSpec[] = [
 .sk-avatar-group > .sk-avatar:not(:first-child) { margin-inline-start: -0.5rem; }
 /* Ring in the page colour so overlapping avatars stay separable in both themes. */
 .sk-avatar-group > .sk-avatar { box-shadow: 0 0 0 2px var(--sk-color-surface-base), inset 0 0 0 1px var(--sk-color-border-subtle); }
-.sk-avatar--overflow { background-color: var(--sk-color-surface-sunken); color: var(--sk-color-text-secondary); }`,
+.sk-avatar--overflow { background-color: var(--sk-color-surface-sunken); color: var(--sk-color-text-secondary); }
+/* Initials on a tint. HCM discards the tint, so the initials would sit on the
+   page background with only the inset ring to bound them — forced to a real
+   border here so the avatar stays a distinct object. */
+@media (forced-colors: active) {
+  .sk-avatar { border: 1px solid CanvasText; background-color: Canvas; color: CanvasText; }
+}
+`,
     related: ['badge', 'top-bar', 'table'],
   },
 
@@ -996,7 +1020,13 @@ export const dataDisplayComponents: ComponentSpec[] = [
   .sk-dl--columns .sk-dl__detail { flex: 1 1 auto; min-inline-size: 0; }
 }
 
-.sk-dl--compact { gap: var(--sk-space-8); font-size: var(--sk-font-size-body-sm); }`,
+.sk-dl--compact { gap: var(--sk-space-8); font-size: var(--sk-font-size-body-sm); }
+/* The divided variant's rule is on border-block-START; setting the end edge
+   here would be a no-op that still reads as coverage. */
+@media (forced-colors: active) {
+  .sk-dl__group { border-block-start-color: CanvasText; }
+}
+`,
     related: ['table', 'card', 'page-header'],
   },
 
@@ -1166,7 +1196,13 @@ export const dataDisplayComponents: ComponentSpec[] = [
   font-size: 0.9em;
   color: var(--sk-color-text-code);
   overflow-wrap: anywhere;
-}`,
+}
+@media (forced-colors: active) {
+  .sk-code-block { border-color: CanvasText; }
+  .sk-code-block__header { border-block-end-color: CanvasText; }
+  .sk-code-block__scroll:focus-visible { outline-color: Highlight; }
+}
+`,
     related: ['textarea', 'kbd', 'card'],
   },
 
@@ -1232,7 +1268,13 @@ export const dataDisplayComponents: ComponentSpec[] = [
   white-space: nowrap;
 }
 
-.sk-kbd--quiet { box-shadow: none; border-block-end-width: var(--sk-border-width-hairline); background-color: transparent; }`,
+.sk-kbd--quiet { box-shadow: none; border-block-end-width: var(--sk-border-width-hairline); background-color: transparent; }
+/* A key cap is a background, a border and a shadow. Two of the three go, so
+   the border has to carry the whole "this is a key" reading. */
+@media (forced-colors: active) {
+  .sk-kbd { border-color: CanvasText; background-color: Canvas; color: CanvasText; }
+}
+`,
     related: ['code-block', 'menu', 'command-palette'],
   },
 
@@ -1370,7 +1412,17 @@ export const dataDisplayComponents: ComponentSpec[] = [
 
 @media (prefers-reduced-motion: reduce) {
   .sk-timeline__event[data-pending] .sk-timeline__marker { animation: none; }
-}`,
+}
+/* Event status is a marker colour and nothing else once the connecting line
+   loses its own. Markers are redrawn as outlined or filled so pending, failed
+   and succeeded stay distinguishable by shape rather than hue. */
+@media (forced-colors: active) {
+  .sk-timeline__event:not(:last-child)::before { background-color: CanvasText; }
+  .sk-timeline__marker { background-color: Canvas; border: 2px solid CanvasText; }
+  .sk-timeline__event[data-success] .sk-timeline__marker { background-color: CanvasText; }
+  .sk-timeline__event[data-failed] .sk-timeline__marker { background-color: Highlight; }
+}
+`,
     related: ['status-indicator', 'description-list', 'table'],
   },
 

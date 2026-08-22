@@ -265,6 +265,7 @@ export function demo(
                    aria-expanded="false" aria-controls="${id}-code" data-sk-toggle-target="#${id}-code">
              ${icon('chevron-down', 14, 'sk-button__icon')}
              <span class="sk-button__label">Show markup</span>
+             <span class="sk-visually-hidden">${opts.label ? ` for ${escapeHtml(opts.label)}` : ` for example ${demoCounter}`}</span>
            </button>
          </div>`
       : ''}

@@ -29,6 +29,8 @@ const PAGES = [
   'component-date-picker.html', 'component-number-input.html',
   'component-tag-input.html', 'component-toolbar.html',
   'component-segmented-control.html', 'component-meter.html',
+  'component-error-page.html', 'component-error-boundary.html',
+  'component-loading-screen.html',
   'examples.html',
   'example-form.html', 'example-states.html', 'example-onboarding.html',
   'example-settings.html', 'example-marketing.html', 'example-signin.html',

@@ -8,9 +8,9 @@ Point an agent at it and it can build a correct, accessible, dark-mode-first
 interface without guessing at a single value.
 
 ```
-64 components · 15 foundations · 15 UX patterns · 9 layout recipes
+67 components · 15 foundations · 15 UX patterns · 9 layout recipes
 120 semantic tokens · 4 themes · 3 densities · 8 target frameworks
-344 contrast checks · 45 colour · 107 behaviour · 73 RTL · 0 axe violations
+344 contrast · 107 behaviour · 94 error-contract · 90 accessible-name · 0 axe violations
 ```
 
 The human-readable specification is [`DESIGN.md`](./DESIGN.md), and there is an
@@ -347,6 +347,8 @@ non-zero, so a change that breaks a promise cannot merge green:
 | `test:urls` | Path prefixes and proxy headers resolve to reachable URLs |
 | `test:behaviours` | Real key presses in a browser: focus, ARIA, Escape, inert |
 | `site:publish` | Static bundle is portable — nothing root-absolute |
+| `test:errors` | Every failing tool call is marked, coded and actionable |
+| `test:announce` | Accessible names exist and are distinct within a region |
 | `test:rtl` | Nothing clipped in either direction, at three widths, 12 pages |
 | `verify:sample` | Dangling references, broken links, markup lint |
 | `test:a11y` | axe-core, WCAG 2.2 AA, both themes |
@@ -585,6 +587,47 @@ curl -s https://example.com/design-system/manifest.json | jq .artefacts.styleshe
 
 The documentation site uses relative links throughout, so it is portable to any
 prefix with no rebuild.
+
+## Errors, for a model rather than a developer
+
+The caller of an MCP server is a language model. That changes what a good error
+is: a model that receives "Unknown component" in a **success** envelope has no
+signal anything went wrong, and will carry on and invent the component.
+
+Every failure from this server is marked `isError`, and carries:
+
+| Field | Why |
+|---|---|
+| `code` | `UNKNOWN_COMPONENT` — branchable without parsing English |
+| `hint` | One of `RETRY_LATER`, `CHECK_INPUT`, `TRY_ALTERNATIVE`, `REPORT_TO_USER` |
+| Closest matches | Ranked by edit distance, never the whole namespace |
+| `retryable` | So a model does not retry something that cannot succeed |
+| `traceId` | So a bug report can name one specific response |
+
+```
+ERROR UNKNOWN_COMPONENT
+
+No component with that id.
+
+Received: "datepicker"
+
+Closest matches:
+  - date-picker
+  - date-range-picker
+
+Next:
+  - Call `list_components` for the full list.
+
+Recovery hint: TRY_ALTERNATIVE
+Retryable: no — the same call will fail again. Change the arguments first.
+This is an error, not content. Do not include it in generated output.
+```
+
+An empty result is **not** an error, and says so explicitly with `count: 0`. A
+model cannot otherwise tell "there genuinely are none" from "something broke and
+returned a default", and the second is a false claim of safety.
+
+`npm run test:errors` enforces all of this — 94 checks.
 
 ## Publishing the documentation as a static site
 

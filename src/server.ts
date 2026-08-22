@@ -42,6 +42,7 @@ import { FRAMEWORKS, frameworkDescriptions, generateCode, type Framework } from 
 import { EXPORT_FORMATS, exportTokens, formatDescriptions, type ExportFormat } from './lib/exporters.js';
 import { search, type ResultKind } from './lib/search.js';
 import { safeForegroundsOn, suggestTokens } from './lib/suggest.js';
+import { emptyResult, invalidArgument, unknownValue } from './lib/errors.js';
 import type { PublishedUrls } from './lib/urls.js';
 import { summariseFindings, validateMarkup } from './lib/validate.js';
 
@@ -64,11 +65,11 @@ function bullets(items: string[]): string {
  * Formatters
  * ------------------------------------------------------------------ */
 
-function formatComponent(id: string): string {
+function formatComponent(id: string): string | null {
   const c = getComponent(id);
-  if (!c) {
-    return `Unknown component "${id}".\n\nAvailable: ${components.map((x) => x.id).join(', ')}`;
-  }
+  // Null rather than a friendly string: the caller has to be able to mark the
+  // response as a failure, and a string cannot carry that.
+  if (!c) return null;
 
   const anatomy = c.anatomy
     .map((a) => `| ${a.part} | ${a.required ? 'Required' : 'Optional'} | ${a.description} |`)
@@ -163,11 +164,9 @@ ${c.related.map((r) => `\`${r}\``).join(', ')}
 Get code with \`get_component_code({ id: "${c.id}", framework: "react" })\`.`;
 }
 
-function formatFoundation(id: string): string {
+function formatFoundation(id: string): string | null {
   const f = getFoundation(id);
-  if (!f) {
-    return `Unknown foundation "${id}".\n\nAvailable: ${foundations.map((x) => x.id).join(', ')}`;
-  }
+  if (!f) return null;
   return `# ${f.title}
 
 ${f.summary}
@@ -181,11 +180,9 @@ ${f.body}
 ${f.related.map((r) => `\`${r}\``).join(', ')}`;
 }
 
-function formatPattern(id: string): string {
+function formatPattern(id: string): string | null {
   const p = getPattern(id);
-  if (!p) {
-    return `Unknown pattern "${id}".\n\nAvailable: ${patterns.map((x) => x.id).join(', ')}`;
-  }
+  if (!p) return null;
   return `# ${p.name}  \`${p.id}\`
 
 ${p.summary}
@@ -210,11 +207,9 @@ ${p.components.map((c) => `\`${c}\``).join(', ')}
 ${p.html ? `\n## Example\n\n\`\`\`html\n${p.html}\n\`\`\`` : ''}`;
 }
 
-function formatLayout(id: string): string {
+function formatLayout(id: string): string | null {
   const l = getLayout(id);
-  if (!l) {
-    return `Unknown layout "${id}".\n\nAvailable: ${layouts.map((x) => x.id).join(', ')}`;
-  }
+  if (!l) return null;
   const regions = l.regions
     .map((r) => `| ${r.name} | ${r.description} | ${r.responsive} |`)
     .join('\n');
@@ -401,7 +396,11 @@ dark mode — it lists the nine things that break silently.`);
       const results = search(query, { kinds: kinds as ResultKind[] | undefined, limit });
       if (results.length === 0) {
         return text(
-          `No results for "${query}".\n\nTry \`get_overview\` for the full catalogue, or broaden the query.`
+          emptyResult(
+            'results',
+            `The index was searched successfully and contains nothing matching "${query}".`,
+            ['Broaden the query, or drop a filter.', 'Call `get_overview` for the full catalogue.']
+          )
         );
       }
       const body = results
@@ -429,7 +428,12 @@ dark mode — it lists the nine things that break silently.`);
       },
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
-    async ({ id }) => text(formatFoundation(id))
+    async ({ id }) => {
+      const body = formatFoundation(id);
+      return body === null
+        ? unknownValue('foundation', id, foundations.map((x) => x.id), 'get_overview')
+        : text(body);
+    }
   );
 
   /* ---------------- Components ---------------- */
@@ -478,7 +482,12 @@ Full spec: \`get_component({ id })\`. Code: \`get_component_code({ id, framework
       },
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
-    async ({ id }) => text(formatComponent(id))
+    async ({ id }) => {
+      const body = formatComponent(id);
+      return body === null
+        ? unknownValue('component', id, components.map((x) => x.id), 'list_components')
+        : text(body);
+    }
   );
 
   server.registerTool(
@@ -502,7 +511,7 @@ Full spec: \`get_component({ id })\`. Code: \`get_component_code({ id, framework
     async ({ id, framework }) => {
       const spec = getComponent(id);
       if (!spec) {
-        return text(`Unknown component "${id}".\n\nAvailable: ${components.map((c) => c.id).join(', ')}`);
+        return unknownValue('component', id, components.map((c) => c.id), 'list_components');
       }
       const lang =
         framework === 'html' ? 'html'
@@ -545,7 +554,12 @@ ${framework !== 'css' ? `\nThe CSS for this component is a separate call: \`get_
       },
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
-    async ({ id }) => text(formatLayout(id))
+    async ({ id }) => {
+      const body = formatLayout(id);
+      return body === null
+        ? unknownValue('layout', id, layouts.map((x) => x.id), 'get_overview')
+        : text(body);
+    }
   );
 
   server.registerTool(
@@ -561,7 +575,12 @@ ${framework !== 'css' ? `\nThe CSS for this component is a separate call: \`get_
       },
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
-    async ({ id }) => text(formatPattern(id))
+    async ({ id }) => {
+      const body = formatPattern(id);
+      return body === null
+        ? unknownValue('pattern', id, patterns.map((x) => x.id), 'get_overview')
+        : text(body);
+    }
   );
 
   /* ---------------- Tokens ---------------- */
@@ -681,7 +700,7 @@ ${framework !== 'css' ? `\nThe CSS for this component is a separate call: \`get_
     async ({ ramp }) => {
       const entries = ramp ? { [ramp]: ramps[ramp] } : ramps;
       if (ramp && !ramps[ramp]) {
-        return text(`Unknown ramp "${ramp}". Available: ${Object.keys(ramps).join(', ')}`);
+        return unknownValue('colour ramp', ramp, Object.keys(ramps));
       }
       const sections = Object.entries(entries)
         .map(([name, values]) => {
@@ -724,7 +743,14 @@ ${sections}`);
       const found = suggestTokens(intent, limit ?? 6);
       if (found.length === 0) {
         return text(
-          `No token matched "${intent}".\n\nTry \`get_tokens({ includeScales: true })\` to browse, or \`search({ query: "${intent}" })\`.`
+          emptyResult(
+            'tokens',
+            `Every token was considered; none maps to the intent "${intent}".`,
+            [
+              'Call `get_tokens({ includeScales: true })` to browse them all.',
+              `Call \`search({ query: "${intent}" })\` to look across the whole system.`,
+            ]
+          )
         );
       }
       const body = found
@@ -778,7 +804,12 @@ ${sections}`);
       try {
         verdict = evaluateContrast(fg.value, bg.value, use ?? 'body-text');
       } catch (err) {
-        return text(`Could not evaluate: ${(err as Error).message}`);
+        return invalidArgument('foreground or background', (err as Error).message, {
+          next: [
+            'Pass a hex colour such as "#1a2b3c", or a semantic token name such as "color-text-primary".',
+            'Call `get_tokens` to list every semantic token name.',
+          ],
+        });
       }
 
       return text(`# Contrast: ${verdict.display}
@@ -1131,7 +1162,9 @@ which artefacts are actually present in this deployment.`);
       mimeType: 'text/markdown',
     },
     async (uri) => ({
-      contents: [{ uri: uri.href, mimeType: 'text/markdown', text: formatFoundation('principles') }],
+      contents: [
+        { uri: uri.href, mimeType: 'text/markdown', text: formatFoundation('principles') ?? '' },
+      ],
     })
   );
 
@@ -1144,7 +1177,9 @@ which artefacts are actually present in this deployment.`);
       mimeType: 'text/markdown',
     },
     async (uri) => ({
-      contents: [{ uri: uri.href, mimeType: 'text/markdown', text: formatFoundation('dark-mode') }],
+      contents: [
+        { uri: uri.href, mimeType: 'text/markdown', text: formatFoundation('dark-mode') ?? '' },
+      ],
     })
   );
 
