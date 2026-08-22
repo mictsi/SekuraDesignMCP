@@ -201,6 +201,17 @@ the contrast audit proves nothing regressed.
   been referencing this class since 1.0.0 without it existing anywhere, so they
   were rendering with browser defaults.
 
+### Added
+
+- **`./run.sh build --image` and `--no-browser`.** The container build never
+  needed TypeScript or Playwright — the Dockerfile installs its own
+  dependencies, compiles inside the image and runs its own gates there — but
+  `./run.sh build` did the whole host-side build and verification first, so
+  there was no way to ask for just the image. `--image` builds only the
+  container and needs nothing but Docker; `--no-browser` skips the two steps
+  that drive a real browser (the behaviour contracts and the RTL regression),
+  which are the only reason Playwright is involved at all.
+
 ### Fixed
 
 - **`./run.sh build` failed with `sh: 1: tsc: not found` on a fresh checkout.**

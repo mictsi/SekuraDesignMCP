@@ -8,6 +8,7 @@
 #   ./run.sh stop           Stop everything
 #   ./run.sh restart        Stop, then start
 #   ./run.sh logs [target]  Follow logs
+#   ./run.sh build --image  Container only — needs Docker and nothing else
 #   ./run.sh status         What is running, and whether it is healthy
 #   ./run.sh verify         Run every build gate
 #   ./run.sh clean          Remove build output, container and image
@@ -188,7 +189,46 @@ spawn_detached() {
 # Commands
 # ------------------------------------------------------------------ #
 
+build_image() {
+  mkdir -p "$RUN_DIR"
+  step "Building the Docker image"
+  info "Self-contained: it compiles and runs its own gates inside the image."
+  # docker writes its progress to stderr, so capture both streams and only
+  # surface them if the build actually fails.
+  if docker build -t "$IMAGE" . >"$RUN_DIR/docker-build.log" 2>&1; then
+    ok "Built $IMAGE ($(docker images "$IMAGE" --format '{{.Size}}'))"
+  else
+    printf '\n%s\n' "${RED}Docker build failed:${RESET}"
+    tail -n 40 "$RUN_DIR/docker-build.log" | sed 's/^/    /'
+    die "See $RUN_DIR/docker-build.log for the full output."
+  fi
+}
+
 cmd_build() {
+  # --image       Build only the container. Needs Docker and nothing else — no
+  #               Node, no TypeScript, no browser. The Dockerfile compiles and
+  #               runs its own gates inside the image, so the host toolchain is
+  #               not involved at all.
+  # --no-browser  Everything except the checks that drive a real browser. Those
+  #               are the only reason Playwright is needed; the rest of the
+  #               build does not touch it.
+  local image_only="no" skip_browser="no"
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --image|--image-only|--docker)  image_only="yes" ;;
+      --no-browser|--skip-browser)    skip_browser="yes" ;;
+      *) die "Unknown option for build: $1 (try --image or --no-browser)" ;;
+    esac
+    shift
+  done
+
+  if [[ "$image_only" == "yes" ]]; then
+    have_docker || die "--image needs Docker, and Docker is not available."
+    build_image
+    printf '\n%sImage built.%s Run %s./run.sh start%s\n' "$GREEN$BOLD" "$RESET" "$BOLD" "$RESET"
+    return 0
+  fi
+
   need_node
   need_deps
   mkdir -p "$RUN_DIR"
@@ -212,10 +252,15 @@ cmd_build() {
   npx tsc -p tsconfig.behaviours.json
   node dist/scripts/build-behaviours.js | grep -E 'iife.min|Zero dep' | sed 's/^ */    /'
 
-  step "Testing behaviour contracts"
-  # Real key presses against a real DOM. This is what stops the specification
-  # and the implementation drifting apart.
-  node dist/scripts/test-behaviours.js | grep -E 'passed|✗' | sed 's/^/    /'
+  if [[ "$skip_browser" == "yes" ]]; then
+    warn "Skipped the behaviour contracts (--no-browser)."
+  else
+    step "Testing behaviour contracts"
+    # Real key presses against a real DOM. This is what stops the specification
+    # and the implementation drifting apart. The only step that needs a browser,
+    # along with the RTL check below.
+    node dist/scripts/test-behaviours.js | grep -E 'passed|✗' | sed 's/^/    /'
+  fi
 
   step "Emitting stylesheets"
   npm run --silent emit:css | grep -E 'sekura\.css|Wrote' | sed 's/^ */    /'
@@ -226,20 +271,14 @@ cmd_build() {
   # copy.
   node dist/scripts/build-site.js | grep -E '^Built ' | sed 's/^/    /'
   node dist/scripts/verify-sample.js | grep -E '^All |error\(s\)|^  ✗' | sed 's/^/    /'
-  node dist/scripts/test-rtl.js | grep -E 'passed|✗' | sed 's/^/    /'
+  if [[ "$skip_browser" == "yes" ]]; then
+    warn "Skipped the RTL regression (--no-browser)."
+  else
+    node dist/scripts/test-rtl.js | grep -E 'passed|✗' | sed 's/^/    /'
+  fi
 
   if have_docker; then
-    step "Building the Docker image"
-    info "The image build re-runs every gate plus the full smoke test."
-    # docker writes its progress to stderr, so capture both streams and only
-    # surface them if the build actually fails.
-    if docker build -t "$IMAGE" . >"$RUN_DIR/docker-build.log" 2>&1; then
-      ok "Built $IMAGE ($(docker images "$IMAGE" --format '{{.Size}}'))"
-    else
-      printf '\n%s\n' "${RED}Docker build failed:${RESET}"
-      tail -n 40 "$RUN_DIR/docker-build.log" | sed 's/^/    /'
-      die "See $RUN_DIR/docker-build.log for the full output."
-    fi
+    build_image
   else
     warn "Docker is unavailable — skipped the image build."
     warn "'start' will fall back to running the server with Node."
@@ -504,7 +543,9 @@ ${BOLD}USAGE${RESET}
   ./run.sh <command> [options]
 
 ${BOLD}COMMANDS${RESET}
-  ${BOLD}build${RESET}              Compile, run gates, emit CSS, build the docs and the image
+  ${BOLD}build${RESET} [options]    Compile, run gates, emit CSS, build the docs and the image
+    ${DIM}--image${RESET}            Only the container. Needs Docker and nothing else
+    ${DIM}--no-browser${RESET}       Skip the two checks that drive a real browser
   ${BOLD}start${RESET}              Start the server — MCP, health and docs on one port
   ${BOLD}start-build${RESET}        Build, then start          ${DIM}(alias: startandbuild, bs)${RESET}
   ${BOLD}restart${RESET}            Stop, then start

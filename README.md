@@ -483,6 +483,37 @@ Odd-numbered Node majors are never promoted to LTS, so a dependency bot
 offering `node:25-alpine` is offering a runtime that reaches end-of-life in
 months. `npm run check:deps` fails the build if one lands.
 
+### What the build actually needs
+
+The **container build needs Docker and nothing else.** The Dockerfile installs
+its own dependencies, compiles inside the image, and runs its own gates there,
+so the host toolchain is never involved:
+
+```bash
+./run.sh build --image      # or plain: docker build -t sekura-design-mcp .
+```
+
+Verified on a clean `git archive` with no `node_modules`, no `dist`, no `tsc`
+and no browser on the host.
+
+Plain `./run.sh build` does more than that: it also compiles and verifies on the
+host *before* building the image, which is why it wants TypeScript and
+Playwright. Only two steps need a browser — the behaviour contracts and the RTL
+regression — and they are skippable:
+
+| Command | Needs |
+|---|---|
+| `./run.sh build --image` | Docker |
+| `./run.sh build --no-browser` | Node and npm |
+| `./run.sh build` | Node, npm, and a Playwright browser |
+
+`--no-browser` genuinely avoids Playwright rather than tolerating its absence:
+with `PLAYWRIGHT_BROWSERS_PATH` pointed at nothing, it exits 0 while the full
+build exits 1 at the behaviour step.
+
+Install the browser once with `npx playwright install chromium` if you want the
+full local build.
+
 ## Configuration
 
 Every container setting lives in one file.
