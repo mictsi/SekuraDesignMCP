@@ -201,6 +201,27 @@ the contrast audit proves nothing regressed.
   been referencing this class since 1.0.0 without it existing anywhere, so they
   were rendering with browser defaults.
 
+### Fixed
+
+- **`./run.sh build` failed with `sh: 1: tsc: not found` on a fresh checkout.**
+  A trap of my own making: `.env.example` set `NODE_ENV=production`, `run.sh`
+  exported everything in `.env`, and `NODE_ENV=production` makes npm omit
+  devDependencies — so the documented first step, `cp .env.example .env`,
+  stripped the compiler out of the next install. The error named `tsc` and
+  pointed nowhere near the file that caused it.
+
+  Three layers now: `NODE_ENV` is gone from `.env.example` (the Dockerfile sets
+  it for the container, which is the only place it means anything); `run.sh`
+  refuses to export it even if someone adds it back; and `check:env` fails the
+  build on `NODE_ENV`, `PATH` or `NPM_CONFIG_PRODUCTION` appearing in that file
+  at all, because `.env` is read by the host toolchain as well as the container.
+
+- **`run.sh` could not recover from the state it created.** `need_deps` only
+  checked whether `node_modules/` existed, so a production-only tree — present
+  but with no compiler — passed the check and failed at the build every time.
+  It now checks for the compiler itself, reinstalls with `--include=dev`, and
+  fails loudly if the install still does not produce one.
+
 ### Removed
 
 - **`SAMPLE_PORT` and the standalone documentation server.** There are now

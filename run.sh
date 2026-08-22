@@ -39,6 +39,17 @@ if [[ -f "$ENV_FILE" ]]; then
     val="${line#*=}"
     # Only set what the caller has not already exported.
     [[ -n "${!key+x}" ]] && continue
+    # NODE_ENV=production makes npm omit devDependencies, so exporting it here
+    # would strip the compiler out of the next install and break the build with
+    # a "tsc: not found" that points nowhere near the cause. The container gets
+    # it from the Dockerfile, which is where it belongs.
+    # Printed with printf rather than warn(): this loader runs before the
+    # output helpers are defined, and calling one here would abort the script
+    # on the very line meant to keep it working.
+    if [[ "$key" == "NODE_ENV" ]]; then
+      printf '    Ignoring NODE_ENV from %s — it would make npm skip devDependencies.\n' "$ENV_FILE" >&2
+      continue
+    fi
     # Strip one layer of surrounding quotes, if present.
     val="${val%\"}"; val="${val#\"}"; val="${val%\'}"; val="${val#\'}"
     export "$key=$val"
@@ -87,10 +98,21 @@ need_node() {
 }
 
 need_deps() {
-  if [[ ! -d node_modules ]]; then
-    step "Installing dependencies"
-    npm install
+  # Checking only for the directory misses the case this script previously
+  # created itself: a production-only tree, where node_modules exists but the
+  # compiler does not. The build then failed with "tsc: not found" and no hint
+  # that the install was the problem.
+  if [[ -d node_modules && -x node_modules/.bin/tsc ]]; then
+    return 0
   fi
+  if [[ -d node_modules ]]; then
+    warn "node_modules/ exists but the compiler is missing — reinstalling."
+  else
+    step "Installing dependencies"
+  fi
+  # Explicit, so an inherited NODE_ENV cannot decide this for us.
+  NODE_ENV=development npm install --include=dev
+  [[ -x node_modules/.bin/tsc ]] || die "Install finished but node_modules/.bin/tsc is still missing."
 }
 
 # True when the named container exists in any state.

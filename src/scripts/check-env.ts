@@ -33,6 +33,26 @@ const NOT_DEPLOYMENT_SETTINGS = new Map<string, string>([
   ['NO_COLOR', 'a de facto standard read by run.sh, not a Sekura setting'],
 ]);
 
+/**
+ * Variables that must never appear in `.env.example`.
+ *
+ * `.env` is read by the host tooling as well as the container, so a setting
+ * that changes how the host's toolchain behaves is a trap rather than a
+ * configuration option. `NODE_ENV=production` is the one that bit: it makes
+ * npm omit devDependencies, so the next install silently removes the compiler
+ * and the build fails with "tsc: not found" — an error pointing nowhere near
+ * the file that caused it.
+ */
+const NEVER_IN_ENV_FILE = new Map<string, string>([
+  [
+    'NODE_ENV',
+    'it makes npm omit devDependencies, so the next install strips the compiler. ' +
+      'The Dockerfile sets it for the container, which is the only place it means anything',
+  ],
+  ['PATH', 'overriding the host PATH from a config file breaks every tool at once'],
+  ['NPM_CONFIG_PRODUCTION', 'same failure as NODE_ENV, by a different name'],
+]);
+
 interface Finding {
   variable: string;
   problem: string;
@@ -132,6 +152,16 @@ for (const line of readFileSync(examplePath, 'utf8').split('\n')) {
      a quoted value becomes part of the string. Compose strips them and Docker
      does not, which makes this the kind of bug that only appears in one of the
      two ways the project documents starting the container. */
+  const name = trimmed.slice(0, eq).trim();
+  const banned = NEVER_IN_ENV_FILE.get(name);
+  if (banned) {
+    findings.push({
+      variable: name,
+      problem: 'must not be in .env.example',
+      fix: banned,
+    });
+  }
+
   const value = trimmed.slice(eq + 1).trim();
   if (/^".*"$|^'.*'$/.test(value)) {
     findings.push({
@@ -149,6 +179,8 @@ for (const line of readFileSync(examplePath, 'utf8').split('\n')) {
 for (const [variable, where] of readers) {
   if (documented.has(variable)) continue;
   if (NOT_DEPLOYMENT_SETTINGS.has(variable)) continue;
+  // Banned from the file by name, so "undocumented" is the intended state.
+  if (NEVER_IN_ENV_FILE.has(variable)) continue;
   findings.push({
     variable,
     problem: `read by ${[...where].sort().join(', ')} but not in .env.example`,
@@ -157,6 +189,7 @@ for (const [variable, where] of readers) {
 }
 
 for (const variable of documented) {
+  if (NEVER_IN_ENV_FILE.has(variable)) continue; // already reported above
   if (readers.has(variable)) continue;
   findings.push({
     variable,
