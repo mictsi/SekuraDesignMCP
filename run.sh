@@ -9,6 +9,7 @@
 #   ./run.sh restart        Stop, then start
 #   ./run.sh logs [target]  Follow logs
 #   ./run.sh status         What is running, and whether it is healthy
+#   ./run.sh docs           Standalone docs server, for iterating on the site
 #   ./run.sh verify         Run every build gate
 #   ./run.sh clean          Remove build output, container and image
 #
@@ -26,6 +27,25 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 SEKURA_VERSION="$(node -p "require('./package.json').version" 2>/dev/null || echo latest)"
 IMAGE="${SEKURA_IMAGE:-sekura-design-mcp:${SEKURA_VERSION}}"
 CONTAINER="${SEKURA_CONTAINER:-sekura-design-mcp}"
+# Settings come from .env, which is gitignored. Copy .env.example to start.
+# Anything already exported wins, so `SEKURA_PORT=9000 ./run.sh start` still
+# works for a one-off without editing the file.
+ENV_FILE="${SEKURA_ENV_FILE:-.env}"
+if [[ -f "$ENV_FILE" ]]; then
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    [[ "$line" =~ ^[[:space:]]*# ]] && continue
+    [[ "$line" =~ ^[[:space:]]*$ ]] && continue
+    [[ "$line" != *=* ]] && continue
+    key="${line%%=*}"; key="${key//[[:space:]]/}"
+    val="${line#*=}"
+    # Only set what the caller has not already exported.
+    [[ -n "${!key+x}" ]] && continue
+    # Strip one layer of surrounding quotes, if present.
+    val="${val%\"}"; val="${val#\"}"; val="${val%\'}"; val="${val#\'}"
+    export "$key=$val"
+  done < "$ENV_FILE"
+fi
+
 MCP_PORT="${SEKURA_PORT:-8080}"
 # Publishing under a path. BASE_PATH is where the server listens; EXTERNAL_URL is
 # what it puts in generated links. See README, "Publishing under a path".
@@ -220,10 +240,16 @@ start_mcp_docker() {
 
   image_exists || die "Image $IMAGE not found. Run: ./run.sh build"
 
+  # The whole file goes in, rather than re-listing settings here where they
+  # would drift from .env.example.
+  local env_args=()
+  [[ -f "$ENV_FILE" ]] && env_args+=(--env-file "$ENV_FILE")
+
   docker run -d \
     --name "$CONTAINER" \
     --restart unless-stopped \
     -p "${MCP_PORT}:8080" \
+    "${env_args[@]}" \
     -e SEKURA_BASE_PATH="${BASE_PATH:-/}" \
     -e SEKURA_EXTERNAL_URL="$EXTERNAL_URL" \
     "$IMAGE" >/dev/null
@@ -260,6 +286,10 @@ start_mcp_local() {
   fi
 }
 
+# Kept for `./run.sh sample`: a standalone docs server on its own port, for
+# iterating on the site without the MCP server running. `./run.sh start` no
+# longer launches it — the server publishes /docs on its own port, and a second
+# copy on 4173 is both a duplicate and a contradiction of "one port, one path".
 start_sample() {
   if pid_alive "$SAMPLE_PID"; then
     info "Sample site already running"
@@ -299,8 +329,6 @@ cmd_start() {
     start_mcp_local
   fi
 
-  start_sample
-
   cat <<EOF
 
 ${BOLD}Ready.${RESET}
@@ -310,8 +338,7 @@ ${BOLD}Ready.${RESET}
   Manifest       http://localhost:${MCP_PORT}${BASE_PATH}/manifest.json
   Tokens (CSS)   http://localhost:${MCP_PORT}${BASE_PATH}/tokens.css
   Stylesheet     http://localhost:${MCP_PORT}${BASE_PATH}/css/sekura.css
-  Documentation  http://localhost:${MCP_PORT}${BASE_PATH}/docs/
-  Sample site    ${BOLD}http://localhost:${SAMPLE_PORT}/${RESET}
+  Documentation  ${BOLD}http://localhost:${MCP_PORT}${BASE_PATH}/docs/${RESET}
 
   Connect a client:
     ${DIM}claude mcp add --transport http sekura-design http://localhost:${MCP_PORT}${BASE_PATH}/mcp${RESET}
@@ -500,12 +527,13 @@ ${BOLD}USAGE${RESET}
 
 ${BOLD}COMMANDS${RESET}
   ${BOLD}build${RESET}              Compile, run gates, emit CSS, build the sample and the image
-  ${BOLD}start${RESET}              Start the MCP server and the sample site
+  ${BOLD}start${RESET}              Start the server — MCP, health and docs on one port
   ${BOLD}start-build${RESET}        Build, then start          ${DIM}(alias: startandbuild, bs)${RESET}
   ${BOLD}restart${RESET}            Stop, then start
-  ${BOLD}stop${RESET}               Stop the server and the sample site
+  ${BOLD}stop${RESET}               Stop the server and any standalone docs server
   ${BOLD}logs${RESET} [target]      Follow logs                ${DIM}target: server | sample${RESET}
   ${BOLD}status${RESET}             What is running, plus a live contrast-audit check
+  ${BOLD}docs${RESET}               Standalone docs server on SAMPLE_PORT ${DIM}(alias: sample)${RESET}
   ${BOLD}verify${RESET}             Run every gate without starting anything
   ${BOLD}clean${RESET} [-y] [--all] Remove build output, container and image
   ${BOLD}help${RESET}               This message
@@ -516,8 +544,11 @@ ${BOLD}OPTIONS${RESET}
   logs --no-follow     Print recent logs and exit
 
 ${BOLD}ENVIRONMENT${RESET}
-  SEKURA_PORT          MCP server port          ${DIM}(default 8080)${RESET}
-  SAMPLE_PORT          Sample site port         ${DIM}(default 4173)${RESET}
+  Settings are read from ${BOLD}.env${RESET} — copy .env.example to start. Anything already
+  exported wins, so SEKURA_PORT=9000 ./run.sh start works without editing it.
+
+  SEKURA_PORT          Host port                ${DIM}(default 8080)${RESET}
+  SAMPLE_PORT          Standalone docs port     ${DIM}(default 4173, ./run.sh docs only)${RESET}
   SEKURA_IMAGE         Docker image tag         ${DIM}(default sekura-design-mcp:<package.json version>)${RESET}
   SEKURA_CONTAINER     Container name           ${DIM}(default sekura-design-mcp)${RESET}
   NO_COLOR             Disable coloured output
@@ -549,6 +580,7 @@ main() {
     stop)                           cmd_stop "$@" ;;
     logs|log)                       cmd_logs "$@" ;;
     status|ps)                      cmd_status "$@" ;;
+    docs|sample)                    start_sample ;;
     verify|check|test)              cmd_verify "$@" ;;
     clean)                          cmd_clean "$@" ;;
     help|-h|--help)                 cmd_help ;;

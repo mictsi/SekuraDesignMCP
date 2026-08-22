@@ -54,6 +54,11 @@ jobs:
         # well-meaning bot moving the runtime to a major that never gets LTS.
         run: npm run check:deps
 
+      - name: Environment documentation
+        # .env.example must document every setting the code reads, and list none
+        # it does not. It is the only place a deployer looks.
+        run: npm run check:env
+
       - name: URL resolution
         # Path prefixes, stripped prefixes and forwarded headers, which are the
         # deployments that cannot be tried by hand.
@@ -227,6 +232,30 @@ jobs:
               console.log('all '+Object.keys(m.artefacts).length+' artefact URLs carry the prefix');
             });"
 
+      - name: Configured entirely from .env
+        # The documented path: copy the sample, edit it, --env-file it. Also
+        # asserts the three endpoints share one port and one app path, which is
+        # the whole point of the base-path support.
+        run: |
+          cp .env.example .env
+          sed -i 's|^SEKURA_BASE_PATH=/$|SEKURA_BASE_PATH=/from-env|' .env
+          docker run -d --name sekura-envfile -p 8083:8080 --env-file .env sekura-design-mcp:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8083/from-env/health > /dev/null; then break; fi
+            sleep 1
+          done
+          for p in /from-env/health /from-env/docs/ /from-env/manifest.json; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:8083$p")
+            echo "GET $p -> $code"
+            [ "$code" = "200" ] || { echo "::error::$p returned $code"; exit 1; }
+          done
+          code=$(curl -s -o /dev/null -w '%{http_code}' -X POST http://127.0.0.1:8083/from-env/mcp \
+            -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' \
+            -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}')
+          echo "POST /from-env/mcp -> $code"
+          [ "$code" = "200" ] || { echo "::error::MCP returned $code from .env config"; exit 1; }
+          rm -f .env
+
       - name: External URL overrides a stripped prefix
         # The proxy_pass-strips-the-prefix case: the app listens at the root but
         # every link it generates must be the public one.
@@ -254,3 +283,4 @@ jobs:
           docker logs sekura || true
           docker logs sekura-prefixed || true
           docker logs sekura-external || true
+          docker logs sekura-envfile || true

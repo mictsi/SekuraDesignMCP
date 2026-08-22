@@ -78,6 +78,20 @@ the contrast audit proves nothing regressed.
 
   The marketing example's FAQ now uses the real accordion rather than the
   `.sk-details` styling that had been standing in for it.
+- **All container settings moved to `.env`**, with `.env.example` as the
+  documented sample. `docker compose up`, `./run.sh start` and
+  `docker run --env-file .env` now read the same file, so there is one place to
+  look when a deployment misbehaves. `run.sh` loads it, letting an exported
+  value win so `SEKURA_PORT=9000 ./run.sh start` still works for a one-off.
+- **`npm run check:env`** — a gate running both directions: every setting the
+  code reads must be documented, and every setting documented must be read by
+  something. A setting someone will set, restart for, and watch do nothing is
+  worse than an undocumented one. It also rejects quoted values, because
+  `docker run --env-file` keeps the quotes as part of the value while Compose
+  strips them — a bug that would only appear in one of the two ways this project
+  documents starting the container. Finding the first violations immediately:
+  the README's configuration table was missing three settings, and `SAMPLE_PORT`
+  and `SEKURA_MCP_PORT` were undocumented entirely.
 - **The container can be published under a path.** `SEKURA_BASE_PATH` sets where
   the process listens; `SEKURA_EXTERNAL_URL` sets the base that generated links
   are built from. Two settings rather than one because a proxy configured with
@@ -118,6 +132,11 @@ the contrast audit proves nothing regressed.
 
 ### Fixed
 
+- **`./run.sh start` no longer starts a second documentation server on port
+  4173.** The MCP endpoint, the health check and the docs are all served from
+  one port under one path prefix; a separate copy on another port both
+  duplicated it and contradicted that. The standalone server is still available
+  as `./run.sh docs` for iterating on the site itself.
 - **Repository URLs said `OWNER`.** `package.json`, the CHANGELOG compare links,
   `SECURITY.md` and the GHCR pull command all carried the placeholder, so the
   advisory link went nowhere and the documented `docker run` could not resolve.

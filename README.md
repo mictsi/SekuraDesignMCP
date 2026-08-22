@@ -339,6 +339,7 @@ non-zero, so a change that breaks a promise cannot merge green:
 |---|---|
 | `check:version` | No version literal has drifted from `package.json` |
 | `check:deps` | No pre-release dependencies; every Node reference an LTS line |
+| `check:env` | `.env.example` documents every setting, and only real ones |
 | `audit:contrast` | 344 checks — 86 declared pairings across four themes |
 | `lint:css` | Structure, tokens only, no physical properties |
 | `smoke` | Every MCP tool, component, framework and export format |
@@ -401,6 +402,7 @@ npm run verify          # everything below, in order
 npm run build           # compile
 npm run check:version   # no version literal has drifted
 npm run check:deps      # dependency policy: stable releases, Node LTS only
+npm run check:env       # .env.example matches what the code actually reads
 npm run test:color      # colour maths vs WCAG reference values
 npm run test:urls       # URL generation under prefixes and reverse proxies
 npm run audit:contrast  # 344 contrast checks — build gate
@@ -451,14 +453,14 @@ src/
     └── search.ts         weighted full-text search
 ```
 
-### Configuration
+### Settings
 
-| Variable | Default | Purpose |
-|---|---|---|
-| `SEKURA_MCP_TRANSPORT` | `stdio` (`http` in Docker) | Transport |
-| `PORT` | `8080` | HTTP port |
-| `HOST` | `0.0.0.0` | Bind address |
-| `SEKURA_MCP_PATH` | `/mcp` | MCP endpoint path |
+Every setting, with what it does and when you would change it, is documented in
+[`.env.example`](./.env.example) — including the path variables this section
+used to omit. See [Configuration](#configuration) for how to use the file.
+
+A second list here would drift from that one, which is the failure
+`npm run check:env` exists to prevent.
 
 ---
 
@@ -478,7 +480,35 @@ Odd-numbered Node majors are never promoted to LTS, so a dependency bot
 offering `node:25-alpine` is offering a runtime that reaches end-of-life in
 months. `npm run check:deps` fails the build if one lands.
 
+## Configuration
+
+Every container setting lives in one file.
+
+```bash
+cp .env.example .env      # then edit .env, which is gitignored
+```
+
+`docker compose up`, `./run.sh start` and `docker run --env-file .env` all read
+it, so there is a single place to look when a deployment misbehaves. Anything
+already exported wins, so `SEKURA_PORT=9000 ./run.sh start` still works for a
+one-off.
+
+`npm run check:env` fails the build if the code reads a setting `.env.example`
+does not document, or documents one nothing reads — a setting someone will set,
+restart for, and watch do nothing is worse than an undocumented one. It also
+rejects quoted values, because `docker run --env-file` keeps the quotes as part
+of the value while Compose strips them.
+
 ## Publishing under a path
+
+**The MCP endpoint, the health check and the documentation site are served from
+one port under one path prefix.** There is no second port and no second server:
+
+```
+http://host:8080/<app_path>/mcp        MCP, POST
+http://host:8080/<app_path>/health     health
+http://host:8080/<app_path>/docs/      documentation site
+```
 
 The image serves at the root by default. To publish it under a path on an
 existing web server — `https://example.com/design-system/` — you need to know

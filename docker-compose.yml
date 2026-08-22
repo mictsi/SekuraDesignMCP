@@ -4,38 +4,21 @@ services:
       context: .
       target: runtime
     # Tag follows package.json; override with SEKURA_VERSION.
-    image: sekura-design-mcp:${SEKURA_VERSION:-latest}
-    container_name: sekura-design-mcp
+    image: ${SEKURA_IMAGE:-sekura-design-mcp}:${SEKURA_VERSION:-latest}
+    container_name: ${SEKURA_CONTAINER:-sekura-design-mcp}
     restart: unless-stopped
     ports:
       - "${SEKURA_PORT:-8080}:8080"
-    environment:
-      SEKURA_MCP_TRANSPORT: http
-      SEKURA_MCP_PATH: /mcp
-      PORT: "8080"
-      NODE_ENV: production
+    # Every setting lives in .env — copy .env.example to start.
+    #
+    # `required: false` so `docker compose up` works on a fresh clone with no
+    # .env at all; the Dockerfile's ENV defaults then apply. Compose also reads
+    # this same file for ${...} interpolation below, so the host port and the
+    # image tag come from it too.
+    env_file:
+      - path: .env
+        required: false
 
-      # --- Publishing under a path on an existing web server ---
-      #
-      # These answer two different questions and are not interchangeable.
-      #
-      # SEKURA_BASE_PATH is where THIS PROCESS listens. Set it when the proxy
-      # passes the prefix through:
-      #     location /design-system/ { proxy_pass http://app:8080/design-system/; }
-      #     SEKURA_BASE_PATH: /design-system
-      #
-      # SEKURA_EXTERNAL_URL is what the WORLD sees, used to generate links. Set
-      # it when the proxy strips the prefix, because the container has no way to
-      # discover what was removed:
-      #     location /design-system/ { proxy_pass http://app:8080/; }
-      #     SEKURA_EXTERNAL_URL: https://example.com/design-system
-      #
-      # With Traefik or ingress-nginx, neither is needed: X-Forwarded-Prefix is
-      # honoured automatically. Set SEKURA_TRUST_PROXY=false if the container is
-      # exposed directly, so a forged X-Forwarded-Host cannot rewrite links.
-      SEKURA_BASE_PATH: ${SEKURA_BASE_PATH:-/}
-      SEKURA_EXTERNAL_URL: ${SEKURA_EXTERNAL_URL:-}
-      SEKURA_TRUST_PROXY: ${SEKURA_TRUST_PROXY:-true}
     healthcheck:
       test:
         - CMD
