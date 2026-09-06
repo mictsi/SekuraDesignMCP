@@ -103,7 +103,7 @@ jobs:
       - name: Install Chromium
         # Needed by the behaviour and accessibility checks below, which drive a
         # real browser rather than a DOM emulation.
-        run: npx playwright install --with-deps chromium
+        run: node node_modules/playwright-core/cli.js install --with-deps chromium
 
       - name: Behaviour contracts
         # Real key presses against a real DOM: roving tabindex, focus trap and
@@ -165,7 +165,7 @@ jobs:
       - run: npm run emit:css
       - run: npm run build:behaviours
       - run: npm run site:build
-      - run: npx playwright install --with-deps chromium
+      - run: node node_modules/playwright-core/cli.js install --with-deps chromium
 
       - name: axe-core — WCAG 2.0/2.1/2.2 A + AA
         # Both themes, because a dark-mode contrast failure is invisible to a

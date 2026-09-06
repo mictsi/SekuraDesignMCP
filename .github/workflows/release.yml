@@ -53,7 +53,7 @@ jobs:
           echo "version=$PKG_VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+        run: node node_modules/playwright-core/cli.js install --with-deps chromium
 
       - uses: actions/setup-dotnet@v4
         with:
