@@ -71,6 +71,7 @@ export const NAV: NavGroup[] = [
     items: [
       { file: 'examples.html', label: 'All examples' },
       { file: 'workbench.html', label: 'Component workbench' },
+      { file: 'form-lab.html', label: 'Forms under real conditions' },
       { file: 'example-dashboard.html', label: 'Dashboard' },
       { file: 'example-list.html', label: 'List page' },
       { file: 'example-detail.html', label: 'Detail page' },
@@ -510,6 +511,7 @@ ${commandPalette(ctx.palette)}
 <script src="assets/sekura.iife.min.js"></script>
 <script src="assets/app.js"></script>
 <script src="assets/examples.js"></script>
+<script type="module" src="assets/form-lab.js"></script>
 <script src="assets/docs.js"></script>
 </body>
 </html>
@@ -554,6 +556,7 @@ ${content}
 <script src="assets/sekura.iife.min.js"></script>
 <script src="assets/app.js"></script>
 <script src="assets/examples.js"></script>
+<script type="module" src="assets/form-lab.js"></script>
 </body>
 </html>
 `;
@@ -592,6 +595,7 @@ ${commandPalette(ctx.palette)}
 <script src="assets/sekura.iife.min.js"></script>
 <script src="assets/app.js"></script>
 <script src="assets/examples.js"></script>
+<script type="module" src="assets/form-lab.js"></script>
 </body>
 </html>
 `;

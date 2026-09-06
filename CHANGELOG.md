@@ -7,6 +7,15 @@ The version in `package.json` is the single source of truth — the server, the
 documentation site, the behaviours bundle and the container tag all derive from
 it, and `npm run check:version` fails the build if a literal drifts back in.
 
+## 2.1.0 — 2026-09-06
+
+- Add structured MCP recipes, event contracts and the `validate_integration` tool for dependencies, markup and initialization.
+- Add a versioned native React package for six controls and a CSS-derived Figma starter library with 216 editable variants.
+- Add the form-composition lab with translated labels, delayed validation, dependent fields, permissions and a real local HTTP adapter demonstrating cancellation, errors and conflicts.
+- Verify representative workflows in Chromium, Firefox and WebKit; document manual assistive-technology and design-tool acceptance separately.
+- Fix RTL overflow from overspecified button hit areas and position checkbox/radio input hit targets within their labels.
+- Merge verified Zod 4.5.4 and install browser binaries through the locked Playwright CLI.
+
 ## What counts as a breaking change
 
 A **major** bump is required for any of these, because each silently breaks

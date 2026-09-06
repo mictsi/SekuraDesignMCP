@@ -1,8 +1,23 @@
 # Design review after implementation
 
-6 September 2026 · version 2.0.0
+6 September 2026 · original review at version 2.0.0; follow-ups at version 2.1.0
 
 The 18 defects in [the original audit](DESIGN-AUDIT.md) are addressed. The documentation now runs the distributed controllers, framework output preserves native markup, and the worked examples demonstrate local application outcomes. The support matrix makes the remaining application responsibilities explicit.
+
+## Follow-up implementation
+
+| Review priority | Implementation | Scope / acceptance |
+| --- | --- | --- |
+| Design-tool library | CSS-derived Figma development plugin; six native editable sets, 216 variants across four themes and three densities; button/toggle prototype reactions; ownership metadata. | Starter coverage is Button, TextField, Textarea, Select, Checkbox and Switch. API typecheck and build pass. A designer must import, inspect and approve it before team publication; the other 61 web components are not claimed as Figma equivalents. |
+| Form composition | New form lab with mixed hints, long translated label, stale-request cancellation, dependent owner choices and changing permissions. | Browser tests exercise retained drafts and recovery paths. |
+| Accessibility and responsive review | Three-engine keyboard, narrow 320px, 200% text, RTL and forced-colors checks; corrected RTL button hit areas and checkbox/radio positioning. | Human screen-reader, browser-zoom, actual OS contrast and physical-touch acceptance remains pending. Exact protocol: [MANUAL-VALIDATION.md](MANUAL-VALIDATION.md). |
+| Framework-native API | Versioned `@sekura/react` build with six typed native controls, controlled values, refs, labels/hints/errors and busy buttons. | Public types compile; representative components mount and update in all three browser engines. Other components and frameworks remain editable recipes. |
+| Browser coverage | Chromium, Firefox and WebKit run the new workflow suite; CI installs locked browser revisions. | Existing broad all-page scans remain Chromium; cross-engine runtime coverage is representative. |
+| Request integration | Reusable JSON fetch adapter plus isolated localhost demo API. | Success, HTTP errors, malformed JSON, timeout, cancellation, explicit retries and optimistic concurrency are exercised. Memory storage is demonstration-only. |
+| Structured MCP | `get_component_code` output schema and structured recipe; manifest includes event payloads and native React availability. | Existing text/error responses remain compatible; structured responses are checked through a real MCP client. |
+| Integration validator | New `validate_integration` checks CSS dependencies, markup roots, native semantics, IDs, icons, initialization and declared handlers. | Static findings include fixes and an explicit runtime-validation limit. |
+
+The earlier review and its baseline evidence below are retained as history. The full verification pipeline passes: 101 generated pages, 202 light/dark axe scans with zero violations, 20 design regressions and 18 additional cross-browser workflow scenarios, plus structured integration and HTTP-adapter checks. Manual acceptance is pending, not reported as passed.
 
 ## Resolution evidence
 
@@ -79,4 +94,4 @@ The verification pipeline covers TypeScript, dependency/version/environment poli
 
 The full site contains 100 generated pages; the published static bundle adds its 404 page. All 100 pages are scanned in light and dark themes. High-contrast themes are covered by token contrast checks and available in the workbench, rather than a claim that every live widget state was scanned in every theme.
 
-Remaining validation limits: Chromium is the executed browser; no manual assistive-technology pass or physical touch-device pass was performed. Razor, Vue, Svelte, Angular and Web Component compilation is not equivalent to running every generated component in those frameworks. React runtime coverage is representative. Native browser find-in-page was not driven through browser chrome; the disclosure's CSS and beforematch synchronization were checked directly.
+Original version 2.0.0 validation limits: Chromium was the executed browser; no manual assistive-technology pass or physical touch-device pass was performed. Razor, Vue, Svelte, Angular and Web Component compilation is not equivalent to running every generated component in those frameworks. React runtime coverage is representative. Native browser find-in-page was not driven through browser chrome; the disclosure's CSS and beforematch synchronization were checked directly.

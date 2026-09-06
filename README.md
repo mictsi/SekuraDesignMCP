@@ -14,7 +14,7 @@ Build-derived counts and support: sample/assets/component-manifest.json
 ```
 
 The human-readable specification is [`DESIGN.md`](./DESIGN.md), and there is an
-100-page [documentation site](./sample) — generated from the same data — that
+101-page [documentation site](./sample) — generated from the same data — that
 explains it with live demos, a full colour guide and worked examples.
 
 ---
@@ -76,7 +76,7 @@ reports it.
 ./run.sh start-build          # then open http://localhost:4173
 ```
 
-An 100-page documentation site — explanations, a full colour guide, a type
+A 101-page documentation site — explanations, a full colour guide, a type
 specimen, live demos, a complete component reference and nine worked examples.
 
 **It is generated from the design system's own data**, so the colour guide shows
@@ -420,7 +420,7 @@ contrast audit proves nothing regressed. See [`CHANGELOG.md`](./CHANGELOG.md).
 ## Development
 
 ```bash
-npm run verify          # full checks; Node/npm, Chromium and .NET 10 SDK required
+npm run verify          # full checks; Node/npm, Chromium, Firefox, WebKit and .NET 10 SDK required
 npm run build           # compile
 npm run check:version   # no version literal has drifted
 npm run check:deps      # dependency policy: stable releases, Node LTS only
@@ -429,9 +429,9 @@ npm run test:color      # colour maths vs WCAG reference values
 npm run test:urls       # URL generation under prefixes and reverse proxies
 npm run audit:contrast  # 344 contrast checks — build gate
 npm run lint:css        # structural CSS lint over all 67 stylesheets
-npm run smoke           # 704 checks across every tool, component and export
-npm run emit:css        # write dist-css/ — 66 files, sekura.css is ~190 KB
-npm run site:build      # regenerate the 100-page documentation site
+npm run smoke           # checks every tool, component and export
+npm run emit:css        # write dist-css/ and the dependency/event manifest
+npm run site:build      # regenerate the 101-page documentation site
 npm run verify:sample   # lint every page against the design system itself
 ```
 
@@ -530,7 +530,7 @@ regression — and they are skippable:
 with `PLAYWRIGHT_BROWSERS_PATH` pointed at nothing, it exits 0 while the full
 build exits 1 at the behaviour step.
 
-Install the browser once with `node node_modules/playwright-core/cli.js install chromium` if you want the
+Install the browser once with `node node_modules/playwright-core/cli.js install chromium firefox webkit` if you want the
 full local build.
 
 ## Configuration
@@ -649,7 +649,7 @@ where a link, a bookmark or a proxy rule eventually points at the wrong one.
 | `/tokens.json` | W3C DTCG format |
 | `/css/sekura.css` | The complete stylesheet; `/css/` also has per-component files |
 | `/js/sekura.iife.min.js` | Behaviours, drop-in `<script>`; `.esm.min.js` alongside |
-| `/docs/` | The 100-page documentation site |
+| `/docs/` | The 101-page documentation site |
 
 Do not assemble those paths by hand from a base you assume. Fetch
 `/manifest.json`, or call the `get_endpoints` MCP tool — only the server knows
@@ -711,7 +711,7 @@ returned a default", and the second is a false claim of safety.
 npm run site:publish        # -> dist-site/
 ```
 
-`dist-site/` is self-contained: 100 pages, the assets, and a 404 page. Upload it
+`dist-site/` is self-contained: 101 pages, the assets, and a 404 page. Upload it
 anywhere. Every reference in it is relative, so the same bundle serves from a
 domain root or any subdirectory with no rebuild:
 
@@ -733,3 +733,27 @@ statically is an alternative to it rather than a prerequisite.
 MIT — see [`LICENSE`](./LICENSE).
 
 Contributing: [`CONTRIBUTING.md`](./CONTRIBUTING.md) · Security: [`SECURITY.md`](./SECURITY.md) · Changes: [`CHANGELOG.md`](./CHANGELOG.md)
+
+
+## Review follow-ups
+
+- `npm run build:react`: builds the versioned local `@sekura/react` package with Button, TextField, Textarea, Select, Checkbox and Switch. See [the API contract](src/react/README.md).
+- `npm run build:design-kit`: derives six Figma component sets (216 theme/density/state variants) from emitted CSS. See [import instructions and coverage](design-tools/figma/README.md). It is a starter library requiring visual review in Figma before publication.
+- `npm run demo:server`: serves the form-composition lab at `http://127.0.0.1:4173/form-lab.html`, with same-origin HTTP validation, save and version-conflict endpoints. Data lives in memory. These endpoints are not mounted by the MCP server.
+- `npm run test:browsers`: exercises native React controls, HTTP workflows, cancellation, permission changes, keyboard overlays, RTL and enlarged text in Chromium, Firefox and WebKit.
+- `get_component_code` retains readable text and adds an output schema and `structuredContent`. Recipes include stylesheet dependencies, initialization instructions, native React export availability and public event payloads.
+- `validate_integration` checks selected components, markup, loaded CSS, SVG symbols, target IDs, initialization and declared application handlers together. Warnings about undeclared handlers do not execute or prove callback behavior.
+
+Example MCP integration validation:
+
+```json
+{
+  "componentIds": ["button"],
+  "markup": "<button type=\"button\" class=\"sk-button\">Save</button>",
+  "stylesheets": ["sekura.css"],
+  "initialization": "auto",
+  "handledEvents": ["button:click"]
+}
+```
+
+Run `npm run test:integration` for structured MCP contracts and `npm run test:request` for HTTP error/abort/timeout handling. Actual screen-reader, OS contrast, physical touch and Figma acceptance procedures are recorded in [MANUAL-VALIDATION.md](MANUAL-VALIDATION.md); they have not been performed by a human tester.

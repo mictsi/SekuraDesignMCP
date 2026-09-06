@@ -26,6 +26,7 @@ import {
   resetDemoIds,
   type ShellContext,
 } from '../site/shell.js';
+import { formLabPage } from '../site/form-lab.js';
 import { supportPage, workbenchPage } from '../site/workbench.js';
 import * as pages from '../site/pages.js';
 
@@ -176,7 +177,7 @@ function main(): void {
     pages.foundationPage('theming', 'theming.html', 'Theming'),
     pages.tokensPage(),
     pages.componentsIndexPage(),
-    supportPage(), workbenchPage(),
+    supportPage(), workbenchPage(), formLabPage(),
     pages.patternsPage(),
     pages.recipesPage(),
   ];

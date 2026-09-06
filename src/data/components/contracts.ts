@@ -1,6 +1,7 @@
 import { parseFragment, serialize, type DefaultTreeAdapterMap } from 'parse5';
 import type { ComponentSpec } from './types.js';
 import { VERSION } from '../../lib/version.js';
+import { componentEvents, componentMarkers, type EventContract } from './events.js';
 
 export const rootClasses: Record<string, string> = {
   'segmented-control': 'sk-segmented', 'form-field': 'sk-field', 'text-field': 'sk-input',
@@ -30,6 +31,9 @@ export interface ImplementationSpec {
   behavior: 'controller' | 'native' | 'application';
   frameworkOutput: 'reference-recipe';
   applicationResponsibilities: string[];
+  events: EventContract[];
+  autoMarker: string | null;
+  nativeReactExport: string | null;
 }
 
 /** Canonical markup carries the same markers that the distributable recognizes. */
@@ -76,6 +80,8 @@ export function implementation(spec: ComponentSpec, catalogue: ComponentSpec[]):
     controller: controllers[spec.id] ?? null,
     behavior: controllers[spec.id] ? 'controller' : ['text-field', 'textarea', 'select', 'checkbox', 'radio-group', 'link'].includes(spec.id) ? 'native' : 'application',
     frameworkOutput: 'reference-recipe',
+    nativeReactExport: ({ button: 'Button', 'text-field': 'TextField', textarea: 'Textarea', select: 'Select', checkbox: 'Checkbox', switch: 'Switch' } as Record<string, string>)[spec.id] ?? null,
+    events: componentEvents[spec.id] ?? [], autoMarker: componentMarkers[spec.id] ?? null,
     applicationResponsibilities: ['Provide real content and application state.', 'Handle persistence, permissions, network errors and navigation.', 'Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons.',
       ...(spec.id === 'switch' ? ['Pass an onToggle callback to createAsyncSwitch for persisted switches.'] : []),
       ...(['tree-view', 'file-upload', 'pagination'].includes(spec.id) ? ['See the worked examples; backend data and transport remain application-owned.'] : [])],

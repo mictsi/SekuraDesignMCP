@@ -893,6 +893,7 @@ export const formComponents: ComponentSpec[] = [
 </label>
 <script>document.getElementById('select-all').indeterminate = true;</script>`,
     css: `.sk-checkbox {
+  position: relative;
   display: flex;
   align-items: flex-start;
   gap: var(--sk-space-10);
@@ -905,6 +906,7 @@ export const formComponents: ComponentSpec[] = [
    display:none or visibility:hidden would remove it from both. */
 .sk-checkbox__input {
   position: absolute;
+  z-index: var(--sk-z-raised);
   inline-size: 1.25rem;
   block-size: 1.25rem;
   margin: 0;
@@ -1116,6 +1118,7 @@ export const formComponents: ComponentSpec[] = [
 .sk-radio-group--cards { gap: var(--sk-space-12); }
 
 .sk-radio {
+  position: relative;
   display: flex;
   align-items: flex-start;
   gap: var(--sk-space-10);
@@ -1126,6 +1129,7 @@ export const formComponents: ComponentSpec[] = [
 
 .sk-radio__input {
   position: absolute;
+  z-index: var(--sk-z-raised);
   inline-size: 1.25rem;
   block-size: 1.25rem;
   margin: 0;
@@ -1733,7 +1737,7 @@ export const formComponents: ComponentSpec[] = [
   cursor: pointer;
   position: relative;
 }
-.sk-search__clear::after { content: ""; position: absolute; inset: 50% 0 0 50%; translate: -50% -50%; min-inline-size: 24px; min-block-size: 24px; }
+.sk-search__clear::after { content: ""; position: absolute; inset: 50% auto auto 50%; translate: -50% -50%; min-inline-size: 24px; min-block-size: 24px; }
 .sk-search__clear:hover { background-color: var(--sk-color-surface-hover); color: var(--sk-color-text-primary); }
 .sk-search__clear > svg { fill: currentColor; }
 

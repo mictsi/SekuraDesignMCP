@@ -2,6 +2,8 @@ node_modules
 dist
 dist-css
 dist-js
+dist-react
+dist-design-kit
 .git
 .gitignore
 *.log

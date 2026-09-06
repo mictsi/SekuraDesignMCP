@@ -47,6 +47,7 @@ function scan(dir: string): void {
   for (const entry of readdirSync(dir)) {
     if (
       entry === 'node_modules' || entry === '.git' || entry === 'dist' ||
+      entry === 'dist-react' || entry === 'dist-design-kit' ||
       entry === 'dist-css' || entry === 'dist-js' || entry === '.run' ||
       entry === 'sample' || entry === '.github'
     ) {

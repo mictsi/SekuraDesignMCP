@@ -175,7 +175,7 @@ export const actionComponents: ComponentSpec[] = [
 .sk-button::after {
   content: "";
   position: absolute;
-  inset: 50% 0 0 50%;
+  inset: 50% auto auto 50%;
   translate: -50% -50%;
   min-width: 24px;
   min-height: 24px;
@@ -479,7 +479,7 @@ export const actionComponents: ComponentSpec[] = [
 .sk-icon-button::after {
   content: "";
   position: absolute;
-  inset: 50% 0 0 50%;
+  inset: 50% auto auto 50%;
   translate: -50% -50%;
   min-inline-size: 24px;
   min-block-size: 24px;

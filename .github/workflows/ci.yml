@@ -83,7 +83,7 @@ jobs:
         # Every failing tool call must be marked isError with a semantic code,
         # a standard recovery hint and the closest valid values. A friendly
         # sentence in a success envelope is what makes a model hallucinate.
-        run: npm run test:errors
+        run: npm run test:errors && npm run test:integration && npm run test:request
 
       - name: MCP smoke test
         # Exercises every tool, component, framework and export format through a
@@ -100,10 +100,10 @@ jobs:
       - name: Generated framework recipes
         run: npm run test:codegen && npm run test:blazor
 
-      - name: Install Chromium
+      - name: Install browser engines
         # Needed by the behaviour and accessibility checks below, which drive a
         # real browser rather than a DOM emulation.
-        run: node node_modules/playwright-core/cli.js install --with-deps chromium
+        run: node node_modules/playwright-core/cli.js install --with-deps chromium firefox webkit
 
       - name: Behaviour contracts
         # Real key presses against a real DOM: roving tabindex, focus trap and
@@ -126,6 +126,9 @@ jobs:
         # failure that works at a domain root and 404s in a subdirectory.
         run: npm run site:publish
 
+      - name: Design kit and native React workflows
+        run: npm run build:design-kit && npm run build:react && npm run test:browsers
+
       - name: Design and example regressions
         run: npm run test:design
 
@@ -145,6 +148,8 @@ jobs:
           path: |
             dist-css/
             dist-js/
+            dist-react/
+            dist-design-kit/
           retention-days: 7
 
   accessibility:

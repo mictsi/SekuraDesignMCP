@@ -1,7 +1,7 @@
 {
   "name": "sekura-design-mcp",
-  "version": "2.0.0",
-  "description": "Sekura Design System — MCP server exposing the complete design, UX, accessibility and dark-mode specification as machine-readable tools.",
+  "version": "2.1.0",
+  "description": "Sekura Design System \u2014 MCP server exposing the complete design, UX, accessibility and dark-mode specification as machine-readable tools.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -20,7 +20,7 @@
     "emit:css": "node dist/scripts/emit-css.js",
     "smoke": "node dist/scripts/smoke.js",
     "test:errors": "node dist/scripts/test-errors.js",
-    "verify": "npm run build && npm run check:version && npm run check:deps && npm run check:env && npm run test:color && npm run test:urls && npm run audit:contrast && npm run lint:css && npm run smoke && npm run test:errors && npm run build:behaviours && npm run test:codegen && npm run test:blazor && npm run test:behaviours && npm run emit:css && npm run site:build && npm run verify:sample && npm run site:publish && npm run test:rtl && npm run test:announce && npm run test:design && npm run test:a11y",
+    "verify": "npm run build && npm run check:version && npm run check:deps && npm run check:env && npm run test:color && npm run test:urls && npm run audit:contrast && npm run lint:css && npm run smoke && npm run test:errors && npm run test:integration && npm run test:request && npm run build:behaviours && npm run test:codegen && npm run test:blazor && npm run test:behaviours && npm run emit:css && npm run site:build && npm run verify:sample && npm run site:publish && npm run test:rtl && npm run test:announce && npm run build:design-kit && npm run build:react && npm run test:browsers && npm run test:design && npm run test:a11y",
     "verify:sample": "node dist/scripts/verify-sample.js",
     "site:build": "node dist/scripts/build-site.js",
     "site:publish": "npm run site:build && node dist/scripts/publish-site.js",
@@ -36,7 +36,13 @@
     "test:rtl": "node dist/scripts/test-rtl.js",
     "test:codegen": "node dist/scripts/test-codegen.js",
     "test:design": "node src/scripts/test-design.mjs",
-    "test:blazor": "node dist/scripts/test-blazor.js"
+    "test:blazor": "node dist/scripts/test-blazor.js",
+    "build:react": "tsc -p tsconfig.react.json && node src/scripts/build-react.mjs",
+    "test:integration": "node dist/scripts/test-integration.js",
+    "test:browsers": "node src/scripts/test-browsers.mjs",
+    "demo:server": "node src/scripts/demo-server.mjs",
+    "build:design-kit": "tsc -p tsconfig.figma.json && node src/scripts/build-design-kit.mjs",
+    "test:request": "node src/scripts/test-request.mjs"
   },
   "keywords": [
     "mcp",
@@ -57,6 +63,7 @@
   "devDependencies": {
     "@angular/compiler": "^22.1.5",
     "@angular/core": "^22.1.5",
+    "@figma/plugin-typings": "^1.138.0",
     "@types/express": "^5.0.6",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
@@ -80,7 +87,10 @@
     "DESIGN-REVIEW.md",
     "README.md",
     "LICENSE",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "dist-react",
+    "dist-design-kit",
+    "MANUAL-VALIDATION.md"
   ],
   "repository": {
     "type": "git",

@@ -52,8 +52,8 @@ jobs:
           fi
           echo "version=$PKG_VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Install Chromium
-        run: node node_modules/playwright-core/cli.js install --with-deps chromium
+      - name: Install browser engines
+        run: node node_modules/playwright-core/cli.js install --with-deps chromium firefox webkit
 
       - uses: actions/setup-dotnet@v4
         with:
@@ -86,6 +86,10 @@ jobs:
 
           # 5. npm tarball for the behaviours package.
           (cd dist-js && npm pack --pack-destination ../release >/dev/null)
+
+          # Native React package and editable design-tool starter library.
+          (cd dist-react && npm pack --pack-destination ../release >/dev/null)
+          (cd dist-design-kit && zip -qr "../release/sekura-design-kit-$VERSION.zip" .)
 
           # Checksums, so a consumer can verify what they downloaded.
           (cd release && sha256sum * > SHA256SUMS.txt)

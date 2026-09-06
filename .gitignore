@@ -171,3 +171,6 @@ dist-site/
 
 # temp files
 /tmp/
+
+dist-react/
+dist-design-kit/

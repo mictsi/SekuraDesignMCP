@@ -47,6 +47,7 @@ import type { PublishedUrls } from './lib/urls.js';
 import { summariseFindings, validateMarkup } from './lib/validate.js';
 
 import { VERSION } from './lib/version.js';
+import { componentRecipe, recipeSchema, integrationInput, integrationResultSchema, validateIntegration } from './lib/integration.js';
 
 export const SERVER_NAME = 'sekura-design';
 export const SERVER_VERSION = VERSION;
@@ -294,6 +295,7 @@ Start with \`get_overview\` for the map. Then:
 - \`get_pattern\` — recurring UX problems and their answers
 - \`export_tokens\` — CSS, Tailwind, W3C DTCG, Swift, Android
 - \`check_contrast\` / \`audit_theme\` / \`validate_markup\` — verify, do not guess
+- \`validate_integration\` — check assembled markup, dependencies, initialization and declared action handlers
 
 Two rules that govern everything else: product code references semantic tokens only (never a hex value, never a primitive), and dark mode is a peer of light mode rather than an inversion of it. Layouts are flex-first and respond to their container, so most need no media query.`,
     }
@@ -516,12 +518,13 @@ Full spec: \`get_component({ id })\`. Code: \`get_component_code({ id, framework
               .join(' | ')
           ),
       },
+      outputSchema: recipeSchema,
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
     async ({ id, framework }) => {
       const spec = getComponent(id);
       if (!spec) {
-        return unknownValue('component', id, components.map((c) => c.id), 'list_components');
+        return { ...unknownValue('component', id, components.map((c) => c.id), 'list_components') };
       }
       const lang =
         framework === 'html' ? 'html'
@@ -532,7 +535,7 @@ Full spec: \`get_component({ id })\`. Code: \`get_component_code({ id, framework
         : framework === 'blazor' ? 'razor'
         : 'ts';
 
-      return text(`# ${spec.name} — ${framework}
+      const response = text(`# ${spec.name} — ${framework}
 
 ${frameworkDescriptions[framework]}
 
@@ -546,8 +549,20 @@ ${generateCode(spec, framework)}
 ${bullets(spec.accessibility.aria.slice(0, 4))}
 
 ${framework !== 'css' ? `\nThe CSS for this component is a separate call: \`get_component_code({ id: "${spec.id}", framework: "css" })\`. Token definitions come from \`export_tokens({ format: "css" })\`.` : ''}`);
+      return { ...response, structuredContent: componentRecipe(spec, framework) };
     }
   );
+
+  server.registerTool('validate_integration', {
+    title: 'Validate component integration',
+    description: 'Check component markup, stylesheet dependencies, SVG symbols, ID references, initialization and declared application events. Returns structured findings and fixes; does not execute callbacks.',
+    inputSchema: integrationInput,
+    outputSchema: integrationResultSchema,
+    annotations: { readOnlyHint: true, openWorldHint: false },
+  }, async (input) => {
+    const result = validateIntegration(input);
+    return { ...text(JSON.stringify(result, null, 2)), structuredContent: result };
+  });
 
   /* ---------------- Layouts and patterns ---------------- */
 
@@ -1218,7 +1233,7 @@ Work in this order:
 2. ${layout ? `\`get_layout({ id: "${layout}" })\`` : 'Pick a layout recipe with `get_layout` — list them via `get_overview`.'}
 3. \`get_component\` for each component you will use, then \`get_component_code\` for the markup and CSS.
 4. \`get_foundation({ id: "responsive-layout" })\` before writing any layout CSS.
-5. \`validate_markup\` on the result before you finish.
+5. \`validate_integration\` with the selected components, markup, stylesheets, initialization and handled events; then compile, mount and exercise application outcomes.
 
 Hard requirements:
 - Semantic tokens only. No hex values, no primitive tokens, no arbitrary spacing.
