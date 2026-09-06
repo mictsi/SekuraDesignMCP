@@ -530,7 +530,7 @@ regression — and they are skippable:
 with `PLAYWRIGHT_BROWSERS_PATH` pointed at nothing, it exits 0 while the full
 build exits 1 at the behaviour step.
 
-Install the browser once with `npx playwright install chromium` if you want the
+Install the browser once with `node node_modules/playwright-core/cli.js install chromium` if you want the
 full local build.
 
 ## Configuration
