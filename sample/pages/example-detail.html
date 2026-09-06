@@ -35,14 +35,14 @@
                  meaningless in a list of controls. -->
             <div class="sk-split-button sk-split-button--secondary" role="group" aria-label="Share options">
               <button type="button" class="sk-split-button__action"
-                      data-sk-demo-toast="Link copied to the clipboard." data-sk-demo-intent="success">Copy link</button>
+                      data-sk-copy-link>Copy link</button>
               <button type="button" class="sk-split-button__trigger"
                       aria-haspopup="menu" aria-expanded="false" aria-controls="share-menu">
                 <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-chevron-down"></use></svg>
                 <span class="sk-visually-hidden">More share options</span>
               </button>
             </div>
-            <button type="button" class="sk-button sk-button--primary">
+            <button type="button" class="sk-button sk-button--primary" data-sk-task-add>
               <svg class="sk-button__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-plus"></use></svg>
               <span class="sk-button__label">Add task</span>
             </button>
@@ -421,8 +421,8 @@
         </div>
 
         <footer class="sk-drawer__footer">
-          <button type="button" class="sk-button sk-button--secondary">Edit task</button>
-          <button type="button" class="sk-button sk-button--danger-ghost">Delete task</button>
+          <button type="button" class="sk-button sk-button--secondary" data-sk-task-edit>Edit task</button>
+          <button type="button" class="sk-button sk-button--danger-ghost" data-sk-task-delete>Delete task</button>
         </footer>
       </aside>
 

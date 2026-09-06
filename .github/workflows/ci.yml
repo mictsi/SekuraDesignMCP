@@ -93,6 +93,13 @@ jobs:
       - name: Build behaviour package
         run: npm run build:behaviours
 
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Generated framework recipes
+        run: npm run test:codegen && npm run test:blazor
+
       - name: Install Chromium
         # Needed by the behaviour and accessibility checks below, which drive a
         # real browser rather than a DOM emulation.
@@ -118,6 +125,9 @@ jobs:
         # Produces dist-site/ and refuses if anything is root-absolute — the
         # failure that works at a domain root and 404s in a subdirectory.
         run: npm run site:publish
+
+      - name: Design and example regressions
+        run: npm run test:design
 
       - name: RTL regression
         # Logical properties are claimed to make RTL work with no extra CSS.
@@ -153,6 +163,7 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm run emit:css
+      - run: npm run build:behaviours
       - run: npm run site:build
       - run: npx playwright install --with-deps chromium
 

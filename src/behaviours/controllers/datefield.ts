@@ -24,6 +24,7 @@
  * keyboard.
  */
 
+import { position, type Positioner } from '../core/position.js';
 import { announce } from '../core/live.js';
 import { combine, direction, emit, ensureId, on, toggleAttr, type Cleanup } from '../core/dom.js';
 import { saveFocus, trapFocus, type FocusRestore } from '../core/focus.js';
@@ -402,6 +403,7 @@ export function createDatePicker(
   let open = false;
   let restore: FocusRestore | null = null;
   let release: Cleanup | null = null;
+  let positioner: Positioner | null = null;
 
   let grid = panel.querySelector<HTMLElement>('.sk-calendar');
   if (!grid) {
@@ -432,6 +434,7 @@ export function createDatePicker(
     panel.hidden = false;
     toggleAttr(panel, 'data-open', true);
     trigger.setAttribute('aria-expanded', 'true');
+    positioner = position(panel, trigger, { align: 'end' });
     restore = saveFocus();
     release = trapFocus(panel);
     calendar.focus();
@@ -443,6 +446,7 @@ export function createDatePicker(
     open = false;
     release?.();
     release = null;
+    positioner?.destroy(); positioner = null;
     panel.hidden = true;
     toggleAttr(panel, 'data-open', false);
     trigger.setAttribute('aria-expanded', 'false');

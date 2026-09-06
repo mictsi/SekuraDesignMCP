@@ -13,6 +13,7 @@ import { copyFileSync, existsSync, readFileSync, readdirSync, unlinkSync, writeF
 import { join, resolve } from 'node:path';
 
 import { components } from '../data/components/index.js';
+import { componentManifest } from '../data/components/contracts.js';
 import { foundations } from '../data/foundations.js';
 import { patterns } from '../data/patterns.js';
 import { layouts } from '../data/layouts.js';
@@ -25,6 +26,7 @@ import {
   resetDemoIds,
   type ShellContext,
 } from '../site/shell.js';
+import { supportPage, workbenchPage } from '../site/workbench.js';
 import * as pages from '../site/pages.js';
 
 const ROOT = resolve(process.cwd(), 'sample');
@@ -174,6 +176,7 @@ function main(): void {
     pages.foundationPage('theming', 'theming.html', 'Theming'),
     pages.tokensPage(),
     pages.componentsIndexPage(),
+    supportPage(), workbenchPage(),
     pages.patternsPage(),
     pages.recipesPage(),
   ];
@@ -220,6 +223,13 @@ function main(): void {
   /* ---- Stylesheet ---- */
   const css = resolve(process.cwd(), 'dist-css/sekura.css');
   if (existsSync(css)) copyFileSync(css, join(ROOT, 'assets/sekura.css'));
+
+  const bundle = resolve(process.cwd(), 'dist-js/sekura.iife.min.js');
+  if (!existsSync(bundle)) throw new Error('Build behaviours before building the site: npm run build:behaviours');
+  copyFileSync(bundle, join(ROOT, 'assets/sekura.iife.min.js'));
+  writeFileSync(join(ROOT, 'assets/component-manifest.json'), JSON.stringify({ ...componentManifest(components),
+    counts: { pages: written.length, components: components.length, foundations: foundations.length, patterns: patterns.length, layouts: layouts.length, tokens: semanticTokens.length },
+  }, null, 2));
 
   /* ---- Report ---- */
   const total = written.reduce((n, w) => n + w.bytes, 0);

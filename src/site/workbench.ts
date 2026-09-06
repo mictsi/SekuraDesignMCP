@@ -1,0 +1,41 @@
+import { components } from '../data/components/index.js';
+import { Page, demo } from './shell.js';
+import { escapeHtml } from '../lib/markdown.js';
+
+export function supportPage(): Page {
+  const p = new Page({ file: 'support.html', title: 'Implementation & integration', eyebrow: 'Reference', lead: 'Choose components using their implemented behavior, dependencies and application responsibilities.' });
+  p.section('Integration contract', `<div class="sk-prose"><p>Load <code>sekura.css</code>, then the behavior bundle and call <code>Sekura.autoEnhance()</code> after the markup exists. Use <code>dispose(root)</code> before replacing manually managed content. Framework recipes include lifecycle cleanup and native markup.</p><p>The framework outputs are editable reference recipes. Application data, permissions, network requests and action outcomes remain yours. The component specification’s props describe the intended API; they are not automatically props on every recipe.</p><p>For selective CSS loading, read <a class="sk-link" href="assets/component-manifest.json">the machine-readable component manifest</a>. It lists the actual root class, CSS dependencies and controller. Load tokens and base styles first. The full stylesheet includes all dependencies.</p></div>`);
+  p.section('Component support', `<div class="sk-table" role="region" aria-label="Component implementation support" tabindex="0"><table><thead><tr><th scope="col">Component</th><th scope="col">Root class</th><th scope="col">Behavior</th><th scope="col">CSS dependencies</th></tr></thead><tbody>${components.map(c => `<tr><th scope="row"><a class="sk-link" href="component-${c.id}.html">${c.name}</a></th><td><code>${c.implementation!.rootClass}</code></td><td>${c.implementation!.controller ?? c.implementation!.behavior}</td><td>${c.implementation!.cssDependencies.join(', ') || 'Base styles only'}</td></tr>`).join('')}</tbody></table></div>`);
+  p.section('Boundaries to plan for', `<ul class="sk-prose"><li>Tree behavior supports single selection. Supply lazy loading and application-specific multi-selection yourself.</li><li>Upload controls validate and select files. Supply an upload callback for transport; the workbench demonstrates progress, retry and cancellation with an explicit simulator.</li><li>Pagination belongs to the list’s filter and selection model. The projects example implements that model locally.</li><li>Persisted switches require an async onToggle callback. A native switch without that callback changes local form state only.</li><li>Full-page recipes contain placeholder regions intended for composition. Replace those with your navigation and content.</li></ul>`);
+  p.section('For designers, developers and agents', `<div class="sk-prose"><p>Designers: use the <a class="sk-link" href="workbench.html">workbench</a> to compare sizes, densities, states and long labels. Check actual keyboard flow, errors and recovery as part of the design.</p><p>Developers: preserve native elements and controller markers, assign unique IDs, let one layer own ARIA state, and wire application outcomes explicitly. Use the compiled recipes as starting points.</p><p>AI agents: read implementation metadata before promising a behavior. Use the exact root class, include dependencies, distinguish local simulation from persistence, and validate both markup and interactions. A successful markup lint does not prove actions work.</p></div>`);
+  return p;
+}
+
+export function workbenchPage(): Page {
+  const p = new Page({ file: 'workbench.html', title: 'Component workbench', eyebrow: 'Examples', lead: 'Compare control alignment and try complete action states before composing a page.' });
+  p.section('Appearance controls', `<div class="sk-cluster sk-cluster--gap-16">
+    <div class="sk-field"><label class="sk-field__label" for="bench-theme">Preview theme</label><select class="sk-select" id="bench-theme" data-sk-bench-theme><option>light</option><option>dark</option><option>hc-light</option><option>hc-dark</option></select></div>
+    <div class="sk-field"><label class="sk-field__label" for="bench-density">Preview density</label><select class="sk-select" id="bench-density" data-sk-bench-density><option>comfortable</option><option>compact</option><option>dense</option></select></div>
+    <div class="sk-field"><label class="sk-field__label" for="bench-state">Preview state</label><select class="sk-select" id="bench-state" data-sk-bench-state><option value="rest">Rest</option><option value="disabled">Disabled</option><option value="busy">Busy</option><option value="invalid">Invalid</option><option value="readonly">Read only</option></select></div>
+    <label class="sk-checkbox"><input type="checkbox" class="sk-checkbox__input" data-sk-bench-long /><span class="sk-checkbox__box" aria-hidden="true"></span><span>Long labels</span></label>
+  </div>`);
+  p.section('Control sizing', `<div class="sk-stack sk-stack--gap-24 docs-workbench" data-sk-bench-preview data-sk-theme="light" data-sk-density="comfortable">${['sm', 'md', 'lg'].map(size => {
+    const suffix = size === 'md' ? '' : ` sk-input--${size}`;
+    return `<div class="sk-stack sk-stack--gap-8"><h3>${size === 'sm' ? 'Small' : size === 'md' ? 'Medium' : 'Large'}</h3><div class="docs-control-row" data-sk-size-row="${size}">
+      <button type="button" class="sk-button sk-button--primary${size === 'md' ? '' : ` sk-button--${size}`}" data-sk-bench-button>Save changes</button>
+      <input class="sk-input${suffix}" aria-label="${size} project name" value="Website redesign" />
+      <select class="sk-select${size === 'md' ? '' : ` sk-select--${size}`}" aria-label="${size} team"><option>Product team</option><option>Platform team</option></select>
+      <div class="sk-number sk-input-group${size === 'md' ? '' : ` sk-field--${size}`}" data-sk-bench-number><input class="sk-input" aria-label="${size} target length" data-sk-number min="1" max="260" value="45" /><span class="sk-number__steppers"><button type="button" class="sk-number__step" data-sk-step="-1" aria-hidden="true" tabindex="-1">−</button><button type="button" class="sk-number__step" data-sk-step="1" aria-hidden="true" tabindex="-1">+</button></span></div>
+    </div><p class="sk-field__hint" data-sk-state-help>Use Tab to inspect focus. Controls share the same target height.</p></div>`;
+  }).join('')}</div>`);
+  p.section('Save, fail, cancel and retry', `<div class="sk-card"><div class="sk-card__body sk-stack sk-stack--gap-16" data-sk-action-example>
+    <p>This operation uses a local simulator. Successful saves increase the version; Undo restores it.</p>
+    <label class="sk-checkbox"><input class="sk-checkbox__input" type="checkbox" data-sk-fail-next /><span class="sk-checkbox__box" aria-hidden="true"></span><span>Fail the next request</span></label>
+    <div class="sk-cluster sk-cluster--gap-8"><button class="sk-button sk-button--primary" type="button" data-sk-action-save>Save changes</button><button class="sk-button sk-button--secondary" type="button" data-sk-action-cancel disabled>Cancel saving</button><button class="sk-button sk-button--secondary" type="button" data-sk-action-retry hidden>Retry save</button></div>
+    <p role="status" data-sk-action-status>Version 0. Ready to save.</p>
+  </div></div>`);
+  const upload = components.find(c => c.id === 'file-upload')!;
+  p.section('Upload queue', `<p class="sk-prose">Local upload simulator: no files leave your device. Choose files, cancel an upload, or force a failure and retry.</p><label class="sk-checkbox"><input class="sk-checkbox__input" type="checkbox" data-sk-upload-fail /><span class="sk-checkbox__box" aria-hidden="true"></span><span>Fail uploads until unchecked</span></label>${demo(upload.html.replace('class="sk-upload"', 'class="sk-upload" data-sk-custom-upload'), upload.html)}`);
+  p.section('Implementation checklist', `<ul class="sk-prose"><li>Keep action labels stable while pending; announce the outcome separately.</li><li>Preserve input on failure. Provide a named retry and a cancellation path.</li><li>Undo restores state, not just a message.</li><li>Compare all sizes at narrow container widths and enlarged text.</li></ul>`);
+  return p;
+}

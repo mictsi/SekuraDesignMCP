@@ -92,6 +92,14 @@ function formatComponent(id: string): string | null {
 
 ${c.summary}
 
+## Implementation contract
+
+\`\`\`json
+${JSON.stringify(c.implementation, null, 2)}
+\`\`\`
+
+Framework outputs are reference recipes, not a universal props API. Load sekura.css for all dependencies; wire application data and outcomes explicitly.
+
 ## When to use
 ${bullets(c.whenToUse)}
 
@@ -281,7 +289,7 @@ export function createServer(options: ServerOptions = {}): McpServer {
 
 Start with \`get_overview\` for the map. Then:
 - \`get_foundation\` — the reasoning (colour, dark mode, responsive layout, accessibility, …)
-- \`get_component\` / \`get_component_code\` — 45 components with paste-ready code in 8 frameworks
+- \`get_component\` / \`get_component_code\` — ${components.length} components with reference recipes in ${FRAMEWORKS.length} formats
 - \`get_layout\` — full page blueprints
 - \`get_pattern\` — recurring UX problems and their answers
 - \`export_tokens\` — CSS, Tailwind, W3C DTCG, Swift, Android
@@ -370,6 +378,8 @@ ${EXPORT_FORMATS.map((f) => `- \`${f}\` — ${formatDescriptions[f]}`).join('\n'
 - \`suggest_token\` — describe an intent, get the right token
 
 ## Getting started
+Read each component’s implementation contract before promising behavior. Verify generated code and action outcomes, not only markup.
+
 Call \`get_setup\` for the HTML scaffold, the pre-paint theme script and the
 stylesheet bundle. Call \`get_foundation({ id: "dark-mode" })\` before implementing
 dark mode — it lists the nine things that break silently.`);
@@ -495,7 +505,7 @@ Full spec: \`get_component({ id })\`. Code: \`get_component_code({ id, framework
     {
       title: 'Get paste-ready component code',
       description:
-        'Production code for a component in the requested framework. HTML returns reference markup with the required ARIA wiring; CSS returns the production stylesheet written against semantic tokens; framework options return typed wrappers that forward the accessibility attributes the spec requires.',
+        'Production code for a component in the requested framework. HTML returns reference markup with the required ARIA wiring; CSS returns the production stylesheet written against semantic tokens; framework options return editable reference recipes with native markup and lifecycle wiring. Inspect implementation metadata for dependencies and application responsibilities.',
       inputSchema: {
         id: z.string().describe('Component id.'),
         framework: z

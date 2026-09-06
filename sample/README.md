@@ -1,13 +1,12 @@
 # Sekura documentation site
 
-An 81-page documentation site for the Sekura Design System — explanations, a
+An 100-page documentation site for the Sekura Design System — explanations, a
 full colour guide, a type specimen, live demos, a complete component reference,
 and nine worked examples.
 
 **Everything is generated from the design system's own data**, so the colour
 guide shows genuinely audited contrast values and the component pages show the
-same specification the MCP server serves. The docs cannot drift from the system
-they document.
+same specification the MCP server serves. Browser tests verify the shared behavior bundle against the rendered pages.
 
 ## Run it
 
@@ -21,7 +20,7 @@ everything else — there is no separate documentation server and no second port
 To build the pages without running anything:
 
 ```bash
-npm run build && npm run emit:css && npm run site:build
+npm run build && npm run build:behaviours && npm run emit:css && npm run site:build
 ```
 
 They work opened straight from the filesystem, and `npm run site:publish`
@@ -51,6 +50,8 @@ the full narrative in a collapsible section.
 | `tokens.html` | All 120 semantic tokens, filterable, with the value in each of the four themes |
 | `components.html` | 67 components grouped by category |
 | `component-*.html` | One page each: anatomy, variants, states, props, dark-mode note, full keyboard and ARIA contract, CSS |
+| `support.html` | Component root classes, dependencies, controller coverage and application responsibilities |
+| `workbench.html` | Sizes, densities, themes, long content, action failure/cancel/retry/undo and upload simulation |
 | `patterns.html` | 15 UX patterns with their anti-patterns |
 | `recipes.html` | 9 page blueprints with markup |
 

@@ -6,6 +6,7 @@ import { layoutComponents } from './layout.js';
 import { navigationComponents } from './navigation.js';
 import { overlayComponents } from './overlay.js';
 import type { ComponentCategory, ComponentSpec } from './types.js';
+import { implementation, referenceMarkup } from './contracts.js';
 
 export const components: ComponentSpec[] = [
   ...actionComponents,
@@ -16,6 +17,12 @@ export const components: ComponentSpec[] = [
   ...overlayComponents,
   ...layoutComponents,
 ];
+
+for (const component of components) {
+  // Whole-document recipes retain their document envelope.
+  if (!/<(?:html|body)\b/i.test(component.html)) component.html = referenceMarkup(component);
+}
+for (const component of components) component.implementation = implementation(component, components);
 
 const byId = new Map(components.map((c) => [c.id, c]));
 

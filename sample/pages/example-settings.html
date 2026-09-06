@@ -140,8 +140,7 @@
                 <span class="sk-switch__content">
                   <label class="sk-switch__label" for="reduce-motion">Reduce motion</label>
                   <span class="sk-switch__description" id="reduce-motion-desc">
-                    Overrides your system setting for this application. Spinners keep
-                    turning, slowly — a frozen spinner communicates nothing.
+                    Reduces nonessential animation for this demonstration. Loading states retain a text label.
                   </span>
                 </span>
                 <input type="checkbox" role="switch" class="sk-switch__input" id="reduce-motion"
@@ -226,7 +225,7 @@
                   andre.kim@example.com · Product team
                 </p>
               </div>
-              <button type="button" class="sk-button sk-button--secondary sk-button--sm">Change photo</button>
+              <button type="button" class="sk-button sk-button--secondary sk-button--sm" data-sk-photo-open>Change photo</button>
             </div>
 
             <dl class="sk-dl sk-dl--columns">
@@ -295,3 +294,6 @@
           </footer>
         </form>
       </dialog>
+
+<input type="file" accept="image/*" id="profile-photo" aria-label="Choose a profile photo" hidden />
+<p class="sk-visually-hidden" role="status" data-sk-photo-status></p>

@@ -1,7 +1,7 @@
 {
   "name": "sekura-design-mcp",
-  "version": "1.0.0",
-  "description": "Sekura Design System \u2014 MCP server exposing the complete design, UX, accessibility and dark-mode specification as machine-readable tools.",
+  "version": "2.0.0",
+  "description": "Sekura Design System — MCP server exposing the complete design, UX, accessibility and dark-mode specification as machine-readable tools.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -20,7 +20,7 @@
     "emit:css": "node dist/scripts/emit-css.js",
     "smoke": "node dist/scripts/smoke.js",
     "test:errors": "node dist/scripts/test-errors.js",
-    "verify": "npm run build && npm run check:version && npm run check:deps && npm run check:env && npm run test:color && npm run test:urls && npm run audit:contrast && npm run lint:css && npm run smoke && npm run test:errors && npm run build:behaviours && npm run test:behaviours && npm run emit:css && npm run site:build && npm run verify:sample && npm run site:publish && npm run test:rtl && npm run test:announce",
+    "verify": "npm run build && npm run check:version && npm run check:deps && npm run check:env && npm run test:color && npm run test:urls && npm run audit:contrast && npm run lint:css && npm run smoke && npm run test:errors && npm run build:behaviours && npm run test:codegen && npm run test:blazor && npm run test:behaviours && npm run emit:css && npm run site:build && npm run verify:sample && npm run site:publish && npm run test:rtl && npm run test:announce && npm run test:design && npm run test:a11y",
     "verify:sample": "node dist/scripts/verify-sample.js",
     "site:build": "node dist/scripts/build-site.js",
     "site:publish": "npm run site:build && node dist/scripts/publish-site.js",
@@ -33,7 +33,10 @@
     "test:announce": "node src/scripts/test-announce.mjs",
     "test:color": "node dist/scripts/test-color.js",
     "test:urls": "node dist/scripts/test-urls.js",
-    "test:rtl": "node dist/scripts/test-rtl.js"
+    "test:rtl": "node dist/scripts/test-rtl.js",
+    "test:codegen": "node dist/scripts/test-codegen.js",
+    "test:design": "node src/scripts/test-design.mjs",
+    "test:blazor": "node dist/scripts/test-blazor.js"
   },
   "keywords": [
     "mcp",
@@ -48,21 +51,33 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
     "express": "^5.2.1",
+    "parse5": "^8.0.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@angular/compiler": "^22.1.5",
+    "@angular/core": "^22.1.5",
     "@types/express": "^5.0.6",
     "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vue/compiler-sfc": "^3.5.42",
     "axe-core": "^4.13.0",
     "esbuild": "^0.28.2",
     "playwright-core": "^1.62.1",
-    "typescript": "^7.0.2"
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "svelte": "^5.57.0",
+    "typescript": "^7.0.2",
+    "vue": "^3.5.42"
   },
   "files": [
     "dist",
     "dist-css",
     "dist-js",
     "DESIGN.md",
+    "DESIGN-AUDIT.md",
+    "DESIGN-REVIEW.md",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"

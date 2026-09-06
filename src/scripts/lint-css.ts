@@ -32,7 +32,7 @@ const scalePrefixes = [
   'container', 'elevation', 'control-height', 'control-padding', 'row-padding',
   'stack-gap', 'section-gap', 'focus-ring', 'breakpoint', 'palette',
   'grid-min', 'grid-gap', 'cluster-gap', 'sidebar-width', 'content-min',
-  'slider-progress', 'dir-scale',
+  'slider-progress', 'slider-direction', 'control-size', 'dir-scale',
 ];
 void scales;
 
@@ -161,6 +161,12 @@ function lint(source: string, css: string): void {
 }
 
 for (const c of components) lint(`component:${c.id}`, c.css);
+const allComponentCss = components.map(c => c.css).join('\n');
+for (const c of components) for (const size of c.sizes) {
+  if (size.className && !size.className.includes('{') && !allComponentCss.includes('.' + size.className)) {
+    issues.push({ source: `component:${c.id}`, rule: 'missing-size-selector', detail: size.className });
+  }
+}
 for (const l of layouts) lint(`layout:${l.id}`, l.css);
 lint('base:reset', resetCss);
 lint('base:prose', proseCss);

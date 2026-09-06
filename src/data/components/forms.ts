@@ -188,6 +188,8 @@ export const formComponents: ComponentSpec[] = [
 .sk-field[data-disabled] .sk-field__hint { color: var(--sk-color-text-disabled); }
 
 /* --- Inline: wraps to stacked automatically, no breakpoint needed --- */
+.sk-field--sm { --sk-control-size: var(--sk-control-height-sm); }
+.sk-field--lg { --sk-control-size: var(--sk-control-height-lg); }
 .sk-field--inline {
   flex-direction: row;
   flex-wrap: wrap;
@@ -342,16 +344,16 @@ export const formComponents: ComponentSpec[] = [
      by flex-basis at the call site, never hard-coded here. */
   inline-size: 100%;
   min-inline-size: 0;
-  min-block-size: var(--sk-control-height-md);
+  min-block-size: var(--sk-control-size, var(--sk-control-height-md));
   padding-inline: var(--sk-space-12);
-  padding-block: var(--sk-space-8);
+  padding-block: max(0px, calc((var(--sk-control-size, var(--sk-control-height-md)) - 1lh - 2 * var(--sk-border-width-hairline)) / 2));
   background-color: var(--sk-color-field-bg);
   border: var(--sk-border-width-hairline) solid var(--sk-color-field-border);
   border-radius: var(--sk-radius-md);
   color: var(--sk-color-text-primary);
   font-family: var(--sk-font-family-sans);
   font-size: var(--sk-font-size-body-md);
-  line-height: var(--sk-line-height-body-md);
+  line-height: 1.25;
   transition:
     border-color var(--sk-duration-fast) var(--sk-easing-standard),
     background-color var(--sk-duration-fast) var(--sk-easing-standard);
@@ -385,8 +387,8 @@ export const formComponents: ComponentSpec[] = [
   font-variant-numeric: tabular-nums;
 }
 
-.sk-input--sm { min-block-size: var(--sk-control-height-sm); padding-inline: var(--sk-space-8); font-size: var(--sk-font-size-body-sm); }
-.sk-input--lg { min-block-size: var(--sk-control-height-lg); padding-inline: var(--sk-space-16); }
+.sk-input--sm { --sk-control-size: var(--sk-control-height-sm); min-block-size: var(--sk-control-height-sm); padding-inline: var(--sk-space-8); font-size: var(--sk-font-size-body-sm); }
+.sk-input--lg { --sk-control-size: var(--sk-control-height-lg); min-block-size: var(--sk-control-height-lg); padding-inline: var(--sk-space-16); }
 
 /* Chrome injects a hard-coded pale yellow autofill background that is unreadable
    in dark mode. There is no supported property to change it, so we paint over it
@@ -422,6 +424,7 @@ export const formComponents: ComponentSpec[] = [
   min-inline-size: 0;
   border: none;
   border-radius: 0;
+  min-block-size: calc(var(--sk-control-size, var(--sk-control-height-md)) - 2 * var(--sk-border-width-hairline));
   background: transparent;
 }
 .sk-input-group > .sk-input:focus-visible { outline: none; }
@@ -709,19 +712,20 @@ export const formComponents: ComponentSpec[] = [
 }
 
 .sk-select {
+  block-size: var(--sk-control-size, var(--sk-control-height-md));
   flex: 1 1 auto;
   min-inline-size: 0;
-  min-block-size: var(--sk-control-height-md);
+  min-block-size: var(--sk-control-size, var(--sk-control-height-md));
   /* Inline-end padding leaves room for the chevron; logical so RTL flips it. */
   padding-inline: var(--sk-space-12) var(--sk-space-32);
-  padding-block: var(--sk-space-8);
+  padding-block: max(0px, calc((var(--sk-control-size, var(--sk-control-height-md)) - 1lh - 2 * var(--sk-border-width-hairline)) / 2));
   background-color: var(--sk-color-field-bg);
   border: var(--sk-border-width-hairline) solid var(--sk-color-field-border);
   border-radius: var(--sk-radius-md);
   color: var(--sk-color-text-primary);
   font-family: var(--sk-font-family-sans);
   font-size: var(--sk-font-size-body-md);
-  line-height: var(--sk-line-height-body-md);
+  line-height: 1.25;
   appearance: none;
   cursor: pointer;
   /* Makes the OS-rendered option list follow the theme instead of flashing white. */
@@ -755,16 +759,17 @@ export const formComponents: ComponentSpec[] = [
   cursor: not-allowed;
 }
 .sk-select[data-placeholder] { color: var(--sk-color-text-placeholder); }
+.sk-select[aria-invalid="true"] { border-color: var(--sk-color-field-border-error); }
 
 .sk-select--quiet { border-color: transparent; background-color: transparent; }
 .sk-select--quiet:hover:not(:disabled) { background-color: var(--sk-color-surface-hover); border-color: var(--sk-color-border-subtle); }
 
-.sk-select--sm { min-block-size: var(--sk-control-height-sm); font-size: var(--sk-font-size-body-sm); padding-inline: var(--sk-space-8) var(--sk-space-28); }
-.sk-select--lg { min-block-size: var(--sk-control-height-lg); }
+.sk-select--sm { --sk-control-size: var(--sk-control-height-sm); min-block-size: var(--sk-control-height-sm); font-size: var(--sk-font-size-body-sm); padding-inline: var(--sk-space-8) var(--sk-space-28); }
+.sk-select--lg { --sk-control-size: var(--sk-control-height-lg); min-block-size: var(--sk-control-height-lg); }
 /* The chevron is a background-image data URI, which HCM discards outright,
    leaving a select with no affordance that it opens anything. */
 @media (forced-colors: active) {
-  .sk-select { border-color: CanvasText; }
+  .sk-select { border-color: CanvasText; appearance: auto; background-image: none; }
   .sk-select:focus-visible { outline-color: Highlight; }
   .sk-select:disabled { color: GrayText; border-color: GrayText; }
 }
@@ -1474,7 +1479,8 @@ export const formComponents: ComponentSpec[] = [
   </div>
   <p class="sk-visually-hidden" role="status">2 results available.</p>
 </div>`,
-    css: `.sk-combobox { position: relative; display: flex; flex-direction: column; min-inline-size: 0; }
+    css: `.sk-combobox--sm { --sk-control-size: var(--sk-control-height-sm); }
+.sk-combobox { position: relative; display: flex; flex-direction: column; min-inline-size: 0; }
 
 .sk-combobox__list {
   position: absolute;
@@ -1679,7 +1685,7 @@ export const formComponents: ComponentSpec[] = [
   flex: 1 1 20rem;
   min-inline-size: 0;
   max-inline-size: 32rem;
-  min-block-size: var(--sk-control-height-md);
+  min-block-size: var(--sk-control-size, var(--sk-control-height-md));
   padding-inline: var(--sk-space-12);
   background-color: var(--sk-color-field-bg);
   border: var(--sk-border-width-hairline) solid var(--sk-color-field-border);
@@ -1827,7 +1833,7 @@ export const formComponents: ComponentSpec[] = [
   <div class="sk-slider sk-slider--with-input">
     <input class="sk-slider__input" id="reminder-slider" type="range"
            min="60" max="86400" step="60" value="3600"
-           aria-valuetext="3600 seconds, 1 hour" />
+           data-sk-unit="seconds" aria-valuetext="3600 seconds, 1 hour" />
     <output class="sk-slider__output" for="reminder-slider">1 hour</output>
   </div>
 </div>`,
@@ -1853,11 +1859,12 @@ export const formComponents: ComponentSpec[] = [
   block-size: 0.375rem;
   border-radius: var(--sk-radius-full);
   background: linear-gradient(
-    to right,
+    var(--sk-slider-direction, to right),
     var(--sk-color-control-checked) 0 var(--sk-slider-progress, 50%),
     var(--sk-color-control-track) var(--sk-slider-progress, 50%) 100%
   );
 }
+:dir(rtl) .sk-slider__input { --sk-slider-direction: to left; }
 .sk-slider__input::-moz-range-track {
   block-size: 0.375rem;
   border-radius: var(--sk-radius-full);
@@ -1906,7 +1913,8 @@ export const formComponents: ComponentSpec[] = [
 
 .sk-slider__output {
   flex: 0 0 auto;
-  min-inline-size: 5rem;
+  min-inline-size: 0;
+  max-inline-size: 9rem;
   text-align: end;
   font-size: var(--sk-font-size-body-sm);
   font-variant-numeric: tabular-nums;
@@ -2356,18 +2364,22 @@ export const formComponents: ComponentSpec[] = [
 .sk-number .sk-input { flex: 1 1 auto; min-inline-size: 0; }
 
 .sk-number__steppers {
+  /* Include the wrapper border in the hit area at the smallest density. */
+  margin-block: calc(-1 * var(--sk-border-width-hairline));
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   flex: 0 0 auto;
   border-inline-start: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle);
 }
 .sk-number__step {
+  font-size: var(--sk-font-size-label-md);
+  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   /* 24x24 minimum per 2.5.8, which the native spinners miss. */
   inline-size: 1.75rem;
-  block-size: 1.5rem;
+  align-self: stretch;
   min-block-size: 1.5rem;
   padding: 0;
   background: none;
@@ -2377,7 +2389,7 @@ export const formComponents: ComponentSpec[] = [
 }
 .sk-number__step:hover { background-color: var(--sk-color-surface-hover); color: var(--sk-color-text-primary); }
 .sk-number__step svg { fill: currentColor; }
-.sk-number__step + .sk-number__step { border-block-start: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle); }
+.sk-number__step + .sk-number__step { border-inline-start: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle); }
 
 .sk-number[data-at-max] .sk-number__step[data-sk-step="1"],
 .sk-number[data-at-min] .sk-number__step[data-sk-step="-1"] { color: var(--sk-color-text-disabled); }
@@ -2507,7 +2519,7 @@ export const formComponents: ComponentSpec[] = [
   flex-wrap: wrap;
   align-items: center;
   gap: var(--sk-space-4);
-  min-block-size: var(--sk-control-height-md);
+  min-block-size: var(--sk-control-size, var(--sk-control-height-md));
   padding: var(--sk-space-4) var(--sk-space-8);
   background-color: var(--sk-color-field-bg);
   border: var(--sk-border-width-hairline) solid var(--sk-color-field-border);
@@ -2752,6 +2764,7 @@ export const formComponents: ComponentSpec[] = [
 }
 .sk-date-picker__panel[hidden] { display: none !important; }
 
+.sk-date-picker--sm { --sk-control-size: var(--sk-control-height-sm); }
 .sk-date-picker--inline { display: block; }
 .sk-date-picker--inline .sk-date-picker__panel {
   position: static;
@@ -2969,7 +2982,8 @@ export const formComponents: ComponentSpec[] = [
     <div class="sk-date-range__calendar" data-sk-calendar></div>
   </div>
 </fieldset>`,
-    css: `.sk-date-range { display: flex; flex-direction: column; gap: var(--sk-space-16); }
+    css: `.sk-date-range--sm { --sk-control-size: var(--sk-control-height-sm); }
+.sk-date-range { display: flex; flex-direction: column; gap: var(--sk-space-16); }
 .sk-date-range__calendar {
   padding: var(--sk-space-12);
   background-color: var(--sk-color-surface-base);

@@ -7,9 +7,9 @@
  */
 
 import { combine, ensureId, emit, on, toggleAttr, type Cleanup } from '../core/dom.js';
-import { rovingTabindex } from '../core/focus.js';
 
 export interface DisclosureOptions {
+  findable?: boolean;
   /** Start expanded. Read from aria-expanded when omitted. */
   expanded?: boolean;
   onToggle?: (expanded: boolean) => void;
@@ -48,6 +48,7 @@ export function createDisclosure(
   }
 
   let expanded = options.expanded ?? trigger.getAttribute('aria-expanded') === 'true';
+  const findable = options.findable ?? panel.getAttribute('hidden') === 'until-found';
 
   function apply(next: boolean, notify: boolean): void {
     expanded = next;
@@ -55,7 +56,8 @@ export function createDisclosure(
     // `hidden` rather than a visibility/height trick: collapsed content must
     // leave the accessibility tree and the tab order, not merely become
     // invisible.
-    panel.hidden = !next;
+    if (next) panel.removeAttribute('hidden');
+    else panel.setAttribute('hidden', findable ? 'until-found' : '');
     toggleAttr(panel, 'data-open', next);
     if (notify) {
       options.onToggle?.(next);
@@ -82,7 +84,7 @@ export function createDisclosure(
     open: () => apply(true, true),
     close: () => apply(false, true),
     toggle: () => apply(!expanded, true),
-    destroy: combine(off, offKey),
+    destroy: combine(off, offKey, on(panel, 'beforematch', () => apply(true, true))),
   };
 }
 
@@ -108,9 +110,8 @@ export interface Accordion {
 /**
  * A group of disclosures with arrow-key navigation between their headers.
  *
- * Headers form one tab stop; Tab moves out of the accordion, not to the next
- * header. That is the ARIA authoring practice, and it is what stops a ten-item
- * accordion from being ten tab stops.
+ * Every header remains in the page Tab sequence. Arrow navigation supplements
+ * the native button interaction; it does not replace Tab navigation.
  */
 export function createAccordion(
   container: HTMLElement,
@@ -153,11 +154,15 @@ export function createAccordion(
     cleanups.push(d.destroy);
   }
 
-  const roving = rovingTabindex(container, {
-    orientation: 'vertical',
-    items: () => pairs.map((p) => p.trigger),
-  });
-  cleanups.push(roving.destroy);
+  for (const { trigger } of pairs) trigger.tabIndex = 0;
+  cleanups.push(on(container, 'keydown', (event: KeyboardEvent) => {
+    const index = pairs.findIndex(p => p.trigger === event.target);
+    if (index < 0) return;
+    const next = event.key === 'ArrowDown' ? (index + 1) % pairs.length
+      : event.key === 'ArrowUp' ? (index - 1 + pairs.length) % pairs.length
+      : event.key === 'Home' ? 0 : event.key === 'End' ? pairs.length - 1 : -1;
+    if (next >= 0) { event.preventDefault(); pairs[next]!.trigger.focus(); }
+  }));
 
   return {
     get open() {

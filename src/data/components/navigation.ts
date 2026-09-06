@@ -157,7 +157,7 @@ export const navigationComponents: ComponentSpec[] = [
     <span class="sk-visually-hidden">Open navigation</span>
   </button>
 
-  <a class="sk-top-bar__identity" href="/">
+  <a class="sk-top-bar__identity" href="/" aria-label="Sekura Console home">
     <svg class="sk-top-bar__logo" aria-hidden="true" focusable="false" width="24" height="24"><use href="#sk-logo" /></svg>
     <span class="sk-top-bar__product">Sekura Console</span>
   </a>
@@ -203,11 +203,16 @@ export const navigationComponents: ComponentSpec[] = [
 
 .sk-top-bar[data-scrolled] { box-shadow: var(--sk-elevation-2); }
 
+.sk-top-bar { flex-wrap: wrap; container-type: inline-size; }
+@container (max-width: 24rem) {
+  .sk-top-bar__product, .sk-top-bar__search { display: none; }
+  .sk-top-bar__utilities { flex-wrap: wrap; gap: var(--sk-space-2); }
+}
 .sk-top-bar__nav-trigger { flex: 0 0 auto; }
 @media (min-width: 64rem) { .sk-top-bar__nav-trigger { display: none; } }
 
 .sk-top-bar__identity {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
   display: flex;
   align-items: center;
   gap: var(--sk-space-8);
@@ -897,6 +902,9 @@ export const navigationComponents: ComponentSpec[] = [
   min-inline-size: 0;
   padding-block: var(--sk-space-12);
 }
+
+.sk-pagination--sm .sk-pagination__page,
+.sk-pagination--sm .sk-pagination__control { min-block-size: var(--sk-control-height-sm); padding-block: var(--sk-space-2); }
 
 .sk-pagination__status {
   flex: 1 1 12rem;

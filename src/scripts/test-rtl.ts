@@ -50,9 +50,11 @@ const PAGES = [
   'example-onboarding.html',
   'example-settings.html',
   'example-marketing.html',
+  'example-signin.html',
+  'workbench.html',
 ];
 
-const WIDTHS = [1280, 768, 390];
+const WIDTHS = [1280, 768, 390, 320];
 
 let passed = 0;
 const failures: string[] = [];
@@ -90,7 +92,7 @@ async function main(): Promise<void> {
     for (const width of WIDTHS) {
       for (const file of PAGES) {
         const page = await browser.newPage({ viewport: { width, height: 900 } });
-        await page.goto(`http://127.0.0.1:${port}/${file}`, { waitUntil: 'networkidle' });
+        await page.goto(`http://127.0.0.1:${port}/${file}`, { waitUntil: 'load' });
         await page.evaluate((d) => document.documentElement.setAttribute('dir', d), dir);
         await page.waitForTimeout(150);
 
@@ -155,7 +157,7 @@ async function main(): Promise<void> {
   /* --- Mirroring: the layout must actually flip, not merely not break. --- */
   {
     const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
-    await page.goto(`http://127.0.0.1:${port}/example-list.html`, { waitUntil: 'networkidle' });
+    await page.goto(`http://127.0.0.1:${port}/example-list.html`, { waitUntil: 'load' });
 
     const ltrNav = await page.evaluate(
       () => document.querySelector('.sk-side-nav')!.getBoundingClientRect().left

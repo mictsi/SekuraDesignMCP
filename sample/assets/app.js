@@ -29,23 +29,7 @@
    * same tick announces nothing — the most common live-region bug.
    * ================================================================== */
 
-  var announcer = document.createElement('p');
-  announcer.className = 'sk-visually-hidden';
-  announcer.setAttribute('role', 'status');
-  announcer.setAttribute('aria-live', 'polite');
-  document.addEventListener('DOMContentLoaded', function () {
-    document.body.appendChild(announcer);
-  });
-
-  var announceTimer;
-  function announce(message) {
-    // Clearing first forces a re-announcement when the same text repeats.
-    announcer.textContent = '';
-    clearTimeout(announceTimer);
-    announceTimer = setTimeout(function () {
-      announcer.textContent = message;
-    }, 60);
-  }
+  function announce(message) { Sekura.announce(message); }
 
   /* ================================================================== *
    * Theme and density
@@ -64,12 +48,12 @@
   }
 
   function initTheme() {
-    $$('[data-sk-theme-option]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        window.sekuraTheme.set(btn.dataset.skThemeOption);
-        syncThemeControls();
-        announce('Theme set to ' + btn.textContent.trim() + '.');
-      });
+    document.addEventListener('sk:segmented:change', function (event) {
+      var btn = $('[data-sk-theme-option][aria-checked="true"]', event.target);
+      if (!btn) return;
+      window.sekuraTheme.set(btn.dataset.skThemeOption);
+      syncThemeControls();
+      announce('Theme set to ' + btn.textContent.trim() + '.');
     });
 
     // The header button cycles; the settings page offers all three explicitly.
@@ -97,17 +81,14 @@
       btn.setAttribute('aria-checked', String(on));
       btn.tabIndex = on ? 0 : -1;
 
-      btn.addEventListener('click', function () {
-        var value = btn.dataset.skDensityOption;
-        document.documentElement.setAttribute('data-sk-density', value);
-        try { localStorage.setItem('sk-density', value); } catch (e) { /* private mode */ }
-        $$('[data-sk-density-option]').forEach(function (b) {
-          var isOn = b === btn;
-          b.setAttribute('aria-checked', String(isOn));
-          b.tabIndex = isOn ? 0 : -1;
-        });
-        announce('Density set to ' + value + '.');
-      });
+    });
+    document.addEventListener('sk:segmented:change', function (event) {
+      var btn = $('[data-sk-density-option][aria-checked="true"]', event.target);
+      if (!btn) return;
+      var value = btn.dataset.skDensityOption;
+      document.documentElement.setAttribute('data-sk-density', value);
+      try { localStorage.setItem('sk-density', value); } catch (e) { announce('Density applied for this page; storage is unavailable.'); return; }
+      announce('Density set to ' + value + '.');
     });
   }
 
@@ -119,261 +100,41 @@
    * CSS does automatically but a key handler does not.
    * ================================================================== */
 
-  function initSegmented() {
-    $$('.sk-button-group--segmented[role="radiogroup"]').forEach(function (group) {
-      var segments = $$('[role="radio"]', group);
-      var rtl = getComputedStyle(group).direction === 'rtl';
-
-      group.addEventListener('keydown', function (e) {
-        var idx = segments.indexOf(document.activeElement);
-        if (idx === -1) return;
-
-        var forward = rtl ? 'ArrowLeft' : 'ArrowRight';
-        var back = rtl ? 'ArrowRight' : 'ArrowLeft';
-        var next = null;
-
-        if (e.key === forward || e.key === 'ArrowDown') next = (idx + 1) % segments.length;
-        else if (e.key === back || e.key === 'ArrowUp') next = (idx - 1 + segments.length) % segments.length;
-        else if (e.key === 'Home') next = 0;
-        else if (e.key === 'End') next = segments.length - 1;
-        else return;
-
-        e.preventDefault();
-        segments[next].focus();
-        segments[next].click();
-      });
-    });
+  function initShared() {
+    $$('[role="tablist"]').forEach(function (el) { el.setAttribute('data-sk-tabs', ''); });
+    $$('.sk-button-group--segmented[role="radiogroup"], .sk-segmented').forEach(function (el) { el.setAttribute('data-sk-segmented', ''); });
+    $$('[aria-haspopup="menu"][aria-controls]').forEach(function (el) { el.dataset.skMenuTrigger = el.getAttribute('aria-controls'); });
+    $$('[data-sk-popover-target]').forEach(function (el) { el.dataset.skPopoverTrigger = el.dataset.skPopoverTarget; });
+    $$('dialog.sk-dialog').forEach(function (el) { el.setAttribute('data-sk-dialog', ''); });
+    $$('.sk-drawer').forEach(function (el) { el.setAttribute('data-sk-drawer', ''); if (!el.hasAttribute('data-sk-modal')) el.dataset.skModal = '(max-width: 63.999rem)'; });
+    $$('[data-sk-table]').forEach(function (el) { el.dataset.skSelection = el.id === 'project-table' ? 'projects' : 'items'; });
+    Sekura.autoEnhance(document.body);
   }
-
-  /* ================================================================== *
-   * Menus
-   *
-   * A menu moves REAL focus into itself, unlike a combobox. Escape closes and
-   * returns focus to the trigger — including when closing by selecting an item.
-   * ================================================================== */
-
-  var openMenu = null;
-
-  function closeMenu(restoreFocus) {
-    if (!openMenu) return;
-    var menu = openMenu.menu;
-    var trigger = openMenu.trigger;
-    menu.hidden = true;
-    trigger.setAttribute('aria-expanded', 'false');
-    openMenu = null;
-    if (restoreFocus) trigger.focus();
-  }
-
-  function positionMenu(menu, trigger) {
-    var rect = trigger.getBoundingClientRect();
-    menu.style.position = 'fixed';
-    menu.style.insetBlockStart = rect.bottom + 4 + 'px';
-    menu.hidden = false;
-
-    // Flip and clamp rather than letting the menu leave the viewport.
-    var menuRect = menu.getBoundingClientRect();
-    var left = rect.left;
-    if (left + menuRect.width > window.innerWidth - 8) {
-      left = Math.max(8, rect.right - menuRect.width);
-    }
-    menu.style.insetInlineStart = left + 'px';
-
-    if (rect.bottom + menuRect.height > window.innerHeight - 8) {
-      menu.style.insetBlockStart = Math.max(8, rect.top - menuRect.height - 4) + 'px';
-    }
-  }
-
-  function initMenus() {
-    $$('[aria-haspopup="menu"]').forEach(function (trigger) {
-      var menu = document.getElementById(trigger.getAttribute('aria-controls'));
-      if (!menu) return;
-
-      function open(focusLast) {
-        closeMenu(false);
-        positionMenu(menu, trigger);
-        trigger.setAttribute('aria-expanded', 'true');
-        openMenu = { menu: menu, trigger: trigger };
-        var items = $$('[role="menuitem"]:not([aria-disabled="true"])', menu);
-        if (items.length) (focusLast ? items[items.length - 1] : items[0]).focus();
-      }
-
-      trigger.addEventListener('click', function (e) {
-        e.stopPropagation();
-        if (trigger.getAttribute('aria-expanded') === 'true') closeMenu(true);
-        else open(false);
-      });
-
-      trigger.addEventListener('keydown', function (e) {
-        if (e.key === 'ArrowDown') { e.preventDefault(); open(false); }
-        else if (e.key === 'ArrowUp') { e.preventDefault(); open(true); }
-      });
-
-      menu.addEventListener('keydown', function (e) {
-        var items = $$('[role="menuitem"]:not([aria-disabled="true"])', menu);
-        var idx = items.indexOf(document.activeElement);
-
-        if (e.key === 'ArrowDown') {
-          e.preventDefault();
-          items[(idx + 1) % items.length].focus();
-        } else if (e.key === 'ArrowUp') {
-          e.preventDefault();
-          items[(idx - 1 + items.length) % items.length].focus();
-        } else if (e.key === 'Home') {
-          e.preventDefault(); items[0].focus();
-        } else if (e.key === 'End') {
-          e.preventDefault(); items[items.length - 1].focus();
-        } else if (e.key === 'Escape') {
-          e.preventDefault(); closeMenu(true);
-        } else if (e.key === 'Tab') {
-          // A menu never traps Tab.
-          closeMenu(false);
-        } else if (/^[a-z0-9]$/i.test(e.key)) {
-          // Type-ahead.
-          var match = items.filter(function (i) {
-            return i.textContent.trim().toLowerCase().indexOf(e.key.toLowerCase()) === 0;
-          })[0];
-          if (match) { e.preventDefault(); match.focus(); }
-        }
-      });
-
-      $$('[role="menuitem"]', menu).forEach(function (item) {
-        item.addEventListener('click', function () {
-          if (item.getAttribute('aria-disabled') === 'true') return;
-          var label = item.querySelector('.sk-menu__label');
-          closeMenu(true);
-          if (item.dataset.skDemo !== 'false') {
-            toast({ intent: 'success', message: (label ? label.textContent.trim() : 'Action') + ' — demo only.' });
-          }
-        });
-      });
-    });
-
-    document.addEventListener('click', function (e) {
-      if (openMenu && !openMenu.menu.contains(e.target) && !openMenu.trigger.contains(e.target)) {
-        closeMenu(false);
-      }
-    });
-  }
-
-  /* ================================================================== *
-   * Dialogs
-   *
-   * Native <dialog> + showModal(): the top layer, focus trapping and page
-   * inertness come free. Hand-rolling role="dialog" loses all three.
-   * ================================================================== */
 
   function initDialogs() {
-    $$('[data-sk-dialog-open]').forEach(function (trigger) {
-      trigger.addEventListener('click', function () {
-        var dialog = document.getElementById(trigger.dataset.skDialogOpen);
-        if (dialog && typeof dialog.showModal === 'function') dialog.showModal();
-      });
-    });
-
     $$('dialog.sk-dialog').forEach(function (dialog) {
-      $$('[data-sk-dialog-close]', dialog).forEach(function (btn) {
-        btn.addEventListener('click', function () { dialog.close('cancel'); });
-      });
-
-      // Typed confirmation: the destructive button stays disabled until the
-      // exact phrase is entered.
-      var phraseInput = $('[data-sk-confirm-phrase]', dialog);
-      if (phraseInput) {
-        var expected = phraseInput.dataset.skConfirmPhrase;
-        var confirmBtn = $('[data-sk-confirm-button]', dialog);
-        phraseInput.addEventListener('input', function () {
-          confirmBtn.disabled = phraseInput.value.trim() !== expected;
-        });
-        dialog.addEventListener('close', function () {
-          phraseInput.value = '';
-          confirmBtn.disabled = true;
-        });
-      }
-
       dialog.addEventListener('close', function () {
         if (dialog.returnValue === 'confirm') {
-          toast({
-            intent: 'success',
-            message: dialog.dataset.skConfirmMessage || 'Done.',
-            action: { label: 'Undo', onClick: function () { announce('Change undone.'); } }
-          });
+          dialog.dispatchEvent(new CustomEvent('sk:demo:confirm', { bubbles: true }));
+          if (!dialog.hasAttribute('data-sk-local-delete')) toast({ intent: 'info', message: dialog.dataset.skConfirmMessage || 'Demonstration complete. No remote changes were made.' });
         }
       });
     });
-  }
-
-  /* ================================================================== *
-   * Drawers
-   *
-   * Inline above lg (a flex sibling, page stays interactive, focus NOT
-   * trapped, no aria-modal). Modal below lg. Shipping only the CSS half of
-   * that switch is a real accessibility bug, so the JS switches the ARIA too.
-   * ================================================================== */
-
-  var drawerReturnFocus = null;
-
-  function isNarrow() { return window.matchMedia('(max-width: 63.999rem)').matches; }
-
-  function openDrawer(drawer, trigger) {
-    drawerReturnFocus = trigger || document.activeElement;
-    drawer.hidden = false;
-    drawer.dataset.open = '';
-    drawer.removeAttribute('inert');
-
-    if (isNarrow()) {
-      drawer.setAttribute('role', 'dialog');
-      drawer.setAttribute('aria-modal', 'true');
-      var heading = $('.sk-drawer__title', drawer);
-      if (heading) { heading.tabIndex = -1; heading.focus(); }
-    } else {
-      // Non-modal: the page is still available, so claiming otherwise would lie.
-      drawer.setAttribute('role', 'complementary');
-      drawer.removeAttribute('aria-modal');
-    }
-  }
-
-  function closeDrawer(drawer) {
-    delete drawer.dataset.open;
-    drawer.hidden = true;
-    // A closed drawer must be inert, or it leaves invisible tab stops.
-    drawer.setAttribute('inert', '');
-    if (drawerReturnFocus && document.contains(drawerReturnFocus)) drawerReturnFocus.focus();
-    drawerReturnFocus = null;
   }
 
   function initDrawers() {
-    $$('.sk-drawer').forEach(function (drawer) {
-      if (drawer.hidden) drawer.setAttribute('inert', '');
-      $$('[data-sk-drawer-close]', drawer).forEach(function (btn) {
-        btn.addEventListener('click', function () { closeDrawer(drawer); });
-      });
-    });
-
-    $$('[data-sk-drawer-open]').forEach(function (trigger) {
-      trigger.addEventListener('click', function () {
-        var drawer = document.getElementById(trigger.dataset.skDrawerOpen);
-        if (drawer) openDrawer(drawer, trigger);
-      });
-    });
-
-    // Mobile navigation drawer.
-    var navTrigger = $('.sk-top-bar__nav-trigger');
+    var trigger = $('.sk-top-bar__nav-trigger');
     var nav = $('#primary-nav');
-    if (navTrigger && nav) {
-      navTrigger.addEventListener('click', function () {
-        var open = nav.hasAttribute('data-open');
-        if (open) {
-          nav.removeAttribute('data-open');
-          navTrigger.setAttribute('aria-expanded', 'false');
-          navTrigger.focus();
-        } else {
-          nav.setAttribute('data-open', '');
-          navTrigger.setAttribute('aria-expanded', 'true');
-          var first = $('a', nav);
-          if (first) first.focus();
-        }
-      });
+    if (!trigger || !nav) return;
+    var query = matchMedia('(max-width: 63.999rem)');
+    var controller = Sekura.createDrawer(nav, { modal: '(max-width: 63.999rem)', onOpenChange: function (open) { trigger.setAttribute('aria-expanded', String(open)); } });
+    function sync() {
+      if (query.matches) controller.close();
+      else { controller.show(); nav.setAttribute('role', 'navigation'); }
     }
+    query.addEventListener('change', sync);
+    trigger.addEventListener('click', function () { controller.open ? controller.close() : controller.show(); });
+    sync();
   }
 
   /* ================================================================== *
@@ -451,228 +212,12 @@
    * Tabs (roving tabindex, automatic activation)
    * ================================================================== */
 
-  function initTabs() {
-    $$('[role="tablist"]').forEach(function (tablist) {
-      var tabs = $$('[role="tab"]', tablist);
-      if (!tabs.length) return;
-      var rtl = getComputedStyle(tablist).direction === 'rtl';
-
-      function select(tab) {
-        tabs.forEach(function (t) {
-          var on = t === tab;
-          t.setAttribute('aria-selected', String(on));
-          t.tabIndex = on ? 0 : -1;
-          var panel = document.getElementById(t.getAttribute('aria-controls'));
-          if (panel) panel.hidden = !on;
-        });
-      }
-
-      tabs.forEach(function (tab) {
-        tab.addEventListener('click', function () { select(tab); });
-      });
-
-      tablist.addEventListener('keydown', function (e) {
-        var idx = tabs.indexOf(document.activeElement);
-        if (idx === -1) return;
-        var forward = rtl ? 'ArrowLeft' : 'ArrowRight';
-        var back = rtl ? 'ArrowRight' : 'ArrowLeft';
-        var next = null;
-
-        if (e.key === forward) next = (idx + 1) % tabs.length;
-        else if (e.key === back) next = (idx - 1 + tabs.length) % tabs.length;
-        else if (e.key === 'Home') next = 0;
-        else if (e.key === 'End') next = tabs.length - 1;
-        else return;
-
-        e.preventDefault();
-        tabs[next].focus();
-        select(tabs[next]);
-      });
-    });
-  }
-
-  /* ================================================================== *
-   * Popovers
-   *
-   * Non-modal: no aria-modal, focus not trapped, light dismiss, Escape returns
-   * focus to the trigger.
-   * ================================================================== */
-
-  function initPopovers() {
-    $$('[data-sk-popover-target]').forEach(function (trigger) {
-      var popover = document.getElementById(trigger.dataset.skPopoverTarget);
-      if (!popover) return;
-
-      function close(restore) {
-        popover.dataset.open = 'false';
-        popover.hidden = true;
-        trigger.setAttribute('aria-expanded', 'false');
-        if (restore) trigger.focus();
-      }
-
-      trigger.addEventListener('click', function (e) {
-        e.stopPropagation();
-        var isOpen = trigger.getAttribute('aria-expanded') === 'true';
-        if (isOpen) { close(false); return; }
-
-        popover.hidden = false;
-        popover.dataset.open = 'true';
-        trigger.setAttribute('aria-expanded', 'true');
-
-        var rect = trigger.getBoundingClientRect();
-        popover.style.position = 'fixed';
-        popover.style.insetBlockStart = rect.bottom + 6 + 'px';
-        var pRect = popover.getBoundingClientRect();
-        var left = Math.min(rect.left, window.innerWidth - pRect.width - 8);
-        popover.style.insetInlineStart = Math.max(8, left) + 'px';
-
-        var first = popover.querySelector('input, button, select, a[href]');
-        if (first) first.focus();
-      });
-
-      popover.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') { e.preventDefault(); close(true); }
-      });
-
-      document.addEventListener('click', function (e) {
-        if (trigger.getAttribute('aria-expanded') !== 'true') return;
-        if (!popover.contains(e.target) && !trigger.contains(e.target)) close(false);
-      });
-
-      $$('[data-sk-popover-close]', popover).forEach(function (btn) {
-        btn.addEventListener('click', function () { close(true); });
-      });
-    });
-  }
-
-  /* ================================================================== *
-   * Tooltips
-   *
-   * Immediate on focus, delayed on hover. Dismissible with Escape, hoverable,
-   * and persistent until focus moves (WCAG 1.4.13).
-   * ================================================================== */
-
-  function initTooltips() {
-    var tip = document.createElement('span');
-    tip.className = 'sk-tooltip';
-    tip.setAttribute('role', 'tooltip');
-    tip.id = 'sk-shared-tooltip';
-    document.addEventListener('DOMContentLoaded', function () { document.body.appendChild(tip); });
-
-    var showTimer;
-    var current = null;
-
-    function show(el) {
-      current = el;
-      tip.textContent = el.dataset.skTooltip;
-      tip.dataset.visible = '';
-      var rect = el.getBoundingClientRect();
-      var tRect = tip.getBoundingClientRect();
-      tip.style.insetInlineStart =
-        Math.max(8, Math.min(rect.left + rect.width / 2 - tRect.width / 2,
-                             window.innerWidth - tRect.width - 8)) + 'px';
-      var top = rect.top - tRect.height - 8;
-      tip.style.insetBlockStart = (top < 8 ? rect.bottom + 8 : top) + 'px';
-    }
-
-    function hide() {
-      clearTimeout(showTimer);
-      delete tip.dataset.visible;
-      current = null;
-    }
-
-    document.addEventListener('mouseover', function (e) {
-      var el = e.target.closest ? e.target.closest('[data-sk-tooltip]') : null;
-      if (!el) return;
-      clearTimeout(showTimer);
-      showTimer = setTimeout(function () { show(el); }, 400);
-    });
-    document.addEventListener('mouseout', function (e) {
-      var el = e.target.closest ? e.target.closest('[data-sk-tooltip]') : null;
-      if (el && el === current) hide();
-      else if (el) clearTimeout(showTimer);
-    });
-    // No delay on focus: a keyboard user has already committed to the control.
-    document.addEventListener('focusin', function (e) {
-      var el = e.target.closest ? e.target.closest('[data-sk-tooltip]') : null;
-      if (el) show(el);
-    });
-    document.addEventListener('focusout', hide);
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && current) hide();
-    });
-  }
-
   /* ================================================================== *
    * Tables: tri-state selection, sorting, bulk bar
    * ================================================================== */
 
   function initTables() {
     $$('[data-sk-table]').forEach(function (table) {
-      var selectAll = $('[data-sk-select-all]', table);
-      var rowBoxes = $$('[data-sk-select-row]', table);
-      var bulkBar = document.getElementById(table.dataset.skBulkBar || '');
-
-      function selectedRows() {
-        return rowBoxes.filter(function (b) { return b.checked; });
-      }
-
-      function sync() {
-        var selected = selectedRows();
-
-        if (selectAll) {
-          selectAll.checked = selected.length === rowBoxes.length && rowBoxes.length > 0;
-          // Indeterminate is a DOM property with no HTML attribute. Announced
-          // as "mixed".
-          selectAll.indeterminate = selected.length > 0 && selected.length < rowBoxes.length;
-        }
-
-        rowBoxes.forEach(function (box) {
-          var row = box.closest('tr');
-          if (row) row.setAttribute('aria-selected', String(box.checked));
-        });
-
-        if (bulkBar) {
-          bulkBar.hidden = selected.length === 0;
-          var count = $('[data-sk-selection-count]', bulkBar);
-          if (count) {
-            count.textContent = selected.length + (selected.length === 1 ? ' zone selected' : ' zones selected');
-          }
-          $$('[data-sk-selection-label]', bulkBar).forEach(function (el) {
-            el.textContent = el.dataset.skSelectionLabel.replace('{n}', String(selected.length));
-          });
-        }
-      }
-
-      if (selectAll) {
-        selectAll.addEventListener('change', function () {
-          // Scopes to the CURRENT PAGE only. Selecting everything matching the
-          // filter is a separate, explicit escalation.
-          rowBoxes.forEach(function (b) { b.checked = selectAll.checked; });
-          sync();
-          announce(selectAll.checked
-            ? rowBoxes.length + ' zones on this page selected.'
-            : 'Selection cleared.');
-        });
-      }
-
-      rowBoxes.forEach(function (box) {
-        box.addEventListener('change', sync);
-      });
-
-      if (bulkBar) {
-        var clear = $('[data-sk-clear-selection]', bulkBar);
-        if (clear) {
-          clear.addEventListener('click', function () {
-            rowBoxes.forEach(function (b) { b.checked = false; });
-            sync();
-            announce('Selection cleared.');
-            var firstBox = rowBoxes[0];
-            if (firstBox) firstBox.focus();
-          });
-        }
-      }
-
       // Sorting.
       $$('[data-sk-sort]', table).forEach(function (button) {
         button.addEventListener('click', function () {
@@ -703,13 +248,13 @@
             return next === 'ascending' ? cmp : -cmp;
           });
           rows.forEach(function (r) { tbody.appendChild(r); });
+          table.dispatchEvent(new Event('sk:table:sort'));
 
           // The visual reorder is completely silent without this.
           announce('Sorted by ' + button.textContent.trim() + ', ' + next + '.');
         });
       });
 
-      sync();
     });
   }
 
@@ -722,6 +267,7 @@
 
   function initSearch() {
     $$('[data-sk-filter-input]').forEach(function (input) {
+      if (input.dataset.skFilterInput === '#project-table') return;
       var targetSel = input.dataset.skFilterInput;
       var timer;
 
@@ -741,8 +287,8 @@
           var status = $('[data-sk-filter-status]');
           if (status) {
             status.textContent = q
-              ? 'Showing ' + shown + ' of ' + rows.length + ' zones matching "' + input.value.trim() + '".'
-              : 'Showing all ' + rows.length + ' zones.';
+              ? 'Showing ' + shown + ' of ' + rows.length + ' items matching "' + input.value.trim() + '".'
+              : 'Showing all ' + rows.length + ' items.';
           }
 
           var empty = $('[data-sk-filter-empty]');
@@ -754,7 +300,7 @@
 
           announce(shown === 0
             ? 'No zones match ' + input.value.trim() + '.'
-            : shown + (shown === 1 ? ' zone' : ' zones') + ' found.');
+            : shown + (shown === 1 ? ' item' : ' items') + ' found.');
         }, 250);
       });
 
@@ -777,7 +323,7 @@
 
   function initForms() {
     $$('[data-sk-validate]').forEach(function (form) {
-      var summary = $('[data-sk-error-summary]', form);
+      var summary = $('[data-sk-error-summary]', form) || $('[data-sk-error-summary]');
       var summaryList = summary ? $('ul', summary) : null;
 
       function validateField(field) {
@@ -896,7 +442,7 @@
         }
 
         if (summary) summary.hidden = true;
-        toast({ intent: 'success', message: 'Zone created. This is a demo, so nothing was saved.' });
+        form.dispatchEvent(new CustomEvent('sk:demo:submit', { bubbles: true }));
       });
     });
   }
@@ -910,25 +456,23 @@
 
   function initSwitches() {
     $$('.sk-switch__input[data-sk-async]').forEach(function (input) {
-      var wrapper = input.closest('.sk-switch');
-      var label = $('.sk-switch__label', wrapper);
-
-      input.addEventListener('change', function () {
-        var intended = input.checked;
-        // Revert until confirmed: do not claim a state we have not reached.
-        input.checked = !intended;
-        input.disabled = true;
-        wrapper.setAttribute('data-pending', '');
-        input.setAttribute('aria-busy', 'true');
-        announce(label.textContent.trim() + ', saving.');
-
-        setTimeout(function () {
-          input.checked = intended;
-          input.disabled = false;
-          wrapper.removeAttribute('data-pending');
-          input.removeAttribute('aria-busy');
-          announce(label.textContent.trim() + ' turned ' + (intended ? 'on' : 'off') + '.');
-        }, 900);
+      var key = 'sk-setting-' + input.id;
+      var stored;
+      try { stored = localStorage.getItem(key); } catch (e) { stored = null; }
+      if (stored !== null) input.checked = stored === 'true';
+      function apply() {
+        if (input.id === 'reduce-motion') document.documentElement.toggleAttribute('data-sk-reduce-motion', input.checked);
+        if (input.id === 'mono-ids') document.documentElement.toggleAttribute('data-sk-mono-ids', input.checked);
+      }
+      apply();
+      Sekura.createAsyncSwitch(input, {
+        label: ($('label[for="' + input.id + '"]') || input).textContent.trim(),
+        onToggle: function (next) {
+          return new Promise(function (resolve) { setTimeout(function () {
+            try { localStorage.setItem(key, String(next)); input.checked = next; apply(); resolve(true); }
+            catch (e) { resolve(false); }
+          }, 500); });
+        }
       });
     });
   }
@@ -953,8 +497,9 @@
           }
           announce('Copied to clipboard.');
         };
-        if (navigator.clipboard) navigator.clipboard.writeText(value).then(done, done);
-        else done();
+        if (navigator.clipboard) navigator.clipboard.writeText(value).then(done, failed);
+        else failed();
+        function failed() { announce('Could not copy. Select the text and copy it manually.'); }
       });
     });
   }
@@ -1093,10 +638,8 @@
       btn.addEventListener('click', function () {
         toast({
           intent: btn.dataset.skDemoIntent || 'success',
-          message: btn.dataset.skDemoToast,
-          action: btn.dataset.skDemoUndo
-            ? { label: 'Undo', onClick: function () { announce('Change undone.'); } }
-            : null
+          message: 'Demo only: ' + btn.dataset.skDemoToast,
+          action: null
         });
       });
     });
@@ -1117,7 +660,7 @@
         setTimeout(function () {
           btn.removeAttribute('aria-busy');
           if (icon) spinner.replaceWith(icon); else spinner.remove();
-          toast({ intent: 'success', message: 'Changes saved.' });
+          toast({ intent: 'info', message: 'Save demonstration complete. No remote changes were made.' });
         }, 1600);
       });
     });
@@ -1139,13 +682,9 @@
   function init() {
     initTheme();
     initDensity();
-    initSegmented();
-    initMenus();
+    initShared();
     initDialogs();
     initDrawers();
-    initTabs();
-    initPopovers();
-    initTooltips();
     initTables();
     initSearch();
     initForms();
@@ -1155,11 +694,7 @@
     initScrollState();
     initDemoActions();
 
-    // Global Escape: close the topmost overlay.
-    document.addEventListener('keydown', function (e) {
-      if (e.key !== 'Escape') return;
-      if (openMenu) closeMenu(true);
-    });
+
   }
 
   if (document.readyState === 'loading') {

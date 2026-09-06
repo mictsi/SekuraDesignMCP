@@ -4,20 +4,37 @@ A dockerized [Model Context Protocol](https://modelcontextprotocol.io) server th
 serves the complete **Sekura Design System** — tokens, components, layouts, UX
 patterns, accessibility contract and paste-ready code — to any MCP-capable tool.
 
-Point an agent at it and it can build a correct, accessible, dark-mode-first
-interface without guessing at a single value.
+Agents and developers can inspect the same tokens, native markup and interaction contracts.
+Application behavior still needs implementation and accessibility verification.
 
 ```
 67 components · 15 foundations · 15 UX patterns · 9 layout recipes
 120 semantic tokens · 4 themes · 3 densities · 8 target frameworks
-344 contrast · 107 behaviour · 94 error-contract · 90 accessible-name · 0 axe violations
+Build-derived counts and support: sample/assets/component-manifest.json
 ```
 
 The human-readable specification is [`DESIGN.md`](./DESIGN.md), and there is an
-81-page [documentation site](./sample) — generated from the same data — that
+100-page [documentation site](./sample) — generated from the same data — that
 explains it with live demos, a full colour guide and worked examples.
 
 ---
+
+## Integration and migration
+
+The [support matrix](./sample/support.html) distinguishes CSS, native behavior,
+controllers, and application-owned actions. The [workbench](./sample/workbench.html)
+compares every control size and density and demonstrates pending, failure, retry,
+cancellation and real undo. Example data stays local; simulated remote actions are labelled.
+
+Generated framework code is an **editable reference recipe**, preserving the native
+markup, unique IDs and controller cleanup. Except for the dedicated React Button,
+these are not general-purpose prop-driven components. Read the emitted API before
+passing specification props. Keep one owner for controller state and wire your own
+permissions, network requests, persistence and navigation.
+
+Version 2 corrects the accordion Tab sequence and replaces the old generated wrappers.
+See [migration notes and the second design review](./DESIGN-REVIEW.md) and the
+[original audit](./DESIGN-AUDIT.md). No package or site is published by a local build.
 
 ## Quickest start
 
@@ -26,8 +43,8 @@ explains it with live demos, a full colour guide and worked examples.
 ```
 
 Builds everything — TypeScript, contrast audit, CSS lint, stylesheets, the
-documentation site and the Docker image — then starts the MCP server on `:8080`
-and the docs on `:4173`.
+documentation site and the Docker image — then serves MCP and the documentation
+on `:8080`, with the docs at `/docs/`.
 
 ```
 ./run.sh build          Compile, run gates, emit CSS, build the docs and the image
@@ -35,7 +52,7 @@ and the docs on `:4173`.
 ./run.sh start-build    Build, then start
 ./run.sh restart        Stop, then start
 ./run.sh stop           Stop everything
-./run.sh logs [target]  Follow logs            (target: server | sample)
+./run.sh logs [target]  Follow server logs
 ./run.sh status         What is running, plus a live contrast-audit check
 ./run.sh verify         Run every gate without starting anything
 ./run.sh clean [--all]  Remove build output, container and image
@@ -59,13 +76,12 @@ reports it.
 ./run.sh start-build          # then open http://localhost:4173
 ```
 
-An 81-page documentation site — explanations, a full colour guide, a type
-specimen, live demos, a complete component reference and six worked examples.
+An 100-page documentation site — explanations, a full colour guide, a type
+specimen, live demos, a complete component reference and nine worked examples.
 
 **It is generated from the design system's own data**, so the colour guide shows
 genuinely audited contrast values and the component pages show the same
-specification the MCP server serves. The docs cannot drift from the system they
-document.
+specification the MCP server serves. Browser regression tests check that the documented interactions work.
 
 | | |
 |---|---|
@@ -140,7 +156,7 @@ table:
 
 [mcp_servers.sekura-design]
 command = "docker"
-args = ["run", "-i", "--rm", "-e", "SEKURA_MCP_TRANSPORT=stdio", "sekura-design-mcp:1.0.0"]
+args = ["run", "-i", "--rm", "-e", "SEKURA_MCP_TRANSPORT=stdio", "sekura-design-mcp:2.0.0"]
 
 # The first call builds a 5,900-line overview, so allow a little headroom.
 startup_timeout_sec = 30
@@ -159,7 +175,7 @@ Recent Codex versions can add it for you:
 
 ```bash
 codex mcp add sekura-design -- docker run -i --rm \
-  -e SEKURA_MCP_TRANSPORT=stdio sekura-design-mcp:1.0.0
+  -e SEKURA_MCP_TRANSPORT=stdio sekura-design-mcp:2.0.0
 
 codex mcp list          # confirm it registered
 ```
@@ -194,7 +210,7 @@ to start, but these help:
     "sekura-design": {
       "command": "docker",
       "args": ["run", "-i", "--rm", "-e", "SEKURA_MCP_TRANSPORT=stdio",
-               "sekura-design-mcp:1.0.0"]
+               "sekura-design-mcp:2.0.0"]
     }
   }
 }
@@ -276,7 +292,7 @@ review and break in production — the unstyleable Chrome autofill background, S
 chevrons baked into data URIs, WebKit's search clear button, scrims that are too
 weak on dark, and so on.
 
-**The contrast contract is machine-verified.** 73 declared pairings × 4 themes = 292
+**The contrast contract is machine-verified.** 86 declared pairings × 4 themes = 344
 checks, run on every build and by the container's health check. Two neutral steps
 are pinned by contrast rather than by eye: `neutral-400` is the lightest grey
 clearing 3:1 on white, and `neutral-500` the lightest clearing 4.5:1 on the subtle
@@ -323,7 +339,7 @@ two-column `sidebar-layout`, which stacks purely through flex wrapping.
   → ❌ button-accessible-name, with the fix and the WCAG criterion
 
 > audit_theme
-  → 292/292 pairings satisfied across all four themes
+  → 344/344 pairings satisfied across all four themes
 ```
 
 ---
@@ -345,11 +361,14 @@ non-zero, so a change that breaks a promise cannot merge green:
 | `smoke` | Every MCP tool, component, framework and export format |
 | `test:color` | Colour maths against WCAG reference values |
 | `test:urls` | Path prefixes and proxy headers resolve to reachable URLs |
+| `test:codegen` | React, Angular and Web Component typechecks; Vue/Svelte compilation; Angular templates |
+| `test:blazor` | All generated Razor components compile with .NET 10 |
+| `test:design` | Example workflows, control alignment, generated React mounts, lifecycle and mobile geometry |
 | `test:behaviours` | Real key presses in a browser: focus, ARIA, Escape, inert |
 | `site:publish` | Static bundle is portable — nothing root-absolute |
 | `test:errors` | Every failing tool call is marked, coded and actionable |
 | `test:announce` | Accessible names exist and are distinct within a region |
-| `test:rtl` | Nothing clipped in either direction, at three widths, 12 pages |
+| `test:rtl` | Nothing clipped in either direction, at four widths, including 320px, across 14 pages |
 | `verify:sample` | Dangling references, broken links, markup lint |
 | `test:a11y` | axe-core, WCAG 2.2 AA, both themes |
 | Docker | Image builds, `/health` re-runs the contrast audit inside it |
@@ -379,7 +398,7 @@ runs the full gate chain again (a release cannot skip checks) and publishes:
 Plus a multi-arch image to GHCR, tagged `1.2.3`, `1.2`, `1` and `latest`:
 
 ```bash
-docker run -d -p 8080:8080 ghcr.io/mictsi/sekuradesignmcp:1.0.0
+docker run -d -p 8080:8080 ghcr.io/mictsi/sekuradesignmcp:2.0.0
 ```
 
 and the documentation site to GitHub Pages.
@@ -401,7 +420,7 @@ contrast audit proves nothing regressed. See [`CHANGELOG.md`](./CHANGELOG.md).
 ## Development
 
 ```bash
-npm run verify          # everything below, in order
+npm run verify          # full checks; Node/npm, Chromium and .NET 10 SDK required
 npm run build           # compile
 npm run check:version   # no version literal has drifted
 npm run check:deps      # dependency policy: stable releases, Node LTS only
@@ -412,7 +431,7 @@ npm run audit:contrast  # 344 contrast checks — build gate
 npm run lint:css        # structural CSS lint over all 67 stylesheets
 npm run smoke           # 704 checks across every tool, component and export
 npm run emit:css        # write dist-css/ — 66 files, sekura.css is ~190 KB
-npm run site:build      # regenerate the 81-page documentation site
+npm run site:build      # regenerate the 100-page documentation site
 npm run verify:sample   # lint every page against the design system itself
 ```
 
@@ -425,7 +444,7 @@ stylesheet that had shipped unnoticed.
 `npm run emit:css` produces standalone artefacts for consuming Sekura as plain
 files: `sekura.css` (everything), `tokens.css`, `tokens.dtcg.json`,
 `tailwind.config.js`, `SekuraColor.swift`, `android-resources.xml`,
-`tokens.figma.json`, and per-component CSS.
+`tokens.figma.json`, per-component CSS, and `component-manifest.json` with dependency and behavior metadata.
 
 ### Layout
 
@@ -445,7 +464,7 @@ src/
 │   ├── foundations.ts    15 foundation documents
 │   ├── layouts.ts        9 page recipes
 │   ├── patterns.ts       15 UX patterns
-│   └── components/       55 component specifications
+│   └── components/       67 component specifications
 └── lib/
     ├── color.ts          WCAG luminance, contrast, compositing
     ├── exporters.ts      11 output formats
@@ -567,7 +586,7 @@ location /design-system/ {
 }
 ```
 ```bash
-docker run -d -p 8080:8080 -e SEKURA_BASE_PATH=/design-system sekura-design-mcp:1.0.0
+docker run -d -p 8080:8080 -e SEKURA_BASE_PATH=/design-system sekura-design-mcp:2.0.0
 ```
 
 **If the proxy strips the prefix**, the app still listens at the root but has no
@@ -583,7 +602,7 @@ location /design-system/ {
 ```bash
 docker run -d -p 8080:8080 \
   -e SEKURA_EXTERNAL_URL=https://example.com/design-system \
-  sekura-design-mcp:1.0.0
+  sekura-design-mcp:2.0.0
 ```
 
 **With Traefik or ingress-nginx, neither is needed.** `X-Forwarded-Prefix` is
@@ -630,7 +649,7 @@ where a link, a bookmark or a proxy rule eventually points at the wrong one.
 | `/tokens.json` | W3C DTCG format |
 | `/css/sekura.css` | The complete stylesheet; `/css/` also has per-component files |
 | `/js/sekura.iife.min.js` | Behaviours, drop-in `<script>`; `.esm.min.js` alongside |
-| `/docs/` | The 85-page documentation site |
+| `/docs/` | The 100-page documentation site |
 
 Do not assemble those paths by hand from a base you assume. Fetch
 `/manifest.json`, or call the `get_endpoints` MCP tool — only the server knows
@@ -692,7 +711,7 @@ returned a default", and the second is a false claim of safety.
 npm run site:publish        # -> dist-site/
 ```
 
-`dist-site/` is self-contained: 96 pages, the assets, and a 404 page. Upload it
+`dist-site/` is self-contained: 100 pages, the assets, and a 404 page. Upload it
 anywhere. Every reference in it is relative, so the same bundle serves from a
 domain root or any subdirectory with no rebuild:
 

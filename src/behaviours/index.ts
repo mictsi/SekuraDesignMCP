@@ -46,6 +46,7 @@ export {
   direction,
   emit,
   ensureId,
+  scopeIds,
   focusable,
   isVisible,
   on,
@@ -68,6 +69,7 @@ export {
 export { dismissable, type DismissOptions } from './core/dismiss.js';
 export { announce, initAnnouncer, readingTime } from './core/live.js';
 export { position, type Align, type PositionOptions, type Positioner, type Side } from './core/position.js';
+export { createSlider, guardAction, type SliderOptions } from './controllers/slider.js';
 export { createTypeahead, type Typeahead, type TypeaheadOptions } from './core/typeahead.js';
 
 /* Controllers. */
@@ -156,4 +158,7 @@ export {
 } from './controllers/misc.js';
 
 /* Auto-initialisation. */
-export { autoEnhance, enhance, getTheme, type EnhanceResult } from './auto.js';
+export { autoEnhance, dispose, enhance, getTheme, type EnhanceResult } from './auto.js';
+
+export { createTree } from './controllers/tree.js';
+export { createUpload, type UploadOptions } from './controllers/upload.js';

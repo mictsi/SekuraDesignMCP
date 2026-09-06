@@ -1,0 +1,1308 @@
+{
+  "schemaVersion": 1,
+  "version": "2.0.0",
+  "base": [
+    "tokens.css",
+    "base.css"
+  ],
+  "dependencyRule": "Load listed component CSS dependencies recursively, once each, or use sekura.css.",
+  "components": [
+    {
+      "id": "button",
+      "cssFile": "components/button.css",
+      "rootClass": "sk-button",
+      "cssDependencies": [
+        "button-group",
+        "form-field",
+        "dialog"
+      ],
+      "svgSymbols": [
+        "sk-icon-download"
+      ],
+      "controller": "guardAction",
+      "behavior": "controller",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "icon-button",
+      "cssFile": "components/icon-button.css",
+      "rootClass": "sk-icon-button",
+      "cssDependencies": [],
+      "svgSymbols": [
+        "sk-icon-copy",
+        "sk-icon-pin",
+        "sk-icon-close"
+      ],
+      "controller": "guardAction",
+      "behavior": "controller",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "button-group",
+      "cssFile": "components/button-group.css",
+      "rootClass": "sk-button-group",
+      "cssDependencies": [
+        "button",
+        "dialog"
+      ],
+      "svgSymbols": [],
+      "controller": "createSegmented",
+      "behavior": "controller",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "split-button",
+      "cssFile": "components/split-button.css",
+      "rootClass": "sk-split-button",
+      "cssDependencies": [
+        "menu"
+      ],
+      "svgSymbols": [
+        "sk-icon-chevron-down"
+      ],
+      "controller": "createMenu",
+      "behavior": "controller",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "link",
+      "cssFile": "components/link.css",
+      "rootClass": "sk-link",
+      "cssDependencies": [
+        "alert"
+      ],
+      "svgSymbols": [
+        "sk-icon-external",
+        "sk-icon-arrow-right"
+      ],
+      "controller": null,
+      "behavior": "native",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "toolbar",
+      "cssFile": "components/toolbar.css",
+      "rootClass": "sk-toolbar",
+      "cssDependencies": [
+        "icon-button"
+      ],
+      "svgSymbols": [
+        "sk-icon-edit",
+        "sk-icon-copy",
+        "sk-icon-download",
+        "sk-icon-trash"
+      ],
+      "controller": "createToolbar",
+      "behavior": "controller",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "segmented-control",
+      "cssFile": "components/segmented-control.css",
+      "rootClass": "sk-segmented",
+      "cssDependencies": [],
+      "svgSymbols": [],
+      "controller": "createSegmented",
+      "behavior": "controller",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "form-field",
+      "cssFile": "components/form-field.css",
+      "rootClass": "sk-field",
+      "cssDependencies": [
+        "text-field",
+        "combobox",
+        "number-input",
+        "date-picker"
+      ],
+      "svgSymbols": [
+        "sk-icon-warning"
+      ],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "text-field",
+      "cssFile": "components/text-field.css",
+      "rootClass": "sk-input",
+      "cssDependencies": [
+        "form-field",
+        "combobox",
+        "number-input",
+        "date-picker"
+      ],
+      "svgSymbols": [
+        "sk-icon-eye"
+      ],
+      "controller": null,
+      "behavior": "native",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "textarea",
+      "cssFile": "components/textarea.css",
+      "rootClass": "sk-textarea",
+      "cssDependencies": [
+        "form-field"
+      ],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "native",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "select",
+      "cssFile": "components/select.css",
+      "rootClass": "sk-select",
+      "cssDependencies": [
+        "form-field"
+      ],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "native",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "checkbox",
+      "cssFile": "components/checkbox.css",
+      "rootClass": "sk-checkbox",
+      "cssDependencies": [
+        "fieldset"
+      ],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "native",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "radio-group",
+      "cssFile": "components/radio-group.css",
+      "rootClass": "sk-radio-group",
+      "cssDependencies": [
+        "form-field",
+        "fieldset"
+      ],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "native",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "switch",
+      "cssFile": "components/switch.css",
+      "rootClass": "sk-switch",
+      "cssDependencies": [],
+      "svgSymbols": [],
+      "controller": "createAsyncSwitch",
+      "behavior": "controller",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons.",
+        "Pass an onToggle callback to createAsyncSwitch for persisted switches."
+      ]
+    },
+    {
+      "id": "combobox",
+      "cssFile": "components/combobox.css",
+      "rootClass": "sk-combobox",
+      "cssDependencies": [
+        "form-field",
+        "text-field",
+        "number-input",
+        "date-picker"
+      ],
+      "svgSymbols": [],
+      "controller": "createCombobox",
+      "behavior": "controller",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "search-field",
+      "cssFile": "components/search-field.css",
+      "rootClass": "sk-search",
+      "cssDependencies": [],
+      "svgSymbols": [
+        "sk-icon-search",
+        "sk-icon-close"
+      ],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "slider",
+      "cssFile": "components/slider.css",
+      "rootClass": "sk-slider",
+      "cssDependencies": [
+        "form-field"
+      ],
+      "svgSymbols": [],
+      "controller": "createSlider",
+      "behavior": "controller",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "file-upload",
+      "cssFile": "components/file-upload.css",
+      "rootClass": "sk-upload",
+      "cssDependencies": [
+        "button",
+        "icon-button",
+        "button-group",
+        "dialog"
+      ],
+      "svgSymbols": [
+        "sk-icon-upload",
+        "sk-icon-close"
+      ],
+      "controller": "createUpload",
+      "behavior": "controller",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons.",
+        "See the worked examples; backend data and transport remain application-owned."
+      ]
+    },
+    {
+      "id": "fieldset",
+      "cssFile": "components/fieldset.css",
+      "rootClass": "sk-fieldset",
+      "cssDependencies": [
+        "form-field"
+      ],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "number-input",
+      "cssFile": "components/number-input.css",
+      "rootClass": "sk-number",
+      "cssDependencies": [
+        "form-field",
+        "text-field",
+        "combobox",
+        "date-picker"
+      ],
+      "svgSymbols": [
+        "sk-icon-chevron-up",
+        "sk-icon-chevron-down"
+      ],
+      "controller": "createNumberInput",
+      "behavior": "controller",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "tag-input",
+      "cssFile": "components/tag-input.css",
+      "rootClass": "sk-tag-input",
+      "cssDependencies": [
+        "form-field"
+      ],
+      "svgSymbols": [],
+      "controller": "createTagInput",
+      "behavior": "controller",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "date-picker",
+      "cssFile": "components/date-picker.css",
+      "rootClass": "sk-date-picker",
+      "cssDependencies": [
+        "form-field",
+        "text-field",
+        "combobox",
+        "number-input"
+      ],
+      "svgSymbols": [
+        "sk-icon-clock"
+      ],
+      "controller": "createDatePicker",
+      "behavior": "controller",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "date-range-picker",
+      "cssFile": "components/date-range-picker.css",
+      "rootClass": "sk-date-range",
+      "cssDependencies": [
+        "form-field",
+        "text-field",
+        "combobox",
+        "fieldset",
+        "number-input",
+        "date-picker",
+        "cluster"
+      ],
+      "svgSymbols": [],
+      "controller": "createDateRange",
+      "behavior": "controller",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "skip-link",
+      "cssFile": "components/skip-link.css",
+      "rootClass": "sk-skip-link",
+      "cssDependencies": [
+        "top-bar"
+      ],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "top-bar",
+      "cssFile": "components/top-bar.css",
+      "rootClass": "sk-top-bar",
+      "cssDependencies": [
+        "icon-button",
+        "search-field",
+        "badge",
+        "avatar"
+      ],
+      "svgSymbols": [
+        "sk-icon-menu",
+        "sk-logo",
+        "sk-icon-contrast",
+        "sk-icon-bell"
+      ],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "side-nav",
+      "cssFile": "components/side-nav.css",
+      "rootClass": "sk-side-nav",
+      "cssDependencies": [],
+      "svgSymbols": [
+        "sk-icon-home",
+        "sk-icon-globe",
+        "sk-icon-users"
+      ],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "breadcrumbs",
+      "cssFile": "components/breadcrumbs.css",
+      "rootClass": "sk-breadcrumbs",
+      "cssDependencies": [
+        "link",
+        "alert"
+      ],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "tabs",
+      "cssFile": "components/tabs.css",
+      "rootClass": "sk-tabs",
+      "cssDependencies": [],
+      "svgSymbols": [],
+      "controller": "createTabs",
+      "behavior": "controller",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "pagination",
+      "cssFile": "components/pagination.css",
+      "rootClass": "sk-pagination",
+      "cssDependencies": [],
+      "svgSymbols": [
+        "sk-icon-chevron-left",
+        "sk-icon-chevron-right"
+      ],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons.",
+        "See the worked examples; backend data and transport remain application-owned."
+      ]
+    },
+    {
+      "id": "stepper",
+      "cssFile": "components/stepper.css",
+      "rootClass": "sk-stepper",
+      "cssDependencies": [],
+      "svgSymbols": [
+        "sk-icon-check"
+      ],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "menu",
+      "cssFile": "components/menu.css",
+      "rootClass": "sk-menu",
+      "cssDependencies": [
+        "icon-button"
+      ],
+      "svgSymbols": [
+        "sk-icon-more",
+        "sk-icon-edit",
+        "sk-icon-copy",
+        "sk-icon-trash"
+      ],
+      "controller": "createMenu",
+      "behavior": "controller",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "command-palette",
+      "cssFile": "components/command-palette.css",
+      "rootClass": "sk-command-palette",
+      "cssDependencies": [
+        "kbd"
+      ],
+      "svgSymbols": [
+        "sk-icon-search",
+        "sk-icon-globe"
+      ],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "alert",
+      "cssFile": "components/alert.css",
+      "rootClass": "sk-alert",
+      "cssDependencies": [
+        "button",
+        "icon-button",
+        "button-group",
+        "link",
+        "code-block",
+        "dialog"
+      ],
+      "svgSymbols": [
+        "sk-icon-warning",
+        "sk-icon-error",
+        "sk-icon-close"
+      ],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "toast",
+      "cssFile": "components/toast.css",
+      "rootClass": "sk-toast",
+      "cssDependencies": [
+        "button",
+        "icon-button",
+        "button-group",
+        "dialog"
+      ],
+      "svgSymbols": [
+        "sk-icon-check-circle",
+        "sk-icon-close"
+      ],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "inline-message",
+      "cssFile": "components/inline-message.css",
+      "rootClass": "sk-inline-message",
+      "cssDependencies": [
+        "button",
+        "button-group",
+        "dialog"
+      ],
+      "svgSymbols": [
+        "sk-icon-info"
+      ],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "progress",
+      "cssFile": "components/progress.css",
+      "rootClass": "sk-progress",
+      "cssDependencies": [],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "spinner",
+      "cssFile": "components/spinner.css",
+      "rootClass": "sk-spinner",
+      "cssDependencies": [],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "skeleton",
+      "cssFile": "components/skeleton.css",
+      "rootClass": "sk-skeleton",
+      "cssDependencies": [],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "empty-state",
+      "cssFile": "components/empty-state.css",
+      "rootClass": "sk-empty-state",
+      "cssDependencies": [
+        "button",
+        "button-group",
+        "dialog"
+      ],
+      "svgSymbols": [
+        "sk-illus-search"
+      ],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "status-indicator",
+      "cssFile": "components/status-indicator.css",
+      "rootClass": "sk-status",
+      "cssDependencies": [],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "meter",
+      "cssFile": "components/meter.css",
+      "rootClass": "sk-meter",
+      "cssDependencies": [],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "loading-screen",
+      "cssFile": "components/loading-screen.css",
+      "rootClass": "sk-loading",
+      "cssDependencies": [
+        "button",
+        "button-group",
+        "spinner",
+        "dialog"
+      ],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "error-page",
+      "cssFile": "components/error-page.css",
+      "rootClass": "sk-error-page",
+      "cssDependencies": [
+        "button",
+        "button-group",
+        "link",
+        "alert",
+        "code-block",
+        "dialog"
+      ],
+      "svgSymbols": [
+        "sk-icon-search"
+      ],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "error-boundary",
+      "cssFile": "components/error-boundary.css",
+      "rootClass": "sk-error-boundary",
+      "cssDependencies": [
+        "button",
+        "button-group",
+        "code-block",
+        "dialog"
+      ],
+      "svgSymbols": [
+        "sk-icon-warning",
+        "sk-icon-refresh"
+      ],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "table",
+      "cssFile": "components/table.css",
+      "rootClass": "sk-table",
+      "cssDependencies": [
+        "icon-button",
+        "link",
+        "checkbox",
+        "alert",
+        "status-indicator"
+      ],
+      "svgSymbols": [
+        "sk-icon-sort-asc",
+        "sk-icon-more"
+      ],
+      "controller": "createSelection",
+      "behavior": "controller",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "card",
+      "cssFile": "components/card.css",
+      "rootClass": "sk-card",
+      "cssDependencies": [
+        "status-indicator",
+        "badge"
+      ],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "stat-tile",
+      "cssFile": "components/stat-tile.css",
+      "rootClass": "sk-stat",
+      "cssDependencies": [],
+      "svgSymbols": [
+        "sk-icon-arrow-up"
+      ],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "badge",
+      "cssFile": "components/badge.css",
+      "rootClass": "sk-badge",
+      "cssDependencies": [],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "avatar",
+      "cssFile": "components/avatar.css",
+      "rootClass": "sk-avatar",
+      "cssDependencies": [],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "description-list",
+      "cssFile": "components/description-list.css",
+      "rootClass": "sk-dl",
+      "cssDependencies": [
+        "code-block"
+      ],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "code-block",
+      "cssFile": "components/code-block.css",
+      "rootClass": "sk-code-block",
+      "cssDependencies": [
+        "button",
+        "button-group",
+        "dialog"
+      ],
+      "svgSymbols": [
+        "sk-icon-copy"
+      ],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "kbd",
+      "cssFile": "components/kbd.css",
+      "rootClass": "sk-kbd",
+      "cssDependencies": [],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "timeline",
+      "cssFile": "components/timeline.css",
+      "rootClass": "sk-timeline",
+      "cssDependencies": [],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "tree-view",
+      "cssFile": "components/tree-view.css",
+      "rootClass": "sk-tree",
+      "cssDependencies": [],
+      "svgSymbols": [
+        "sk-icon-chevron-down"
+      ],
+      "controller": "createTree",
+      "behavior": "controller",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons.",
+        "See the worked examples; backend data and transport remain application-owned."
+      ]
+    },
+    {
+      "id": "disclosure",
+      "cssFile": "components/disclosure.css",
+      "rootClass": "sk-disclosure",
+      "cssDependencies": [],
+      "svgSymbols": [
+        "sk-icon-chevron-right"
+      ],
+      "controller": "createDisclosure",
+      "behavior": "controller",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "accordion",
+      "cssFile": "components/accordion.css",
+      "rootClass": "sk-accordion",
+      "cssDependencies": [],
+      "svgSymbols": [
+        "sk-icon-chevron-right"
+      ],
+      "controller": "createAccordion",
+      "behavior": "controller",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "dialog",
+      "cssFile": "components/dialog.css",
+      "rootClass": "sk-dialog",
+      "cssDependencies": [
+        "button",
+        "icon-button",
+        "button-group",
+        "form-field",
+        "text-field",
+        "combobox",
+        "number-input",
+        "date-picker",
+        "code-block"
+      ],
+      "svgSymbols": [
+        "sk-icon-close"
+      ],
+      "controller": "createDialog",
+      "behavior": "controller",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "drawer",
+      "cssFile": "components/drawer.css",
+      "rootClass": "sk-drawer",
+      "cssDependencies": [
+        "button",
+        "icon-button",
+        "button-group",
+        "description-list",
+        "dialog"
+      ],
+      "svgSymbols": [
+        "sk-icon-close"
+      ],
+      "controller": "createDrawer",
+      "behavior": "controller",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "popover",
+      "cssFile": "components/popover.css",
+      "rootClass": "sk-popover",
+      "cssDependencies": [
+        "button",
+        "button-group",
+        "fieldset",
+        "badge",
+        "dialog"
+      ],
+      "svgSymbols": [
+        "sk-icon-filter"
+      ],
+      "controller": "createPopover",
+      "behavior": "controller",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "tooltip",
+      "cssFile": "components/tooltip.css",
+      "rootClass": "sk-tooltip",
+      "cssDependencies": [
+        "icon-button"
+      ],
+      "svgSymbols": [
+        "sk-icon-copy"
+      ],
+      "controller": "createTooltip",
+      "behavior": "controller",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "app-shell",
+      "cssFile": "components/app-shell.css",
+      "rootClass": "sk-app-shell",
+      "cssDependencies": [
+        "skip-link",
+        "top-bar",
+        "side-nav",
+        "toast",
+        "drawer"
+      ],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "page-header",
+      "cssFile": "components/page-header.css",
+      "rootClass": "sk-page-header",
+      "cssDependencies": [
+        "button",
+        "button-group",
+        "breadcrumbs",
+        "tabs",
+        "status-indicator",
+        "badge",
+        "dialog"
+      ],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "stack",
+      "cssFile": "components/stack.css",
+      "rootClass": "sk-stack",
+      "cssDependencies": [
+        "button",
+        "button-group",
+        "form-field",
+        "switch",
+        "dialog",
+        "cluster"
+      ],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "cluster",
+      "cssFile": "components/cluster.css",
+      "rootClass": "sk-cluster",
+      "cssDependencies": [
+        "button",
+        "button-group",
+        "badge",
+        "dialog"
+      ],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "sidebar-layout",
+      "cssFile": "components/sidebar-layout.css",
+      "rootClass": "sk-sidebar-layout",
+      "cssDependencies": [
+        "table",
+        "stack"
+      ],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "grid",
+      "cssFile": "components/grid.css",
+      "rootClass": "sk-grid",
+      "cssDependencies": [
+        "form-field",
+        "card"
+      ],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "divider",
+      "cssFile": "components/divider.css",
+      "rootClass": "sk-divider",
+      "cssDependencies": [
+        "cluster"
+      ],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    }
+  ],
+  "counts": {
+    "pages": 100,
+    "components": 67,
+    "foundations": 15,
+    "patterns": 15,
+    "layouts": 9,
+    "tokens": 120
+  }
+}

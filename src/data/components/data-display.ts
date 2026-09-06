@@ -1596,7 +1596,7 @@ export const dataDisplayComponents: ComponentSpec[] = [
     whenNotToUse: [
       'Content most readers do need. Hiding the main thing to make a page look tidy trades a scroll for a click and a guess.',
       'Required form fields. A field nobody expands is a field nobody fills, and validation then fails on something invisible.',
-      'Several related sections at one level — use an Accordion, which gives them arrow-key navigation and one tab stop.',
+      'Several related sections at one level — use an Accordion, which gives them arrow-key navigation with every header in the Tab sequence.',
       'Anything that must be found by the browser\'s find-in-page. Collapsed content is only searchable where `hidden="until-found"` is supported.',
     ],
     anatomy: [
@@ -1776,7 +1776,7 @@ export const dataDisplayComponents: ComponentSpec[] = [
     category: 'data-display',
     status: 'stable',
     summary:
-      'A vertical group of disclosures sharing one tab stop and arrow-key navigation. Use it for peer sections at one level of a hierarchy.',
+      'A vertical group of disclosures with native Tab order and supplementary arrow-key navigation. Use it for peer sections at one level of a hierarchy.',
     whenToUse: [
       'Three or more peer sections a reader consults selectively: an FAQ, a settings group, a specification broken into parts.',
       'Long reference content where a full page of prose would bury the structure.',
@@ -1790,7 +1790,7 @@ export const dataDisplayComponents: ComponentSpec[] = [
       'A single section — use a Disclosure.',
     ],
     anatomy: [
-      { part: 'Container', required: true, description: 'Owns the roving tabindex, so the whole group is one tab stop.' },
+      { part: 'Container', required: true, description: 'Groups peer sections; each header remains a Tab stop.' },
       { part: 'Headers', required: true, description: 'A heading element wrapping a real <button>. The heading level must match the surrounding outline.' },
       { part: 'Panels', required: true, description: 'One region per header, labelled by it, `hidden` when collapsed.' },
       { part: 'Expand all', required: false, description: 'A single control for long accordions. Also a strong hint the content should not have been collapsed.' },
@@ -1824,7 +1824,7 @@ export const dataDisplayComponents: ComponentSpec[] = [
     accessibility: {
       role: 'Headings wrapping native buttons, plus regions. There is no `role="accordion"`; inventing one is a common and harmful mistake.',
       keyboard: [
-        { keys: 'Tab', action: 'Moves into the accordion, landing on one header, then straight out to the next control. A ten-item accordion is one tab stop, not ten.' },
+        { keys: 'Tab', action: 'Visits each header and the focusable content of expanded panels in document order.' },
         { keys: 'Arrow Down / Up', action: 'Move between headers, wrapping.' },
         { keys: 'Home / End', action: 'First or last header.' },
         { keys: 'Enter / Space', action: 'Toggles the focused section.' },
@@ -1837,7 +1837,7 @@ export const dataDisplayComponents: ComponentSpec[] = [
       ],
       wcag: [
         '2.1.1 Keyboard',
-        '2.4.3 Focus Order — the roving tabindex must follow visual order.',
+        '2.4.3 Focus Order — Tab order follows document and visual order.',
         '2.4.6 Headings and Labels — the header text has to describe the section, because it becomes a heading in the outline.',
         '4.1.2 Name, Role, Value',
         '1.3.1 Info and Relationships — headings are what carry the structure to assistive technology.',
@@ -1854,7 +1854,7 @@ export const dataDisplayComponents: ComponentSpec[] = [
     dos: [
       'Wrap each header button in a heading of the right level.',
       'Default to allowing several panels open.',
-      'Keep the group to one tab stop with a roving tabindex.',
+      'Keep every header in the page Tab sequence.',
       'Open the first panel by default when one section is clearly the common case.',
     ],
     donts: [

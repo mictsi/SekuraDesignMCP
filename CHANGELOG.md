@@ -25,6 +25,28 @@ the contrast audit proves nothing regressed.
 
 ## [Unreleased]
 
+## [2.0.0] — 2026-09-06
+
+### Breaking changes
+
+- Accordion headers now all participate in the Tab sequence; arrows remain supplementary.
+- Generated framework outputs preserve native reference markup and lifecycle cleanup instead of generic prop wrappers. Except for React Button, callers customize reference markup and application outcomes. Regenerate and adapt integrations; see `DESIGN-REVIEW.md`.
+- Control padding follows density consistently. Number steppers sit side by side; review custom sizing overrides.
+
+### Fixed
+
+- All 18 findings in `DESIGN-AUDIT.md`: framework output, shared demo behavior, filtered selection, busy activation, slider synchronization, responsive layouts, size modifiers, tooltips, disclosures, teardown, floating positioning, example workflows, clipboard failures and sign-in focus.
+- Keyboard theme/density changes now apply. Dialog close callbacks fire once; initially open drawers have matching controller state. All-page accessibility scanning found and fixed an unnamed home link and invalid definition-list placeholder.
+
+### Added
+
+- Implementation/dependency metadata through MCP and a versioned component manifest; support matrix and component workbench.
+- Single-selection tree and upload controllers; local project/task CRUD, export and undo; three-step onboarding, persisted preferences, profile-photo preview and password-recovery demonstration.
+- Compile/typecheck gates for all generated framework recipes, real React consumer mounts, all-page mobile geometry and light/dark accessibility scans, action and lifecycle regressions.
+- Developer verification requires Chromium and the .NET 10 SDK for Razor compilation. No backend transport is implied by the examples.
+
+### Previously unreleased
+
 ### Changed
 
 - **Examples rewritten.** The six example pages demonstrated a DNS product,
@@ -363,5 +385,6 @@ Recorded rather than hidden:
 - The behaviours package is packed into releases but not published to npm.
 - Chromium only — no Firefox or WebKit in the test matrix.
 
-[Unreleased]: https://github.com/mictsi/SekuraDesignMCP/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/mictsi/SekuraDesignMCP/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/mictsi/SekuraDesignMCP/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/mictsi/SekuraDesignMCP/releases/tag/v1.0.0

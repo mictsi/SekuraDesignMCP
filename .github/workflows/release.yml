@@ -55,6 +55,10 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
       - name: Run every gate
         # The same chain CI runs. A release must not be able to skip a check.
         run: npm run verify

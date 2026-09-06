@@ -56,6 +56,7 @@ export function createDialog(dialog: HTMLElement, options: DialogOptions = {}): 
   let restore: FocusRestore | null = null;
   let untrap: Cleanup | null = null;
   let undismiss: Cleanup | null = null;
+  let notifiedOpen = native && (dialog as HTMLDialogElement).open;
 
   if (!native) {
     dialog.setAttribute('role', 'dialog');
@@ -108,7 +109,17 @@ export function createDialog(dialog: HTMLElement, options: DialogOptions = {}): 
     if (native && target) target.focus();
 
     options.onOpenChange?.(true);
+    notifiedOpen = true;
     emit(dialog, 'sk:dialog:open');
+  }
+
+  function finishClose(returnValue?: string): void {
+    if (!notifiedOpen) return;
+    notifiedOpen = false;
+    restore?.restore();
+    restore = null;
+    options.onOpenChange?.(false);
+    emit(dialog, 'sk:dialog:close', { returnValue });
   }
 
   function close(returnValue?: string): void {
@@ -123,10 +134,7 @@ export function createDialog(dialog: HTMLElement, options: DialogOptions = {}): 
       dialog.hidden = true;
       dialog.removeAttribute('data-open');
     }
-    restore?.restore();
-    restore = null;
-    options.onOpenChange?.(false);
-    emit(dialog, 'sk:dialog:close', { returnValue });
+    finishClose(returnValue);
   }
 
   function isOpen(): boolean {
@@ -134,6 +142,14 @@ export function createDialog(dialog: HTMLElement, options: DialogOptions = {}): 
   }
 
   const cleanups: Cleanup[] = [];
+  const phrase = dialog.querySelector<HTMLInputElement>('[data-sk-confirm-phrase]');
+  const confirm = dialog.querySelector<HTMLButtonElement>('[data-sk-confirm-button]');
+  if (phrase && confirm) {
+    const sync = (): void => { confirm.disabled = phrase.value.trim() !== phrase.dataset.skConfirmPhrase; };
+    sync();
+    cleanups.push(on(phrase, 'input', sync), on(dialog, 'close', () => { phrase.value = ''; sync(); }));
+  }
+
 
   if (native) {
     // The native cancel event fires for Escape; intercepting it is how a dirty
@@ -147,9 +163,7 @@ export function createDialog(dialog: HTMLElement, options: DialogOptions = {}): 
     );
     cleanups.push(
       on(dialog, 'close', () => {
-        restore?.restore();
-        restore = null;
-        options.onOpenChange?.(false);
+        if (!isOpen()) finishClose((dialog as HTMLDialogElement).returnValue);
       })
     );
     if (dismissible) {
@@ -219,7 +233,8 @@ export function createDrawer(drawer: HTMLElement, options: DrawerOptions = {}): 
     drawer.setAttribute('inert', '');
     drawer.removeAttribute('data-open');
   }
-  if (drawer.hidden || !drawer.hasAttribute('data-open')) setClosedState();
+  const initiallyOpen = !drawer.hidden && drawer.hasAttribute('data-open');
+  setClosedState();
 
   function show(): void {
     if (open) return;
@@ -272,6 +287,8 @@ export function createDrawer(drawer: HTMLElement, options: DrawerOptions = {}): 
         show();
       })
     : undefined;
+
+  if (initiallyOpen) show();
 
   return {
     get open() {
@@ -426,6 +443,7 @@ export function createTooltip(
   }
 
   let timer: ReturnType<typeof setTimeout> | undefined;
+  let hideTimer: ReturnType<typeof setTimeout> | undefined;
   let positioner: Positioner | null = null;
   let visible = false;
 
@@ -438,6 +456,7 @@ export function createTooltip(
   }
 
   function hide(): void {
+    clearTimeout(hideTimer);
     clearTimeout(timer);
     if (!visible) return;
     visible = false;
@@ -453,21 +472,32 @@ export function createTooltip(
     else timer = setTimeout(show, delay);
   }
 
+  function scheduleHide(): void {
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => {
+      if (!trigger.matches(':focus, :hover') && !tip.matches(':hover')) hide();
+    }, 150);
+  }
   const cleanups = [
+    on(tip, 'pointerenter', () => clearTimeout(hideTimer)),
     on(trigger, 'pointerenter', () => scheduleShow(false)),
     // Hoverable: moving onto the tooltip itself must not dismiss it.
     on(trigger, 'pointerleave', (event: PointerEvent) => {
       if (tip.contains(event.relatedTarget as Node)) return;
-      hide();
+      scheduleHide();
     }),
-    on(tip, 'pointerleave', () => hide()),
+    on(tip, 'pointerleave', scheduleHide),
     on(trigger, 'focus', () => scheduleShow(true)),
-    on(trigger, 'blur', () => hide()),
+    on(trigger, 'blur', scheduleHide),
     // Dismissible without moving focus.
     on(document, 'keydown', (event: KeyboardEvent) => {
       if (event.key === 'Escape' && visible) hide();
     }),
   ];
 
-  return { destroy: combine(hide, ...cleanups) };
+  return { destroy: combine(hide, ...cleanups, () => {
+    const remaining = (trigger.getAttribute('aria-describedby') ?? '').split(/\s+/).filter(id => id && id !== tipId);
+    if (remaining.length) trigger.setAttribute('aria-describedby', remaining.join(' '));
+    else trigger.removeAttribute('aria-describedby');
+  }) };
 }

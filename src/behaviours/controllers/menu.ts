@@ -196,7 +196,8 @@ export function createMenu(
         const item = list[index];
         if (item) {
           event.preventDefault();
-          activate(item);
+          // Preserve native links and delegated application click handlers.
+          item.click();
         }
         return;
       }
@@ -212,6 +213,7 @@ export function createMenu(
 
   const offMenuClick = on(menu, 'click', (event: MouseEvent) => {
     const item = (event.target as Element).closest<HTMLElement>(ITEM_SELECTOR);
+    if (item?.getAttribute('aria-disabled') === 'true') { event.preventDefault(); event.stopImmediatePropagation(); return; }
     if (item && menu.contains(item)) activate(item);
   });
 

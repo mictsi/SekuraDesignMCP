@@ -145,7 +145,7 @@
               <!-- "Skip" is a real answer when a step is optional. Hiding it
                    behind a greyed-out Continue makes people invent a value just
                    to move on. -->
-              <button type="button" class="sk-button sk-button--ghost">Skip for now</button>
+              <button type="button" class="sk-button sk-button--ghost" data-sk-setup-skip>Skip for now</button>
               <button type="submit" class="sk-button sk-button--primary">
                 <span class="sk-button__label">Continue to review</span>
                 <svg class="sk-button__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-arrow-right"></use></svg>
@@ -158,8 +158,7 @@
         <p class="sk-inline-message sk-inline-message--info">
           <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-info"></use></svg>
           <span>
-            Nothing has been created yet. Invitations are sent when you confirm on
-            step 3, and you can still remove people there.
+            Nothing has been created yet. This local example sends no invitations. Review your choices on step 3 before saving them on this device.
           </span>
         </p>
       </div>

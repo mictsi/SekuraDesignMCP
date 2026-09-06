@@ -8,6 +8,7 @@ import { join } from 'node:path';
 
 import { proseCss, resetCss, utilitiesCss } from '../data/base-css.js';
 import { components } from '../data/components/index.js';
+import { componentManifest } from '../data/components/contracts.js';
 import { exportTokens } from '../lib/exporters.js';
 
 const OUT = join(process.cwd(), 'dist-css');
@@ -46,5 +47,6 @@ const bundle = [
   '}',
 ].join('\n\n');
 write('sekura.css', bundle);
+write('component-manifest.json', JSON.stringify(componentManifest(components), null, 2));
 
-console.log(`\nWrote ${components.length + 11} files to ${OUT}`);
+console.log(`\nWrote ${components.length + 12} files to ${OUT}`);

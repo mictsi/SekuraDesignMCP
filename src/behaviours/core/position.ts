@@ -43,13 +43,17 @@ export function position(
   const { offset = 6, padding = 8, track = true } = options;
   const requested = options.side ?? 'bottom';
   const align = options.align ?? 'start';
+  const original = { maxWidth: surface.style.maxWidth, maxHeight: surface.style.maxHeight, overflow: surface.style.overflow };
 
   function update(): void {
     // Measuring requires the surface to be laid out. Callers reveal it first.
-    const a = anchor.getBoundingClientRect();
-    const s = surface.getBoundingClientRect();
     const vw = document.documentElement.clientWidth;
     const vh = document.documentElement.clientHeight;
+    surface.style.maxWidth = `${Math.max(0, vw - padding * 2)}px`;
+    surface.style.maxHeight = `${Math.max(0, vh - padding * 2)}px`;
+    surface.style.overflow = 'auto';
+    const a = anchor.getBoundingClientRect();
+    const s = surface.getBoundingClientRect();
 
     let side = physicalSide(requested, surface);
 
@@ -69,9 +73,10 @@ export function position(
 
     if (side === 'top' || side === 'bottom') {
       top = side === 'bottom' ? a.bottom + offset : a.top - s.height - offset;
+      const edge = direction(anchor) === 'rtl' ? (align === 'start' ? 'end' : align === 'end' ? 'start' : align) : align;
       left =
         align === 'center' ? a.left + a.width / 2 - s.width / 2
-        : align === 'end' ? a.right - s.width
+        : edge === 'end' ? a.right - s.width
         : a.left;
     } else {
       left = side === 'right' ? a.right + offset : a.left - s.width - offset;
@@ -95,6 +100,7 @@ export function position(
   update();
 
   const cleanups: Cleanup[] = [];
+  cleanups.push(() => { Object.assign(surface.style, original); });
   if (track) {
     // Capture, so scrolling any ancestor container repositions — not just the
     // window.

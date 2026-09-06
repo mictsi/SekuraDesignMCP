@@ -61,6 +61,7 @@ export const NAV: NavGroup[] = [
     items: [
       { file: 'tokens.html', label: 'All tokens' },
       { file: 'components.html', label: 'Components' },
+      { file: 'support.html', label: 'Implementation support' },
       { file: 'patterns.html', label: 'Patterns' },
       { file: 'recipes.html', label: 'Layout recipes' },
     ],
@@ -69,6 +70,7 @@ export const NAV: NavGroup[] = [
     label: 'Examples',
     items: [
       { file: 'examples.html', label: 'All examples' },
+      { file: 'workbench.html', label: 'Component workbench' },
       { file: 'example-dashboard.html', label: 'Dashboard' },
       { file: 'example-list.html', label: 'List page' },
       { file: 'example-detail.html', label: 'Detail page' },
@@ -505,7 +507,9 @@ ${renderToc(page.toc)}
 
 ${commandPalette(ctx.palette)}
 
+<script src="assets/sekura.iife.min.js"></script>
 <script src="assets/app.js"></script>
+<script src="assets/examples.js"></script>
 <script src="assets/docs.js"></script>
 </body>
 </html>
@@ -547,7 +551,9 @@ ${head(opts.title, opts.description)}
 ${banner}
 ${content}
 <div class="sk-toast-region" role="status" aria-live="polite" aria-label="Notifications"></div>
+<script src="assets/sekura.iife.min.js"></script>
 <script src="assets/app.js"></script>
+<script src="assets/examples.js"></script>
 </body>
 </html>
 `;
@@ -583,7 +589,9 @@ ${content}
 
 ${commandPalette(ctx.palette)}
 
+<script src="assets/sekura.iife.min.js"></script>
 <script src="assets/app.js"></script>
+<script src="assets/examples.js"></script>
 </body>
 </html>
 `;

@@ -321,13 +321,13 @@ export const overlayComponents: ComponentSpec[] = [
 <aside class="sk-drawer sk-drawer--inline" data-open aria-labelledby="detail-title">
   <header class="sk-drawer__header">
     <h2 class="sk-drawer__title" id="detail-title">Pricing table variants</h2>
-    <button type="button" class="sk-icon-button sk-icon-button--sm">
+    <button type="button" class="sk-icon-button sk-icon-button--sm" data-sk-drawer-close>
       <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-close" /></svg>
       <span class="sk-visually-hidden">Close details panel</span>
     </button>
   </header>
   <div class="sk-drawer__body">
-    <dl class="sk-dl"> ... </dl>
+    <dl class="sk-dl"><div class="sk-dl__group"><dt class="sk-dl__term">Owner</dt><dd class="sk-dl__detail">Product team</dd></div><div class="sk-dl__group"><dt class="sk-dl__term">Status</dt><dd class="sk-dl__detail">In progress</dd></div></dl>
   </div>
   <footer class="sk-drawer__footer">
     <button type="button" class="sk-button sk-button--secondary">Edit record</button>

@@ -55,6 +55,20 @@ export function ensureId(el: Element, prefix = 'sk'): string {
   return el.id;
 }
 
+/** Namespace reference markup once, including its local ARIA and behavior links. */
+export function scopeIds(root: HTMLElement, prefix: string): void {
+  if (root.hasAttribute('data-sk-id-scope')) return;
+  root.setAttribute('data-sk-id-scope', prefix);
+  const elements = Array.from(root.querySelectorAll<HTMLElement>('*'));
+  const ids = new Map(elements.filter(el => el.id).map(el => [el.id, `${prefix}-${el.id}`]));
+  const refs = new Set('for aria-controls aria-labelledby aria-describedby aria-activedescendant aria-owns headers data-sk-combobox data-sk-tag-input data-sk-menu-trigger data-sk-popover-trigger data-sk-tooltip-target data-sk-dialog-open data-sk-drawer-open data-sk-disclosure'.split(' '));
+  for (const el of elements) for (const attr of Array.from(el.attributes)) {
+    if (attr.name === 'id') el.id = ids.get(attr.value) ?? attr.value;
+    else if (refs.has(attr.name)) el.setAttribute(attr.name, attr.value.split(/\s+/).map(id => ids.get(id) ?? id).join(' '));
+    else if (attr.name === 'href' && attr.value.startsWith('#') && ids.has(attr.value.slice(1))) el.setAttribute('href', `#${ids.get(attr.value.slice(1))}`);
+  }
+}
+
 export type Cleanup = () => void;
 
 /** addEventListener that returns its own remover, so teardown cannot drift. */

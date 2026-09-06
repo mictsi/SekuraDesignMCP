@@ -58,7 +58,7 @@ export const resetCss = `/*
    * !important is correct here: [hidden] is a statement of intent that no
    * layout rule should be able to override.
    */
-  [hidden] { display: none !important; }
+  [hidden]:not([hidden="until-found"]) { display: none !important; }
 
   img, picture, svg, video, canvas {
     max-inline-size: 100%;

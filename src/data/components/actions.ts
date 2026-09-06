@@ -147,7 +147,7 @@ export const actionComponents: ComponentSpec[] = [
   gap: var(--sk-space-8);
   min-height: var(--sk-control-height-md);
   padding-inline: var(--sk-control-padding-inline);
-  padding-block: var(--sk-control-padding-block);
+  padding-block: max(0px, calc((var(--sk-control-size, var(--sk-control-height-md)) - 1lh - 2 * var(--sk-border-width-hairline)) / 2));
   border: var(--sk-border-width-hairline) solid transparent;
   border-radius: var(--sk-radius-md);
   /* Type */
@@ -157,7 +157,9 @@ export const actionComponents: ComponentSpec[] = [
   font-weight: var(--sk-font-weight-medium);
   letter-spacing: var(--sk-letter-spacing-label-md);
   text-decoration: none;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  max-inline-size: 100%;
   /* Behaviour */
   cursor: pointer;
   user-select: none;
@@ -273,6 +275,7 @@ export const actionComponents: ComponentSpec[] = [
 
 /* --- Sizes --- */
 .sk-button--sm {
+  --sk-control-size: var(--sk-control-height-sm);
   min-height: var(--sk-control-height-sm);
   padding-inline: var(--sk-space-12);
   font-size: var(--sk-font-size-label-sm);
@@ -280,6 +283,7 @@ export const actionComponents: ComponentSpec[] = [
   gap: var(--sk-space-6);
 }
 .sk-button--lg {
+  --sk-control-size: var(--sk-control-height-lg);
   min-height: var(--sk-control-height-lg);
   padding-inline: var(--sk-space-24);
   font-size: var(--sk-font-size-body-md);
@@ -645,6 +649,7 @@ export const actionComponents: ComponentSpec[] = [
 .sk-button-group--vertical > .sk-button:last-child:not(:first-child) { border-radius: 0 0 var(--sk-radius-md) var(--sk-radius-md); }
 
 /* --- Segmented --- */
+.sk-button-group--sm { --sk-control-height-md: var(--sk-control-height-sm); }
 .sk-button-group--segmented {
   padding: var(--sk-space-2);
   background-color: var(--sk-color-surface-sunken);

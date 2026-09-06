@@ -254,11 +254,13 @@ export function createSelection(
 ): Selection {
   const noun = options.noun ?? 'items';
   const all = () => container.querySelector<HTMLInputElement>('[data-sk-select-all]');
-  const rows = () => Array.from(container.querySelectorAll<HTMLInputElement>('[data-sk-select-row]'));
+  const allRows = () => Array.from(container.querySelectorAll<HTMLInputElement>('[data-sk-select-row]'));
+  const rows = () => allRows().filter(row => !row.disabled && !row.closest('[hidden]'));
   const selected = () => rows().filter((r) => r.checked);
 
   function sync(notify = true): void {
     const head = all();
+    for (const row of allRows()) if (row.closest('[hidden]')) row.checked = false;
     const list = rows();
     const chosen = selected();
 
@@ -270,6 +272,17 @@ export function createSelection(
     }
     for (const row of list) {
       row.closest('tr')?.setAttribute('aria-selected', String(row.checked));
+    }
+    const bulk = document.getElementById(container.dataset.skBulkBar ?? '');
+    if (bulk) {
+      if (bulk.hidden !== (chosen.length === 0)) bulk.hidden = chosen.length === 0;
+      const count = bulk.querySelector('[data-sk-selection-count]');
+      const message = `${chosen.length} ${chosen.length === 1 && noun.endsWith('s') ? noun.slice(0, -1) : noun} selected`;
+      if (count && count.textContent !== message) count.textContent = message;
+      for (const label of bulk.querySelectorAll<HTMLElement>('[data-sk-selection-label]')) {
+        const text = label.dataset.skSelectionLabel!.replace('{n}', String(chosen.length));
+        if (label.textContent !== text) label.textContent = text;
+      }
     }
     if (notify) {
       options.onChange?.(chosen);
@@ -293,6 +306,15 @@ export function createSelection(
   });
 
   sync(false);
+  const observer = new MutationObserver(() => sync());
+  observer.observe(container, { subtree: true, childList: true, attributes: true, attributeFilter: ['hidden', 'disabled'] });
+  const bulk = document.getElementById(container.dataset.skBulkBar ?? '');
+  const clearButton = bulk?.querySelector<HTMLElement>('[data-sk-clear-selection]');
+  const clear = (): void => {
+    for (const row of allRows()) row.checked = false;
+    sync(); rows()[0]?.focus(); announce('Selection cleared.');
+  };
+  const offClear = clearButton ? on(clearButton, 'click', clear) : undefined;
 
   return {
     get selected() {
@@ -303,7 +325,7 @@ export function createSelection(
       sync();
       announce('Selection cleared.');
     },
-    destroy: offAll,
+    destroy: combine(offAll, offClear, () => observer.disconnect()),
   };
 }
 

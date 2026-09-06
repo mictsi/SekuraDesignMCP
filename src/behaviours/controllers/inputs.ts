@@ -108,6 +108,7 @@ export function createNumberInput(
   }
 
   function nudge(delta: number): void {
+    if (input.disabled || input.readOnly) return;
     const from = value ?? (min === -Infinity ? 0 : min);
     const next = clamp(quantise(from + delta));
     if (next === value) {
@@ -119,6 +120,7 @@ export function createNumberInput(
   }
 
   const offKey = on(input, 'keydown', (event: KeyboardEvent) => {
+    if (input.disabled || input.readOnly) return;
     switch (event.key) {
       case 'ArrowUp': event.preventDefault(); nudge(step); break;
       case 'ArrowDown': event.preventDefault(); nudge(-step); break;

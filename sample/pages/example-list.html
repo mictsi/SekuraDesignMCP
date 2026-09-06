@@ -14,7 +14,7 @@
           </div>
           <div class="sk-page-header__actions">
             <button type="button" class="sk-button sk-button--secondary"
-                    data-sk-demo-toast="Export queued. You will get an email when it is ready."
+                    data-sk-export
                     data-sk-demo-intent="info">
               <svg class="sk-button__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-download"></use></svg>
               <span class="sk-button__label">Export</span>
@@ -44,40 +44,23 @@
                 data-sk-popover-target="project-filters" aria-expanded="false" aria-controls="project-filters">
           <svg class="sk-button__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-filter"></use></svg>
           <span class="sk-button__label">Filters</span>
-          <span class="sk-badge sk-badge--brand sk-badge--sm">2</span>
+          <span class="sk-badge sk-badge--brand sk-badge--sm" data-sk-filter-count>0</span>
         </button>
 
-        <!-- Active filters stay visible as removable chips. A filter the user
-             has forgotten about is how "where did my data go" tickets happen. -->
-        <span class="sk-badge sk-badge--neutral">
-          Team: Product
-          <button type="button" class="sk-badge__remove sk-icon-button sk-icon-button--sm"
-                  onclick="this.closest('.sk-badge').remove()">
-            <svg aria-hidden="true" focusable="false" width="12" height="12"><use href="#sk-icon-close"></use></svg>
-            <span class="sk-visually-hidden">Remove team filter Product</span>
-          </button>
-        </span>
-        <span class="sk-badge sk-badge--neutral">
-          Status: Active
-          <button type="button" class="sk-badge__remove sk-icon-button sk-icon-button--sm"
-                  onclick="this.closest('.sk-badge').remove()">
-            <svg aria-hidden="true" focusable="false" width="12" height="12"><use href="#sk-icon-close"></use></svg>
-            <span class="sk-visually-hidden">Remove status filter Active</span>
-          </button>
-        </span>
+        <span class="sk-cluster sk-cluster--gap-8" data-sk-filter-chips></span>
 
         <!-- A date range is two inputs, never one combined "12 Aug – 21 Aug"
              box: a screen reader announces that as a single value and a
              keyboard user cannot edit half of it. -->
-        <div class="sk-cluster sk-cluster--gap-8 sk-cluster--align-start" data-sk-daterange>
+        <div class="sk-cluster sk-cluster--gap-8 sk-cluster--align-start">
           <div class="sk-field">
-            <label class="sk-field__label sk-visually-hidden" for="due-from">Due from</label>
-            <input class="sk-input sk-input--sm" id="due-from" type="text" inputmode="numeric"
+            <label class="sk-field__label" for="due-from">Due from</label>
+            <input class="sk-input sk-input--sm" id="due-from" type="date"
                    placeholder="From" autocomplete="off" spellcheck="false" />
           </div>
           <div class="sk-field">
-            <label class="sk-field__label sk-visually-hidden" for="due-to">Due to</label>
-            <input class="sk-input sk-input--sm" id="due-to" type="text" inputmode="numeric"
+            <label class="sk-field__label" for="due-to">Due to</label>
+            <input class="sk-input sk-input--sm" id="due-to" type="date"
                    placeholder="To" autocomplete="off" spellcheck="false" />
           </div>
         </div>
@@ -100,7 +83,7 @@
             <legend class="sk-fieldset__legend">Team</legend>
             <div class="sk-fieldset__body">
               <label class="sk-checkbox">
-                <input type="checkbox" class="sk-checkbox__input" checked />
+                <input type="checkbox" class="sk-checkbox__input" />
                 <span class="sk-checkbox__box" aria-hidden="true"></span>
                 <span class="sk-checkbox__content"><span class="sk-checkbox__label">Product</span></span>
               </label>
@@ -123,8 +106,8 @@
           </fieldset>
         </div>
         <footer class="sk-popover__footer">
-          <button type="button" class="sk-button sk-button--ghost sk-button--sm" data-sk-popover-close>Clear</button>
-          <button type="button" class="sk-button sk-button--primary sk-button--sm" data-sk-popover-close>Apply</button>
+          <button type="button" class="sk-button sk-button--ghost sk-button--sm" data-sk-filter-clear data-sk-popover-close>Clear</button>
+          <button type="button" class="sk-button sk-button--primary sk-button--sm" data-sk-filter-apply data-sk-popover-close>Apply</button>
         </footer>
       </div>
 
@@ -134,7 +117,7 @@
            role="region" aria-label="Bulk actions" hidden>
         <span class="sk-bulk-bar__count" data-sk-selection-count>0 projects selected</span>
         <button type="button" class="sk-button sk-button--secondary sk-button--sm"
-                data-sk-demo-toast="Selected projects added to the Q3 portfolio." data-sk-demo-undo="true">Add to portfolio</button>
+                data-sk-portfolio>Add to portfolio</button>
         <button type="button" class="sk-button sk-button--danger-ghost sk-button--sm"
                 data-sk-dialog-open="bulk-delete-dialog">
           <span class="sk-button__label" data-sk-selection-label="Delete {n} projects">Delete 0 projects</span>
@@ -464,25 +447,13 @@
         </div>
       </div>
 
-      <nav class="sk-pagination" aria-label="Pagination">
-        <p class="sk-pagination__status" data-sk-filter-status>Showing 1 to 8 of 18 projects</p>
-        <ul class="sk-pagination__list">
-          <li>
-            <a class="sk-pagination__control" href="?page=1" aria-disabled="true" rel="prev">
-              <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-chevron-left"></use></svg>
-              Previous
-            </a>
-          </li>
-          <li><a class="sk-pagination__page" href="?page=1" aria-current="page"><span class="sk-visually-hidden">Current page, page </span>1</a></li>
-          <li><a class="sk-pagination__page" href="?page=2"><span class="sk-visually-hidden">Go to page </span>2</a></li>
-          <li><a class="sk-pagination__page" href="?page=3"><span class="sk-visually-hidden">Go to page </span>3</a></li>
-          <li>
-            <a class="sk-pagination__control" href="?page=2" rel="next">
-              Next
-              <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-chevron-right"></use></svg>
-            </a>
-          </li>
-        </ul>
+      <nav class="sk-pagination" aria-label="Project pages" data-sk-local-pagination>
+        <p class="sk-pagination__status" data-sk-filter-status role="status"></p>
+        <div class="sk-cluster sk-cluster--gap-8">
+          <button type="button" class="sk-button sk-button--secondary sk-button--sm" data-sk-page-prev>Previous</button>
+          <span data-sk-page-label></span>
+          <button type="button" class="sk-button sk-button--secondary sk-button--sm" data-sk-page-next>Next</button>
+        </div>
       </nav>
 
       <!-- Row action menus. Destructive item last, behind a separator. -->
@@ -579,7 +550,7 @@
       <!-- Single delete: irreversible and high impact, so it asks for the
            project name to be typed. Cancel is focused, never the destructive
            option. -->
-      <dialog class="sk-dialog sk-dialog--destructive sk-dialog--sm" id="delete-project-dialog"
+      <dialog class="sk-dialog sk-dialog--destructive sk-dialog--sm" id="delete-project-dialog" data-sk-local-delete
               aria-labelledby="dp-title" data-sk-confirm-message="Project Website redesign deleted.">
         <form method="dialog" class="sk-dialog__panel">
           <header class="sk-dialog__header">
@@ -591,8 +562,8 @@
           </header>
           <div class="sk-dialog__body">
             <p>
-              This removes <strong>34 tasks</strong>, their comments and their attachments.
-              It cannot be undone, and members of the project lose access immediately.
+              This removes the selected project from the local example. Use Undo to restore it.
+              No remote tasks, comments or attachments are changed.
             </p>
             <div class="sk-field">
               <label class="sk-field__label" for="dp-confirm">
@@ -611,7 +582,7 @@
         </form>
       </dialog>
 
-      <dialog class="sk-dialog sk-dialog--destructive sk-dialog--sm" id="bulk-delete-dialog"
+      <dialog class="sk-dialog sk-dialog--destructive sk-dialog--sm" id="bulk-delete-dialog" data-sk-local-delete
               aria-labelledby="bd-title" data-sk-confirm-message="Selected projects deleted.">
         <form method="dialog" class="sk-dialog__panel">
           <header class="sk-dialog__header">

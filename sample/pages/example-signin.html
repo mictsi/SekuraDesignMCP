@@ -5,7 +5,7 @@
   optimisation), a password field that permits paste, and an error that refuses
   to say which of the two values was wrong.
 -->
-<main class="sk-auth__main" id="main">
+<main class="sk-auth__main" id="main" tabindex="-1">
   <div class="sk-auth__brand">
     <svg aria-hidden="true" focusable="false" width="32" height="32"><use href="#sk-icon-logo"></use></svg>
     <p class="sk-auth__product">Sekura Workspace</p>
@@ -18,7 +18,7 @@
       <!-- Deliberately vague: an authentication error must not reveal which of
            the two values was wrong, or it becomes an account-enumeration
            oracle. -->
-      <div class="sk-alert sk-alert--danger" role="alert" id="signin-error" hidden>
+      <div class="sk-alert sk-alert--danger" role="alert" id="signin-error" tabindex="-1" hidden>
         <svg class="sk-alert__icon" aria-hidden="true" focusable="false" width="20" height="20"><use href="#sk-icon-error"></use></svg>
         <div class="sk-alert__content">
           <p class="sk-alert__body">
@@ -76,7 +76,7 @@
   </div>
 
   <div class="sk-cluster sk-cluster--center sk-cluster--gap-16 sk-auth__footer">
-    <a class="sk-link" href="?reset=1">Forgot your password?</a>
+    <a class="sk-link" href="#password-reset" data-sk-reset-open>Forgot your password?</a>
     <a class="sk-link" href="example-dashboard.html">Skip to the demo</a>
   </div>
 
@@ -84,3 +84,17 @@
     This is a demonstration. No credentials are collected, transmitted or stored.
   </p>
 </main>
+
+<dialog class="sk-dialog sk-dialog--sm" id="password-reset" data-sk-dialog aria-labelledby="reset-title">
+  <form class="sk-dialog__panel" data-sk-reset-form>
+    <header class="sk-dialog__header"><h2 class="sk-dialog__title" id="reset-title">Reset your password</h2></header>
+    <div class="sk-dialog__body sk-stack sk-stack--gap-16">
+      <p>This demo shows the recovery flow. No email is sent.</p>
+      <div class="sk-field"><label class="sk-field__label" for="reset-email">Email address</label>
+      <input class="sk-input" type="email" id="reset-email" autocomplete="email" required /></div>
+      <p role="status" data-sk-reset-status></p>
+    </div>
+    <footer class="sk-dialog__footer"><button type="button" class="sk-button sk-button--secondary" data-sk-dialog-close>Close</button>
+    <button type="submit" class="sk-button sk-button--primary">Send reset instructions</button></footer>
+  </form>
+</dialog>

@@ -25,22 +25,17 @@ import {
   createTooltip,
 } from './controllers/overlays.js';
 import { createSelection, createThemeManager } from './controllers/misc.js';
+import { createTree } from './controllers/tree.js';
+import { createUpload } from './controllers/upload.js';
+import { createSlider, guardAction } from './controllers/slider.js';
 
 const MARK = 'skEnhanced';
-const registry = new WeakMap<Element, Cleanup[]>();
+const registry = new WeakMap<Element, Map<string, Cleanup>>();
 
-function claim(el: HTMLElement, kind: string): boolean {
-  const marks = (el.dataset[MARK] ?? '').split(',').filter(Boolean);
-  if (marks.includes(kind)) return false;
-  marks.push(kind);
-  el.dataset[MARK] = marks.join(',');
-  return true;
-}
-
-function track(el: Element, cleanup: Cleanup): void {
-  const list = registry.get(el) ?? [];
-  list.push(cleanup);
-  registry.set(el, list);
+/** Dispose owned handlers before removing or replacing a subtree. */
+export function dispose(root: ParentNode): void {
+  const elements = [...(root instanceof Element ? [root] : []), ...root.querySelectorAll('*')];
+  for (const el of elements) for (const cleanup of [...(registry.get(el)?.values() ?? [])]) cleanup();
 }
 
 /** Resolve a reference that may be an id or a selector. */
@@ -73,22 +68,48 @@ export function enhance(root: ParentNode = document): EnhanceResult {
   let count = 0;
 
   const each = <T extends HTMLElement>(selector: string, fn: (el: T) => Cleanup | void, kind: string) => {
-    for (const el of Array.from(root.querySelectorAll<T>(selector))) {
-      if (!claim(el, kind)) continue;
+    const elements = Array.from(root.querySelectorAll<T>(selector));
+    if (root instanceof HTMLElement && root.matches(selector)) elements.unshift(root as T);
+    for (const el of elements) {
+      const entries = registry.get(el) ?? new Map<string, Cleanup>();
+      if (entries.has(kind)) continue;
       const cleanup = fn(el);
       if (cleanup) {
-        track(el, cleanup);
-        cleanups.push(cleanup);
+        let active = true;
+        const destroy = (): void => {
+          if (!active) return;
+          active = false;
+          cleanup(); entries.delete(kind);
+          if (entries.size) el.dataset[MARK] = [...entries.keys()].join(',');
+          else { delete el.dataset[MARK]; registry.delete(el); }
+        };
+        entries.set(kind, destroy); registry.set(el, entries);
+        el.dataset[MARK] = [...entries.keys()].join(',');
+        cleanups.push(destroy); count += 1;
       }
-      count += 1;
     }
   };
+
+  each<HTMLElement>('.sk-button, .sk-icon-button, [data-sk-action]', guardAction, 'action');
+  each<HTMLFormElement>('form', (form) => {
+    const handler = (event: SubmitEvent): void => {
+      const button = event.submitter ?? form.querySelector('[type="submit"][aria-busy="true"]');
+      if (button?.matches('[aria-busy="true"], [aria-disabled="true"]')) {
+        event.preventDefault(); event.stopImmediatePropagation();
+      }
+    };
+    form.addEventListener('submit', handler, true);
+    return () => form.removeEventListener('submit', handler, true);
+  }, 'submit-guard');
+  each<HTMLElement>('.sk-tree[role=tree]', el => createTree(el).destroy, 'tree');
+  each<HTMLElement>('.sk-upload:not([data-sk-custom-upload])', el => createUpload(el).destroy, 'upload');
+  each<HTMLInputElement>('.sk-slider__input', input => createSlider(input).destroy, 'slider');
 
   /* ---- Disclosure ---- */
   each<HTMLElement>('[data-sk-disclosure]', (trigger) => {
     const panel = resolve(trigger.getAttribute('aria-controls') ?? trigger.dataset.skDisclosure ?? null, trigger);
     if (!panel) return;
-    return createDisclosure(trigger, panel).destroy;
+    return createDisclosure(trigger, panel, { findable: panel.hasAttribute('data-sk-findable') || panel.getAttribute('hidden') === 'until-found' || undefined }).destroy;
   }, 'disclosure');
 
   /* ---- Accordion ---- */
@@ -155,7 +176,7 @@ export function enhance(root: ParentNode = document): EnhanceResult {
   }, 'tabs');
 
   /* ---- Segmented ---- */
-  each<HTMLElement>('[data-sk-segmented]', (group) => createSegmented(group).destroy, 'segmented');
+  each<HTMLElement>('[data-sk-segmented]:not([data-sk-theme-control])', (group) => createSegmented(group).destroy, 'segmented');
 
   /* ---- Menu ---- */
   each<HTMLElement>('[data-sk-menu-trigger]', (trigger) => {
@@ -184,26 +205,7 @@ export function enhance(root: ParentNode = document): EnhanceResult {
     const controller = createDialog(dialog, {
       dismissible: dialog.dataset.skDismissible !== 'false',
     });
-    // Openers live outside the dialog, so they are wired here rather than in the
-    // controller.
-    const openers = Array.from(
-      document.querySelectorAll<HTMLElement>(`[data-sk-dialog-open="${dialog.id}"]`)
-    );
-    const offs = openers.map((btn) => {
-      const handler = () => controller.show();
-      btn.addEventListener('click', handler);
-      return () => btn.removeEventListener('click', handler);
-    });
-    const closers = Array.from(dialog.querySelectorAll<HTMLElement>('[data-sk-dialog-close]'));
-    const closeOffs = closers.map((btn) => {
-      const handler = () => controller.close('cancel');
-      btn.addEventListener('click', handler);
-      return () => btn.removeEventListener('click', handler);
-    });
-    return () => {
-      controller.destroy();
-      for (const off of [...offs, ...closeOffs]) off();
-    };
+    return bindSurface(dialog, 'dialog', () => controller.show(), () => controller.close('cancel'), controller.destroy);
   }, 'dialog');
 
   /* ---- Drawer ---- */
@@ -214,24 +216,7 @@ export function enhance(root: ParentNode = document): EnhanceResult {
       // ARIA along with it.
       modal: modalAttr === 'true' ? true : modalAttr === 'false' ? false : modalAttr,
     });
-    const openers = Array.from(
-      document.querySelectorAll<HTMLElement>(`[data-sk-drawer-open="${drawer.id}"]`)
-    );
-    const offs = openers.map((btn) => {
-      const handler = () => controller.show();
-      btn.addEventListener('click', handler);
-      return () => btn.removeEventListener('click', handler);
-    });
-    const closers = Array.from(drawer.querySelectorAll<HTMLElement>('[data-sk-drawer-close]'));
-    const closeOffs = closers.map((btn) => {
-      const handler = () => controller.close();
-      btn.addEventListener('click', handler);
-      return () => btn.removeEventListener('click', handler);
-    });
-    return () => {
-      controller.destroy();
-      for (const off of [...offs, ...closeOffs]) off();
-    };
+    return bindSurface(drawer, 'drawer', () => controller.show(), () => controller.close(), controller.destroy);
   }, 'drawer');
 
   /* ---- Popover ---- */
@@ -241,10 +226,19 @@ export function enhance(root: ParentNode = document): EnhanceResult {
       trigger
     );
     if (!panel) return;
-    return createPopover(trigger, panel, { trap: trigger.dataset.skTrap === 'true' }).destroy;
+    const controller = createPopover(trigger, panel, { trap: trigger.dataset.skTrap === 'true' });
+    const close = (event: MouseEvent): void => {
+      if ((event.target as Element).closest('[data-sk-popover-close]')) controller.close();
+    };
+    panel.addEventListener('click', close);
+    return () => { panel.removeEventListener('click', close); controller.destroy(); };
   }, 'popover');
 
   /* ---- Tooltip ---- */
+  each<HTMLElement>('[data-sk-tooltip-target]', trigger => {
+    const tip = resolve(trigger.dataset.skTooltipTarget ?? null, trigger);
+    if (tip) return createTooltip(trigger, tip).destroy;
+  }, 'tooltip-target');
   each<HTMLElement>('[data-sk-tooltip]', (trigger) => {
     const text = trigger.dataset.skTooltip ?? '';
     if (!text) return;
@@ -290,7 +284,11 @@ export function enhance(root: ParentNode = document): EnhanceResult {
     // Arrow-key movement comes from the segmented controller when the group also
     // carries role="radiogroup".
     const segmented = group.getAttribute('role') === 'radiogroup'
-      ? createSegmented(group, {}).destroy
+      ? createSegmented(group, { onChange: () => {
+          const chosen = buttons.find(button => button.getAttribute('aria-checked') === 'true');
+          if (chosen) manager.set(chosen.dataset.skThemeOption as 'system' | 'light' | 'dark');
+          syncButtons();
+        } }).destroy
       : undefined;
 
     syncButtons();
@@ -328,17 +326,43 @@ export function getTheme(): ReturnType<typeof createThemeManager> {
  */
 export function autoEnhance(root: HTMLElement = document.body): Cleanup {
   enhance(root);
-
   let queued = false;
-  const observer = new MutationObserver(() => {
+  let stopped = false;
+  const removed = new Set<Element>();
+  const observer = new MutationObserver(records => {
+    for (const record of records) for (const node of record.removedNodes) {
+      if (node instanceof Element) removed.add(node);
+    }
     if (queued) return;
     queued = true;
     queueMicrotask(() => {
       queued = false;
+      if (stopped) return;
+      for (const node of removed) if (!root.contains(node)) dispose(node);
+      removed.clear();
       enhance(root);
     });
   });
   observer.observe(root, { childList: true, subtree: true });
+  return () => {
+    stopped = true; observer.disconnect();
+    for (const node of removed) if (!root.contains(node)) dispose(node);
+    removed.clear(); dispose(root);
+  };
+}
 
-  return () => observer.disconnect();
+function bindSurface(surface: HTMLElement, kind: string, show: () => void, close: () => void, destroy: Cleanup): Cleanup {
+  // Delegation also covers openers inserted after an already-enhanced surface.
+  const click = (event: MouseEvent): void => {
+    const target = event.target as Element;
+    const opener = target.closest<HTMLElement>(`[data-sk-${kind}-open]`);
+    if (opener?.getAttribute(`data-sk-${kind}-open`) === surface.id) {
+      event.preventDefault(); show();
+    }
+    if (surface.contains(target) && target.closest(`[data-sk-${kind}-close]`)) {
+      event.preventDefault(); close();
+    }
+  };
+  surface.ownerDocument.addEventListener('click', click);
+  return () => { surface.ownerDocument.removeEventListener('click', click); destroy(); };
 }

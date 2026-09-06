@@ -74,6 +74,7 @@ export interface AccessibilitySpec {
 }
 
 export interface ComponentSpec {
+  implementation?: import('./contracts.js').ImplementationSpec;
   id: string;
   name: string;
   category: ComponentCategory;

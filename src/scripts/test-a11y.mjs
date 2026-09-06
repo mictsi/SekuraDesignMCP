@@ -13,28 +13,13 @@ import { extname, join, resolve as resolvePath } from 'node:path';
 import { existsSync, statSync, createReadStream } from 'node:fs';
 
 import { chromium } from 'playwright-core';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 
 import { createRequire } from 'node:module';
 const require_ = createRequire(import.meta.url);
 const AXE = readFileSync(require_.resolve('axe-core/axe.min.js'), 'utf8');
 
-const PAGES = [
-  'index.html', 'color.html', 'dark-mode.html', 'typography.html', 'layout.html',
-  'tokens.html', 'components.html', 'patterns.html', 'recipes.html',
-  'component-button.html', 'component-table.html', 'component-combobox.html',
-  'component-dialog.html', 'component-form-field.html',
-  'example-dashboard.html', 'example-list.html', 'example-detail.html',
-  'component-accordion.html', 'component-disclosure.html',
-  'component-date-picker.html', 'component-number-input.html',
-  'component-tag-input.html', 'component-toolbar.html',
-  'component-segmented-control.html', 'component-meter.html',
-  'component-error-page.html', 'component-error-boundary.html',
-  'component-loading-screen.html',
-  'examples.html',
-  'example-form.html', 'example-states.html', 'example-onboarding.html',
-  'example-settings.html', 'example-marketing.html', 'example-signin.html',
-];
+const PAGES = readdirSync('sample').filter(file => file.endsWith('.html'));
 
 const ROOT = resolvePath(process.cwd(), 'sample');
 if (!existsSync(ROOT)) {
@@ -57,7 +42,7 @@ const all = new Map(); // ruleId -> { impact, help, count, pages:Set, sample }
 for (const theme of ['light', 'dark']) {
   for (const file of PAGES) {
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, colorScheme: theme });
-    await page.goto(`http://127.0.0.1:${PORT}/${file}`, { waitUntil: 'networkidle' });
+    await page.goto(`http://127.0.0.1:${PORT}/${file}`, { waitUntil: 'load' });
     await page.addScriptTag({ content: AXE });
     const res = await page.evaluate(async () => {
       // WCAG 2.0/2.1/2.2 A + AA, plus best practices reported separately.
@@ -97,6 +82,7 @@ if (all.size === 0) {
   for (const [id, e] of sorted) {
     console.log(`[${e.impact}] ${id} — ${e.help}`);
     console.log(`   ${e.count} node(s) across ${e.pages.size} scan(s)`);
+    console.log(`   pages: ${[...e.pages].join(', ')}`);
     console.log(`   first: ${e.target}`);
     if (e.summary) console.log(`   ${e.summary.slice(0, 160)}`);
     console.log('');

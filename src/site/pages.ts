@@ -200,7 +200,7 @@ export function overviewPage(): Page {
     { value: String(components.length), label: 'components' },
     { value: String(semanticTokens.length), label: 'semantic tokens' },
     { value: String(THEMES.length), label: 'themes' },
-    { value: '292', label: 'contrast checks' },
+    { value: String(contrastRequirements.length * THEMES.length), label: 'contrast checks' },
     { value: String(foundations.length), label: 'foundations' },
     { value: String(patterns.length), label: 'UX patterns' },
   ];
@@ -601,9 +601,10 @@ function setTheme(value /* 'system' | 'light' | 'dark' */) {
   p.section(
     'Frameworks',
     `<p class="docs-para">
-      Sekura is class-based, so a framework component is a thin typed wrapper that maps props onto
-      class names and forwards the ARIA the specification requires. The MCP server generates these
-      on demand:
+      The MCP server generates editable reference recipes with native markup, unique IDs and
+      controller lifecycle cleanup. Their API differs from the specification’s proposed props;
+      wire application state, permissions and action outcomes explicitly. See the
+      <a class="sk-link" href="support.html">implementation support matrix</a> before integrating:
     </p>
     <div class="docs-chiprow">${['html', 'css', 'react', 'vue', 'svelte', 'angular', 'blazor', 'web-component']
       .map((f) => `<span class="sk-badge sk-badge--neutral">${f}</span>`)
@@ -617,7 +618,7 @@ function setTheme(value /* 'system' | 'light' | 'dark' */) {
       Two checks run on every build and both are gates, not reports. An artefact that breaks a
       declared colour promise, or contains a structurally invalid stylesheet, is not produced.
     </p>
-    ${demo('', `npm run audit:contrast   # 292 contrast checks across 4 themes
+    ${demo('', `npm run audit:contrast   # ${contrastRequirements.length * THEMES.length} contrast checks across ${THEMES.length} themes
 npm run lint:css         # structural CSS lint over every component
 npm run verify           # everything, including the sample site`, { lang: 'bash' })}
     ${callout(
@@ -1928,7 +1929,7 @@ export function componentPage(id: string): Page {
   p.add(
     `<div class="docs-chiprow">
       <span class="sk-badge sk-badge--${c.status === 'stable' ? 'success' : 'warning'}">${c.status}</span>
-      <code class="sk-code">.sk-${escapeHtml(c.id)}</code>
+      <code class="sk-code">.${escapeHtml(c.implementation!.rootClass)}</code>
     </div>`
   );
 
@@ -1945,6 +1946,8 @@ export function componentPage(id: string): Page {
       </div>
     </div>`
   );
+
+  p.section('Implementation', `<div class="sk-prose"><p><strong>Behavior:</strong> ${c.implementation!.controller ?? c.implementation!.behavior}. <strong>CSS dependencies:</strong> ${c.implementation!.cssDependencies.join(', ') || 'base styles'}.</p><p>Framework output: editable reference recipe. Application code owns data and action outcomes. <a class="sk-link" href="support.html">Read the integration contract</a> and <a class="sk-link" href="workbench.html">compare states and sizes</a>.</p></div>`);
 
   // Some examples are whole-page scaffolds — app shell, skip link, side
   // navigation, page header, command palette. Rendering those live inside a
@@ -2223,18 +2226,17 @@ export function behavioursPage(): Page {
     title: 'Behaviours package',
     eyebrow: 'Get started',
     lead:
-      'Framework-agnostic implementations of every keyboard and ARIA contract in ' +
-      'this system. 9.1 KB gzipped, zero dependencies, and the same code runs in ' +
+      'Framework-agnostic controllers for the supported keyboard and ARIA interactions. ' +
+      'Zero runtime dependencies, and the same code runs in ' +
       'React, Vue, Svelte, Angular, Blazor, htmx and plain HTML.',
   });
 
   p.add(
     `<div class="docs-stats">
       ${[
-        ['9.1 KB', 'gzipped'],
-        ['0', 'dependencies'],
-        ['14', 'controllers'],
-        ['63', 'behaviour assertions'],
+        ['0', 'runtime dependencies'],
+        [String(new Set(components.map(c => c.implementation?.controller).filter(Boolean)).size), 'component controllers'],
+        ['Scoped', 'lifecycle cleanup'],
       ]
         .map(
           ([v, l]) =>
@@ -2318,7 +2320,8 @@ menu.destroy();   // always`, { lang: 'ts' })}
 
     <h3 id="way-adapters">3. Framework adapters</h3>
     <p class="docs-para">
-      All of these are short, which is the point — the hard work is already done.
+      Initialize after the elements exist, and dispose controllers when their owner unmounts.
+      These lifecycle sketches supplement the complete generated recipes:
     </p>
     ${demo('', `// React
 useEffect(() => {
@@ -2333,11 +2336,13 @@ function menu(node) {
 }
 
 // Angular — a directive, for the same reason
-ngOnInit()    { this.c = createMenu(this.host.nativeElement, menu); }
+ngAfterViewInit() { this.c = createMenu(this.host.nativeElement, menu); }
 ngOnDestroy() { this.c?.destroy(); }
 
 // Blazor — no DOM abstraction to fight
-await JS.InvokeVoidAsync("Sekura.enhance");`, { lang: 'ts' })}
+await JS.InvokeVoidAsync("Sekura.enhance", Root);
+// On disposal:
+await JS.InvokeVoidAsync("Sekura.dispose", Root);`, { lang: 'ts' })}
     <p class="docs-para">
       The MCP server generates these for you:
       <code class="sk-code">get_component_code({ id: "combobox", framework: "vue" })</code>.
@@ -2409,7 +2414,7 @@ await JS.InvokeVoidAsync("Sekura.enhance");`, { lang: 'ts' })}
   p.section(
     'How it is verified',
     `<p class="docs-para">
-      63 assertions drive a real browser and press real keys. Not a DOM emulation —
+      Behavior assertions drive a real browser and press real keys. Not a DOM emulation —
       focus behaviour is exactly the thing emulators get wrong.
     </p>
     ${demo('', `menu: skips aria-disabled item

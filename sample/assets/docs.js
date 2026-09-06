@@ -76,6 +76,7 @@
         var done = function () {
           // The accessible NAME must not change; the confirmation is announced
           // separately by app.js's live region.
+          Sekura.announce('Copied to clipboard.');
           var label = btn.querySelector('[data-sk-copy-label]');
           if (label) {
             var original = label.textContent;
@@ -85,10 +86,9 @@
         };
 
         if (navigator.clipboard) {
-          navigator.clipboard.writeText(code.textContent).then(done, done);
-        } else {
-          done();
-        }
+          navigator.clipboard.writeText(code.textContent).then(done, failed);
+        } else { failed(); }
+        function failed() { Sekura.announce('Could not copy. Select the code and copy it manually.'); }
       });
     });
   }
