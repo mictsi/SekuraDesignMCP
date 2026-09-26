@@ -95,25 +95,52 @@ need_node() {
   command -v node >/dev/null 2>&1 || die "node is not installed."
   local major
   major="$(node -p 'process.versions.node.split(".")[0]')"
-  (( major >= 20 )) || die "Node 20 or newer is required (found $(node -v))."
+  (( major >= 22 )) || die "Node 22 or newer is required (found $(node -v))."
+}
+
+deps_match_lock() {
+  node <<'NODE'
+const fs = require('node:fs');
+const lock = JSON.parse(fs.readFileSync('package-lock.json', 'utf8'));
+for (const [path, entry] of Object.entries(lock.packages)) {
+  if (!path || !entry.version) continue;
+  let actual;
+  try {
+    actual = JSON.parse(fs.readFileSync(`${path}/package.json`, 'utf8')).version;
+  } catch {
+    // npm legitimately omits optional packages for other CPUs and platforms.
+    if (entry.optional) continue;
+    process.exit(1);
+  }
+  if (actual !== entry.version) process.exit(1);
+}
+NODE
 }
 
 need_deps() {
-  # Checking only for the directory misses the case this script previously
-  # created itself: a production-only tree, where node_modules exists but the
-  # compiler does not. The build then failed with "tsc: not found" and no hint
-  # that the install was the problem.
-  if [[ -d node_modules && -x node_modules/.bin/tsc ]]; then
+  # A compiler can still be present after the lockfile changes. Check the
+  # installed tree, including transitive updates such as Dependabot's Hono.
+  if [[ -d node_modules && -x node_modules/.bin/tsc ]] && deps_match_lock; then
     return 0
   fi
   if [[ -d node_modules ]]; then
-    warn "node_modules/ exists but the compiler is missing — reinstalling."
+    warn "Dependencies differ from package-lock.json — reinstalling."
   else
     step "Installing dependencies"
   fi
-  # Explicit, so an inherited NODE_ENV cannot decide this for us.
-  NODE_ENV=development npm install --include=dev
-  [[ -x node_modules/.bin/tsc ]] || die "Install finished but node_modules/.bin/tsc is still missing."
+  NODE_ENV=development npm ci --include=dev
+  deps_match_lock || die "Install finished but dependencies do not match package-lock.json."
+}
+
+install_browsers() {
+  step "Installing matching browser engines"
+  # Use the locked Playwright CLI; npx playwright can fetch a different release.
+  if node node_modules/playwright-core/cli.js install chromium firefox webkit >"$RUN_DIR/playwright-install.log" 2>&1; then
+    ok "Chromium, Firefox and WebKit ready"
+  else
+    tail -n 30 "$RUN_DIR/playwright-install.log" | sed 's/^/    /'
+    die "Browser install failed. See $RUN_DIR/playwright-install.log."
+  fi
 }
 
 # True when the named container exists in any state.
@@ -232,6 +259,7 @@ cmd_build() {
   need_node
   need_deps
   mkdir -p "$RUN_DIR"
+  if [[ "$skip_browser" != "yes" ]]; then install_browsers; fi
 
   step "Compiling TypeScript"
   npm run --silent build
@@ -241,16 +269,19 @@ cmd_build() {
   # Gates, not reports: a palette that breaks a declared WCAG pairing, or a
   # stylesheet with a structural error, must not produce an artefact. Both
   # scripts exit non-zero on failure, and `set -e` stops the build.
-  node dist/scripts/test-color.js | grep -E 'passed|✗' | sed 's/^/    /'
+  node dist/scripts/test-color.js | sed -n -E '/passed|✗/s/^/    /p'
   node dist/scripts/audit-contrast.js \
-    | grep -E '^(PASS|FAIL)|^All |pairings failed' | sed 's/^/    /'
+    | sed -n -E '/^(PASS|FAIL)|^All |pairings failed/s/^/    /p'
   node dist/scripts/lint-css.js \
-    | grep -E '^All |issue\(s\)|^  \[' | sed 's/^/    /'
+    | sed -n -E '/^All |issue\(s\)|^  \[/s/^/    /p'
+  node dist/scripts/smoke.js | sed -n -E '/passed|failed/s/^/    /p'
+  node dist/scripts/test-integration.js | sed -n -E '/passed|failed/s/^/    /p'
+  node src/scripts/test-request.mjs | sed -n -E '/passed|failed/s/^/    /p'
 
   step "Building the behaviour package"
   # Framework-agnostic keyboard and ARIA implementations. Zero dependencies.
   npx tsc -p tsconfig.behaviours.json
-  node dist/scripts/build-behaviours.js | grep -E 'iife.min|Zero dep' | sed 's/^ */    /'
+  node dist/scripts/build-behaviours.js | sed -n -E '/iife.min|Zero dep/s/^ */    /p'
 
   if [[ "$skip_browser" == "yes" ]]; then
     warn "Skipped the behaviour contracts (--no-browser)."
@@ -259,22 +290,33 @@ cmd_build() {
     # Real key presses against a real DOM. This is what stops the specification
     # and the implementation drifting apart. The only step that needs a browser,
     # along with the RTL check below.
-    node dist/scripts/test-behaviours.js | grep -E 'passed|✗' | sed 's/^/    /'
+    node dist/scripts/test-behaviours.js | sed -n -E '/passed|✗/s/^/    /p'
   fi
 
   step "Emitting stylesheets"
-  npm run --silent emit:css | grep -E 'sekura\.css|Wrote' | sed 's/^ */    /'
+  npm run --silent emit:css | sed -n -E '/sekura\.css|Wrote/s/^ */    /p'
+
+  step "Building the native React package"
+  npm run --silent build:react
+
+  if [[ "$skip_browser" == "yes" ]]; then
+    warn "Skipped the design-tool kit (--no-browser; its CSS capture uses Chromium)."
+  else
+    step "Building the design-tool kit"
+    npm run --silent build:design-kit
+  fi
 
   step "Building the documentation site"
   # Generated from the design system's own data, so the docs cannot drift from
   # the system they document. Consumes the stylesheet just emitted, not a stale
   # copy.
-  node dist/scripts/build-site.js | grep -E '^Built ' | sed 's/^/    /'
-  node dist/scripts/verify-sample.js | grep -E '^All |error\(s\)|^  ✗' | sed 's/^/    /'
+  node dist/scripts/build-site.js | sed -n -E '/^Built /s/^/    /p'
+  node dist/scripts/verify-sample.js | sed -n -E '/^All |error\(s\)|^  ✗/s/^/    /p'
   if [[ "$skip_browser" == "yes" ]]; then
     warn "Skipped the RTL regression (--no-browser)."
   else
-    node dist/scripts/test-rtl.js | grep -E 'passed|✗' | sed 's/^/    /'
+    node dist/scripts/test-rtl.js | sed -n -E '/passed|✗/s/^/    /p'
+    npm run --silent test:browsers | sed -n -E '/Cross-browser workflows:|failed/s/^/    /p'
   fi
 
   if have_docker; then
@@ -508,6 +550,8 @@ cmd_status() {
   [[ -d dist ]]          && ok "dist/         built"          || info "dist/         missing"
   [[ -d dist-css ]]      && ok "dist-css/     built"          || info "dist-css/     missing"
   [[ -d dist-js ]]       && ok "dist-js/      built"          || info "dist-js/      missing"
+  [[ -d dist-react ]]    && ok "dist-react/   built"          || info "dist-react/   missing"
+  [[ -d dist-design-kit ]] && ok "design kit    built"        || info "design kit    missing"
   [[ -f sample/index.html ]] && ok "sample/       built"      || info "sample/       missing"
   if have_docker; then
     if image_exists; then
@@ -537,7 +581,7 @@ cmd_clean() {
 
   printf '%s\n' "${BOLD}This will remove:${RESET}"
   info "running container and the $IMAGE image"
-  info "dist/  dist-css/  dist-js/  .run/"
+  info "dist/  dist-css/  dist-js/  dist-react/  dist-design-kit/  .run/"
   info "generated documentation pages (sample/*.html and sample/assets/sekura.css)"
   [[ "$deep" == "yes" ]] && warn "node_modules/ and package-lock.json  (--all)"
   printf '\n'
@@ -558,8 +602,8 @@ cmd_clean() {
 
   stop_pidfile "$LOCAL_PID" "MCP server" >/dev/null 2>&1 || true
 
-  rm -rf dist dist-css dist-js "$RUN_DIR"
-  ok "Removed dist/ dist-css/ dist-js/ .run/"
+  rm -rf dist dist-css dist-js dist-react dist-design-kit "$RUN_DIR"
+  ok "Removed build output and .run/"
 
   # Only the generated pages — the fragments they are built from stay.
   rm -f sample/*.html sample/assets/sekura.css
@@ -583,7 +627,7 @@ ${BOLD}USAGE${RESET}
 ${BOLD}COMMANDS${RESET}
   ${BOLD}build${RESET} [options]    Compile, run gates, emit CSS, build the docs and the image
     ${DIM}--image${RESET}            Only the container. Needs Docker and nothing else
-    ${DIM}--no-browser${RESET}       Skip the two checks that drive a real browser
+    ${DIM}--no-browser${RESET}       Skip browser tests and the design-tool kit
   ${BOLD}start${RESET}              Start the server — MCP, health and docs on one port
   ${BOLD}start-build${RESET}        Build, then start          ${DIM}(alias: startandbuild, bs)${RESET}
   ${BOLD}restart${RESET}            Stop, then start

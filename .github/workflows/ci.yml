@@ -50,8 +50,7 @@ jobs:
 
       - name: Dependency policy
         # No pre-release dependencies anywhere in the tree, and every Node
-        # reference is an even-numbered LTS line. This is what stops a
-        # well-meaning bot moving the runtime to a major that never gets LTS.
+        # reference is in the currently supported LTS window.
         run: npm run check:deps
 
       - name: Environment documentation

@@ -5,13 +5,12 @@ version: 2
 # the Node runtime major is a *policy* decision, and Dependabot has no way to
 # know the policy.
 #
-# Node's release schedule makes the rule arithmetic: odd majors are never
-# promoted to LTS, and an even major is Current — not LTS — until the October
-# after it ships. Dependabot offered `node:25-alpine` (odd, so never LTS) and
-# `@types/node@26` (even, but pre-LTS until October 2026). Both were declined
-# in favour of Node 24 "Krypton", the active LTS line.
+# The supported LTS window is Node 22 and 24. Dependabot offered
+# `node:25-alpine` and `@types/node@26` while neither was an LTS line.
+# Node's release policy changes with version 27, so review the window against
+# the official release schedule rather than inferring LTS status from parity.
 #
-# `npm run check:deps` enforces the same rule as a build gate, so a major that
+# `npm run check:deps` enforces the current window as a build gate, so a major that
 # arrives by some other route still fails the build rather than shipping.
 
 updates:

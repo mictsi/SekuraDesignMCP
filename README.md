@@ -498,9 +498,9 @@ Node **22 (Jod)** and **24 (Krypton)** — the two Node LTS lines currently in
 support. The container builds on 24; CI runs every gate on both, so
 `engines: >=22` is a verified claim rather than an aspiration.
 
-Odd-numbered Node majors are never promoted to LTS, so a dependency bot
-offering `node:25-alpine` is offering a runtime that reaches end-of-life in
-months. `npm run check:deps` fails the build if one lands.
+Node 25 did not become LTS, and Node 26 is still Current in September 2026.
+`npm run check:deps` enforces the currently supported LTS window. The window
+must be reviewed as Node's release policy changes with version 27.
 
 ### What the build actually needs
 
@@ -517,21 +517,23 @@ and no browser on the host.
 
 Plain `./run.sh build` does more than that: it also compiles and verifies on the
 host *before* building the image, which is why it wants TypeScript and
-Playwright. Only two steps need a browser — the behaviour contracts and the RTL
-regression — and they are skippable:
+Playwright. The script installs the revisions locked by `playwright-core` for
+behavior, RTL, cross-browser and design-kit checks. These steps are skippable:
 
 | Command | Needs |
 |---|---|
 | `./run.sh build --image` | Docker |
-| `./run.sh build --no-browser` | Node and npm |
-| `./run.sh build` | Node, npm, and a Playwright browser |
+| `./run.sh build --no-browser` | Node and npm; Docker when available |
+| `./run.sh build` | Node, npm, Docker when available, and browser downloads |
 
-`--no-browser` genuinely avoids Playwright rather than tolerating its absence:
-with `PLAYWRIGHT_BROWSERS_PATH` pointed at nothing, it exits 0 while the full
-build exits 1 at the behaviour step.
+`--no-browser` skips the browser tests and CSS capture for the Figma kit. The
+React package, stylesheets and documentation still build. The full build
+reinstalls dependencies if they differ from `package-lock.json`, avoiding stale
+local packages after Dependabot updates.
 
-Install the browser once with `node node_modules/playwright-core/cli.js install chromium firefox webkit` if you want the
-full local build.
+The full build installs Chromium, Firefox and WebKit through the locked
+Playwright CLI. To install them separately, run
+`node node_modules/playwright-core/cli.js install chromium firefox webkit`.
 
 ## Configuration
 

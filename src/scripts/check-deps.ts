@@ -8,11 +8,10 @@
  *     that consumers can trust it; shipping an artefact built against a beta
  *     compiler quietly transfers that risk to them.
  *
- *  2. **Node LTS lines only.** Node's release policy is fixed: odd-numbered
- *     majors are *never* promoted to LTS, and even-numbered ones only become
- *     LTS in the October after release. A bot that offers `node:25-alpine`
- *     is offering a runtime that will be end-of-life in months. That check is
- *     purely arithmetic, so it works offline and cannot go stale.
+ *  2. **Supported Node LTS lines only.** The explicit window below is reviewed
+ *     when Node changes release phase. Node 25 never entered LTS; Node 26 is
+ *     still Current in September 2026. The release policy changes with Node 27,
+ *     so odd/even arithmetic is not a timeless substitute for the window.
  *
  * It also checks that every place the project names a Node version agrees —
  * Dockerfile, both workflows, .nvmrc and `engines` — because a container built
@@ -27,24 +26,19 @@ import { join, resolve } from 'node:path';
 const ROOT = process.cwd();
 
 /**
- * The supported window, as a closed interval of even majors.
+ * The supported Node LTS majors for September 2026.
  *
- * Even majors only, because odd ones are never promoted to LTS. But "even" is
- * not sufficient on its own in either direction:
+ * The window needs a deliberate review in either direction:
  *
  *  - **Floor.** Node 20 (Iron) left maintenance in 2026, so a build still
  *    sitting on it is running unsupported.
- *  - **Ceiling.** An even major is *Current*, not LTS, until the October after
- *    it ships. Node 26 released in August 2026 and is not LTS until that
- *    October — and `@types/node@26` was on npm within days. A floor-only check
- *    waves that through, because 26 is even and above 22. It is still a
- *    pre-LTS runtime.
+ *  - **Ceiling.** Node 26 is Current in September 2026, and
+ *    `@types/node@26` is already on npm. A floor-only check would wave it
+ *    through before the project supports that runtime.
  *
- * Moving either bound is a deliberate decision with a CHANGELOG entry, not
- * something a dependency bot gets to make on a Monday morning.
+ * Revising the list requires checking the current Node release schedule.
  */
-const MIN_LTS = 22; // Jod, maintenance
-const MAX_LTS = 24; // Krypton, active
+const SUPPORTED_LTS = [22, 24] as const; // Jod (maintenance), Krypton (active)
 
 /** npm dist-tags and version suffixes that mean "not finished". */
 const PRERELEASE = /-(?:alpha|beta|rc|canary|next|dev|insiders|experimental|nightly|pre)\b/i;
@@ -192,25 +186,11 @@ if (typesNode) {
 }
 
 for (const ref of nodeRefs) {
-  if (ref.major % 2 !== 0) {
+  if (!SUPPORTED_LTS.some((major) => major === ref.major)) {
     findings.push({
       where: ref.where,
-      text: `Node ${ref.major} is an odd-numbered major`,
-      fix: 'odd majors never become LTS — use the nearest even LTS line',
-    });
-  } else if (ref.major < MIN_LTS) {
-    findings.push({
-      where: ref.where,
-      text: `Node ${ref.major} is below the supported floor`,
-      fix: `use Node ${MIN_LTS} or newer`,
-    });
-  } else if (ref.major > MAX_LTS) {
-    findings.push({
-      where: ref.where,
-      text: `Node ${ref.major} has not reached LTS yet`,
-      fix:
-        `an even major is Current, not LTS, until the October after it ships — ` +
-        `use Node ${MAX_LTS}, or raise MAX_LTS once ${ref.major} is promoted`,
+      text: `Node ${ref.major} is outside the supported LTS lines`,
+      fix: `use Node ${SUPPORTED_LTS.join(' or ')}, or review the current release schedule before expanding support`,
     });
   }
 }
@@ -265,7 +245,7 @@ if (findings.length === 0) {
   console.log('');
   console.log(
     `No pre-release dependencies, and every Node reference is an LTS line ` +
-      `(${MIN_LTS}–${MAX_LTS}).`
+      `(${SUPPORTED_LTS.join(' and ')}).`
   );
   process.exit(0);
 }
