@@ -9,6 +9,7 @@ it, and `npm run check:version` fails the build if a literal drifts back in.
 
 ## Unreleased — 2026-09-26
 
+- Scope the project list's density control to its table, connect table spacing to density tokens, protect row targets, and document the three modes with table examples.
 - Merge the open Dependabot updates for Zod, Hono and development dependencies, then refresh all direct packages to current stable releases within the supported Node LTS line.
 - Make `run.sh build` reinstall stale lockfile dependencies, install browser revisions from the locked Playwright CLI, and build the React and design-tool packages.
 - Make `run.sh build --no-browser` skip browser-dependent checks and CSS capture while preserving the remaining build gates.

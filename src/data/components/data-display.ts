@@ -31,9 +31,9 @@ export const dataDisplayComponents: ComponentSpec[] = [
       { name: 'Sticky header', className: 'sk-table--sticky-head', description: 'Header pinned during scroll.', use: 'Tables longer than a viewport.' },
     ],
     sizes: [
-      { name: 'Dense', className: 'sk-table--dense', height: '2rem rows', typeStyle: 'body-sm', description: 'Log and audit views.' },
-      { name: 'Compact', className: 'sk-table--compact', height: '2.5rem rows', typeStyle: 'body-sm', description: 'Operator consoles.' },
-      { name: 'Medium', className: '', height: '3rem rows', typeStyle: 'body-sm', description: 'Default.' },
+      { name: 'Dense', className: 'sk-table--dense', height: '4px block padding', typeStyle: 'body-sm', description: 'Data tables, grids and logs.' },
+      { name: 'Compact', className: 'sk-table--compact', height: '8px block padding', typeStyle: 'body-sm', description: 'Operator consoles.' },
+      { name: 'Comfortable', className: '', height: '12px block padding', typeStyle: 'body-sm', description: 'Default.' },
     ],
     states: [
       { name: 'Rest', description: 'Normal.', trigger: 'default' },
@@ -48,7 +48,7 @@ export const dataDisplayComponents: ComponentSpec[] = [
       { name: 'sortable', type: 'boolean', default: 'false', description: 'Enable column sorting.' },
       { name: 'selectable', type: 'boolean', default: 'false', description: 'Enable row selection.' },
       { name: 'stickyHeader', type: 'boolean', default: 'false', description: 'Pin the header.' },
-      { name: 'density', type: "'dense' | 'compact' | 'medium'", default: "'medium'", description: 'Row height.' },
+      { name: 'density', type: "'comfortable' | 'compact' | 'dense'", default: "'comfortable'", description: 'Row spacing, scoped with data-sk-density on the table or an ancestor.' },
     ],
     tokensUsed: ['color-surface-raised', 'color-surface-subtle', 'color-border-subtle', 'color-surface-hover', 'color-surface-selected', 'color-border-brand', 'color-text-secondary'],
     /*
@@ -210,7 +210,8 @@ export const dataDisplayComponents: ComponentSpec[] = [
 
 .sk-table th,
 .sk-table td {
-  padding: var(--sk-space-12) var(--sk-space-16);
+  padding-block: var(--sk-row-padding-block, var(--sk-space-12));
+  padding-inline: var(--sk-cell-padding-inline, var(--sk-space-16));
   text-align: start;
   vertical-align: middle;
   font-size: var(--sk-font-size-body-sm);
@@ -249,9 +250,15 @@ export const dataDisplayComponents: ComponentSpec[] = [
 
 .sk-table__select-col { inline-size: 1px; white-space: nowrap; }
 
+/* Keep the actual input target large even when the visible box stays 20px. */
+.sk-table label { min-inline-size: 1.5rem; min-block-size: 1.5rem; }
+.sk-table label > input[type="checkbox"] { inline-size: 1.5rem; block-size: 1.5rem; }
+
 .sk-table__sort {
   display: inline-flex;
   align-items: center;
+  min-inline-size: 1.5rem;
+  min-block-size: 1.5rem;
   gap: var(--sk-space-4);
   padding: 0;
   border: none;
@@ -287,8 +294,9 @@ export const dataDisplayComponents: ComponentSpec[] = [
   border-block-end: var(--sk-border-width-hairline) solid var(--sk-color-border-default);
 }
 
-.sk-table--compact th, .sk-table--compact td { padding-block: var(--sk-space-8); }
-.sk-table--dense th, .sk-table--dense td { padding-block: var(--sk-space-4); padding-inline: var(--sk-space-12); }
+/* Legacy modifier classes set the same local tokens as data-sk-density. */
+.sk-table--compact { --sk-row-padding-block: var(--sk-space-8); --sk-cell-padding-inline: var(--sk-space-16); }
+.sk-table--dense { --sk-row-padding-block: var(--sk-space-4); --sk-cell-padding-inline: var(--sk-space-12); }
 
 .sk-table__empty { padding: 0; }
 .sk-table__empty td { padding: 0; }

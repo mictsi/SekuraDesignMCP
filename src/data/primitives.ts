@@ -620,6 +620,7 @@ export interface Density {
   controlPaddingInline: string;
   controlPaddingBlock: string;
   rowPaddingBlock: string;
+  cellPaddingInline: string;
   stackGap: string;
   sectionGap: string;
   description: string;
@@ -633,6 +634,7 @@ export const densities: Record<string, Density> = {
     controlPaddingInline: '1rem',
     controlPaddingBlock: '0.5rem',
     rowPaddingBlock: '0.75rem',
+    cellPaddingInline: '1rem',
     stackGap: '1rem',
     sectionGap: '2rem',
     description:
@@ -645,6 +647,7 @@ export const densities: Record<string, Density> = {
     controlPaddingInline: '0.75rem',
     controlPaddingBlock: '0.375rem',
     rowPaddingBlock: '0.5rem',
+    cellPaddingInline: '1rem',
     stackGap: '0.75rem',
     sectionGap: '1.5rem',
     description:
@@ -657,10 +660,11 @@ export const densities: Record<string, Density> = {
     controlPaddingInline: '0.5rem',
     controlPaddingBlock: '0.25rem',
     rowPaddingBlock: '0.25rem',
+    cellPaddingInline: '0.75rem',
     stackGap: '0.5rem',
     sectionGap: '1rem',
     description:
-      'Data grids and log views only. Requires an escape hatch back to comfortable, and must never be the default for a first-time user.',
+      'Data tables, grids and log views only. Requires an escape hatch back to comfortable, and must never be the default for a first-time user.',
   },
 };
 

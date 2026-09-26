@@ -29,7 +29,7 @@ const knownTokens = new Set(semanticTokens.map((t) => t.name));
 const scalePrefixes = [
   'space', 'radius', 'border-width', 'opacity', 'z', 'duration', 'easing',
   'font-family', 'font-weight', 'font-size', 'line-height', 'letter-spacing',
-  'container', 'elevation', 'control-height', 'control-padding', 'row-padding',
+  'container', 'elevation', 'control-height', 'control-padding', 'row-padding', 'cell-padding',
   'stack-gap', 'section-gap', 'focus-ring', 'breakpoint', 'palette',
   'grid-min', 'grid-gap', 'cluster-gap', 'sidebar-width', 'content-min',
   'slider-progress', 'slider-direction', 'control-size', 'dir-scale',

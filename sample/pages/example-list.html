@@ -67,12 +67,14 @@
 
         <span class="sk-cluster__push"></span>
 
-        <div class="sk-segmented" role="radiogroup" aria-label="Row density" data-sk-segmented>
+        <div class="sk-segmented" role="radiogroup" aria-label="Project row density"
+             aria-describedby="project-density-hint" data-sk-segmented data-sk-density-target="project-table">
           <button type="button" class="sk-segmented__option" role="radio" data-sk-density-option="comfortable">Comfortable</button>
           <button type="button" class="sk-segmented__option" role="radio" data-sk-density-option="compact">Compact</button>
           <button type="button" class="sk-segmented__option" role="radio" data-sk-density-option="dense">Dense</button>
         </div>
       </div>
+      <p class="sk-field__hint" id="project-density-hint">Changes project rows only. Choose Comfortable whenever you need more room to scan or select.</p>
 
       <div class="sk-popover sk-popover--arrow" id="project-filters" hidden>
         <header class="sk-popover__header">
@@ -129,7 +131,7 @@
       <!-- The scroll container needs tabindex, role and a name, or keyboard
            users cannot scroll it at all. The page never scrolls sideways;
            the table does. That is WCAG 1.4.10 Reflow. -->
-      <div class="sk-table" id="project-table" role="region" aria-labelledby="projects-caption" tabindex="0"
+      <div class="sk-table" id="project-table" role="region" aria-labelledby="projects-caption" tabindex="0" data-sk-density="comfortable"
            data-sk-table data-sk-bulk-bar="project-bulk-bar">
         <table>
           <caption id="projects-caption" class="sk-table__caption">

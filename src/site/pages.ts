@@ -1198,10 +1198,10 @@ export function spacingPage(): Page {
   p.section(
     'Density',
     `<p class="docs-para">
-      Three modes changing control padding and row height only. Density never reduces text below
-      <code class="sk-code">body-sm</code> (14px) or a hit target below 24×24 CSS px — where padding
-      is trimmed, an <code class="sk-code">::after</code> pseudo-element restores the target area, so
-      the control looks dense and still behaves correctly.
+      Three modes change control padding and table row spacing. Set
+      <code class="sk-code">data-sk-density</code> on a data region to change its rows without
+      squeezing the surrounding interface. Density never reduces text below
+      <code class="sk-code">body-sm</code> (14px) or a hit target below 24×24 CSS px.
     </p>
     ${demo(
       `<div class="docs-densitydemo">
@@ -1217,17 +1217,26 @@ export function spacingPage(): Page {
                 <label class="sk-field__label" for="dd-${name}">Hostname</label>
                 <input class="sk-input" id="dd-${name}" type="text" value="website-redesign" readonly />
               </div>
+              <div class="sk-table" role="region" aria-label="${escapeHtml(name)} density table" tabindex="0">
+                <table>
+                  <thead><tr><th scope="col">Project</th><th scope="col">Status</th></tr></thead>
+                  <tbody>
+                    <tr><th scope="row">Website</th><td>On track</td></tr>
+                    <tr><th scope="row">Mobile app</th><td>Review</td></tr>
+                  </tbody>
+                </table>
+              </div>
             </div>`
           )
           .join('')}
       </div>`,
-      `<html data-sk-density="compact">`,
-      { label: 'One attribute on the root switches all three' }
+      `<div data-sk-density="compact"><div class="sk-table">…</div></div>`,
+      { label: 'Scope density to the data region' }
     )}
     ${callout(
       'warning',
       '',
-      `<p>Dense mode is for data grids and log views only. It must always offer a way back to
+      `<p>Dense mode is for data tables, grids and log views only. It must always offer a way back to
       comfortable, and must never be the default for a first-time user — it is far easier to recover
       from "this feels roomy" than from "I cannot hit the button".</p>`
     )}`

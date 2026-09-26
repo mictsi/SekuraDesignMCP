@@ -50,6 +50,58 @@ await test('filter, selection, pagination, delete and undo share state', async (
   await page.getByRole('button', { name: 'Remove team filter Marketing' }).click();
   assert.match(await page.locator('[data-sk-filter-status]').textContent(), /of 8 projects/);
 });
+await test('project density changes table rows only, persists, and keeps targets usable', async () => {
+  await go('example-list');
+  await page.evaluate(() => localStorage.setItem('sk-density', 'comfortable'));
+  await page.reload();
+  const table = page.locator('#project-table');
+  const density = page.getByRole('radiogroup', { name: 'Project row density' });
+  const metrics = () => table.evaluate(el => {
+    const cell = el.querySelector('tbody tr th');
+    const input = el.querySelector('tbody .sk-checkbox__input');
+    const sort = el.querySelector('.sk-table__sort');
+    const size = node => { const rect = node.getBoundingClientRect(); return [rect.width, rect.height]; };
+    return {
+      padding: parseFloat(getComputedStyle(cell).paddingBlockStart),
+      inline: parseFloat(getComputedStyle(cell).paddingInlineStart),
+      fontSize: parseFloat(getComputedStyle(cell).fontSize),
+      rowHeight: el.querySelector('tbody tr').getBoundingClientRect().height,
+      input: size(input), sort: size(sort),
+    };
+  });
+  const comfortable = await metrics();
+  assert.equal(comfortable.padding, 12);
+  await density.getByRole('radio', { name: 'Compact' }).click();
+  await settle();
+  const compact = await metrics();
+  assert.equal(compact.padding, 8);
+  await density.getByRole('radio', { name: 'Dense' }).click();
+  await settle();
+  const dense = await metrics();
+  assert.equal(await table.getAttribute('data-sk-density'), 'dense');
+  assert.equal(await page.locator('html').getAttribute('data-sk-density'), 'comfortable');
+  assert.equal(dense.padding, 4);
+  assert.equal(dense.inline, 12);
+  assert.ok(comfortable.rowHeight > compact.rowHeight && compact.rowHeight > dense.rowHeight);
+  assert.ok(dense.fontSize >= 14);
+  for (const target of [dense.input, dense.sort]) assert.ok(target.every(n => n >= 24), `small target: ${target}`);
+  await page.reload();
+  assert.equal(await table.getAttribute('data-sk-density'), 'dense');
+  assert.equal(await density.getByRole('radio', { name: 'Dense' }).getAttribute('aria-checked'), 'true');
+  await density.getByRole('radio', { name: 'Comfortable' }).click();
+});
+await test('density reference shows table spacing in all three modes', async () => {
+  await go('spacing');
+  const paddings = await page.locator('.docs-densitydemo__pane').evaluateAll(panes => panes.map(pane => ({
+    mode: pane.getAttribute('data-sk-density'),
+    padding: parseFloat(getComputedStyle(pane.querySelector('.sk-table td')).paddingBlockStart),
+  })));
+  assert.deepEqual(paddings, [
+    { mode: 'comfortable', padding: 12 },
+    { mode: 'compact', padding: 8 },
+    { mode: 'dense', padding: 4 },
+  ]);
+});
 await test('number, accordion and slider reference demos work', async () => {
   await go('component-number-input'); const input = page.locator('[data-sk-number]');
   await page.locator('[data-sk-step="1"]').click(); assert.equal(await input.inputValue(), '46');

@@ -71,24 +71,45 @@
   }
 
   function initDensity() {
-    var stored;
-    try { stored = localStorage.getItem('sk-density'); } catch (e) { stored = null; }
-    var current = stored || 'comfortable';
-    document.documentElement.setAttribute('data-sk-density', current);
-
+    var values = ['comfortable', 'compact', 'dense'];
+    function read(key) {
+      var stored;
+      try { stored = localStorage.getItem(key); } catch (e) { stored = null; }
+      return values.indexOf(stored) >= 0 ? stored : 'comfortable';
+    }
+    function select(group, value) {
+      $$('[data-sk-density-option]', group).forEach(function (btn) {
+        var on = btn.dataset.skDensityOption === value;
+        btn.setAttribute('aria-checked', String(on));
+        btn.tabIndex = on ? 0 : -1;
+      });
+    }
+    document.documentElement.setAttribute('data-sk-density', read('sk-density'));
     $$('[data-sk-density-option]').forEach(function (btn) {
-      var on = btn.dataset.skDensityOption === current;
-      btn.setAttribute('aria-checked', String(on));
-      btn.tabIndex = on ? 0 : -1;
-
+      var group = btn.closest('[role="radiogroup"]');
+      if (!group || btn !== $('[data-sk-density-option]', group)) return;
+      var targetId = group.dataset.skDensityTarget;
+      var target = targetId ? document.getElementById(targetId) : document.documentElement;
+      if (!target) return;
+      var key = targetId ? 'sk-density:' + targetId : 'sk-density';
+      var value = read(key);
+      target.setAttribute('data-sk-density', value);
+      select(group, value);
     });
     document.addEventListener('sk:segmented:change', function (event) {
-      var btn = $('[data-sk-density-option][aria-checked="true"]', event.target);
+      var group = event.target.closest('[role="radiogroup"]');
+      if (!group) return;
+      var btn = $('[data-sk-density-option][aria-checked="true"]', group);
       if (!btn) return;
       var value = btn.dataset.skDensityOption;
-      document.documentElement.setAttribute('data-sk-density', value);
-      try { localStorage.setItem('sk-density', value); } catch (e) { announce('Density applied for this page; storage is unavailable.'); return; }
-      announce('Density set to ' + value + '.');
+      var targetId = group.dataset.skDensityTarget;
+      var target = targetId ? document.getElementById(targetId) : document.documentElement;
+      if (!target) return;
+      target.setAttribute('data-sk-density', value);
+      try { localStorage.setItem(targetId ? 'sk-density:' + targetId : 'sk-density', value); }
+      catch (e) { announce('Density applied for this page; storage is unavailable.'); return; }
+      var label = targetId ? (group.getAttribute('aria-label') || 'Rows') : 'Interface density';
+      announce(label + ' set to ' + value + '.');
     });
   }
 

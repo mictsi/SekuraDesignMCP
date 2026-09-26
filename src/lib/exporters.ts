@@ -150,6 +150,7 @@ export function exportCss(): string {
     lines.push(`  ${cssVar('control-padding-inline')}: ${d.controlPaddingInline};`);
     lines.push(`  ${cssVar('control-padding-block')}: ${d.controlPaddingBlock};`);
     lines.push(`  ${cssVar('row-padding-block')}: ${d.rowPaddingBlock};`);
+    lines.push(`  ${cssVar('cell-padding-inline')}: ${d.cellPaddingInline};`);
     lines.push(`  ${cssVar('stack-gap')}: ${d.stackGap};`);
     lines.push(`  ${cssVar('section-gap')}: ${d.sectionGap};`);
     lines.push('}');

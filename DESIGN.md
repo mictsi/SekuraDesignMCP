@@ -415,18 +415,25 @@ between fields, or the label appears to belong to the field above it.
 
 ### 7.4 Density
 
-Three modes changing control padding and row height only.
+Three modes change control padding and table row spacing. Apply
+`data-sk-density` to a data region for a local mode; use it on the root only
+when the whole application needs the same density. The table consumes
+`--sk-row-padding-block` and `--sk-cell-padding-inline`. The older
+`sk-table--compact` and `sk-table--dense` classes remain available.
 
-| Mode | Control | Row padding | Use |
-|---|---|---|---|
-| Comfortable | 40px | 12px | Default. Mixed audiences, touch, marketing. |
-| Compact | 36px | 8px | Operator consoles, admin tools. |
-| Dense | 32px | 4px | Data grids and log views only. |
+| Mode | Control | Row padding | Cell inline padding | Use |
+|---|---|---|---|---|
+| Comfortable | 40px | 12px | 16px | Default. Mixed audiences, touch, marketing. |
+| Compact | 36px | 8px | 16px | Operator consoles, admin tools. |
+| Dense | 32px | 4px | 12px | Data tables, grids and log views only. |
 
 Density **never** reduces text below `body-sm` (14px) or a hit target below 24×24
-CSS px. Where padding is trimmed, an `::after` pseudo-element restores the target
-area. Dense mode always offers a way back and is never the default for a first-time
-user.
+CSS px. Dense mode always offers a way back and is never the default for a
+first-time user. The project list example stores row density separately from the
+application control density. Its radiogroup uses
+`data-sk-density-target="project-table"`; the sample app applies the chosen mode
+to that region and stores it under `sk-density:project-table`. The settings
+control uses `sk-density` for the application-wide preference.
 
 ---
 
