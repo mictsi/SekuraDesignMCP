@@ -7,6 +7,11 @@ The version in `package.json` is the single source of truth — the server, the
 documentation site, the behaviours bundle and the container tag all derive from
 it, and `npm run check:version` fails the build if a literal drifts back in.
 
+## 3.0.0 — 2026-10-02
+
+- Promote the package to 3.0.0 and regenerate versioned artifacts.
+- Update migration guidance and examples for the stable release and renamed branch.
+
 ## 3.0.0-alpha.0 — 2026-10-02
 
 - Promote all 71 component specifications to stable and remove beta labels; retain the v3 alpha package version and the separate manual acceptance record.

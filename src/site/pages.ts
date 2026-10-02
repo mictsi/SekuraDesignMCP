@@ -197,7 +197,7 @@ export function overviewPage(): Page {
       'with every colour promise verified by machine rather than by eye.',
   });
 
-  p.section('Version 3 alpha', `<p>A neutral workspace canvas, clear blue actions, compact chrome and
+  p.section('Version 3', `<p>A neutral workspace canvas, clear blue actions, compact chrome and
     readable documents. Existing component names and application behavior contracts remain available.</p>
     <div class="sk-cluster">
       <a class="sk-button sk-button--primary" href="example-workspace.html">Explore the workspace</a>

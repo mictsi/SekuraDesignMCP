@@ -21,10 +21,10 @@ explains it with live demos, a full colour guide and worked examples.
 
 ## Integration and migration
 
-**Sekura 3 alpha** adopts a compact neutral workspace and continuous document
+**Sekura 3** adopts a compact neutral workspace and continuous document
 canvas. Read the [migration plan](./MIGRATION.md) for staged adoption, the optional
 v2 geometry bridge, compatibility checks and rollback. The previous main is
-preserved on `feature/2.1.0`; redesign work is on `3.0.0-alpha`.
+preserved on `feature/2.1.0`; the redesign is on `main` and `3.0.0`.
 
 The [support matrix](./sample/support.html) distinguishes CSS, native behavior,
 controllers, and application-owned actions. The [workbench](./sample/workbench.html)
@@ -167,7 +167,7 @@ table:
 
 [mcp_servers.sekura-design]
 command = "docker"
-args = ["run", "-i", "--rm", "-e", "SEKURA_MCP_TRANSPORT=stdio", "sekura-design-mcp:3.0.0-alpha.0"]
+args = ["run", "-i", "--rm", "-e", "SEKURA_MCP_TRANSPORT=stdio", "sekura-design-mcp:3.0.0"]
 
 # The first call builds a 5,900-line overview, so allow a little headroom.
 startup_timeout_sec = 30
@@ -186,7 +186,7 @@ Recent Codex versions can add it for you:
 
 ```bash
 codex mcp add sekura-design -- docker run -i --rm \
-  -e SEKURA_MCP_TRANSPORT=stdio sekura-design-mcp:3.0.0-alpha.0
+  -e SEKURA_MCP_TRANSPORT=stdio sekura-design-mcp:3.0.0
 
 codex mcp list          # confirm it registered
 ```
@@ -221,7 +221,7 @@ to start, but these help:
     "sekura-design": {
       "command": "docker",
       "args": ["run", "-i", "--rm", "-e", "SEKURA_MCP_TRANSPORT=stdio",
-               "sekura-design-mcp:3.0.0-alpha.0"]
+               "sekura-design-mcp:3.0.0"]
     }
   }
 }
@@ -414,10 +414,10 @@ runs the full gate chain again (a release cannot skip checks) and publishes:
 
 Stable releases also publish a multi-arch image to GHCR, tagged `1.2.3`, `1.2`,
 `1` and `latest`. Alpha releases use their exact version tag and do not update
-`latest` or the stable documentation site. After publishing an alpha release:
+`latest` or the stable documentation site. After publishing the release:
 
 ```bash
-docker run -d -p 8080:8080 ghcr.io/mictsi/sekuradesignmcp:3.0.0-alpha.0
+docker run -d -p 8080:8080 ghcr.io/mictsi/sekuradesignmcp:3.0.0
 ```
 
 Stable releases deploy the documentation site to GitHub Pages.
@@ -607,7 +607,7 @@ location /design-system/ {
 }
 ```
 ```bash
-docker run -d -p 8080:8080 -e SEKURA_BASE_PATH=/design-system sekura-design-mcp:3.0.0-alpha.0
+docker run -d -p 8080:8080 -e SEKURA_BASE_PATH=/design-system sekura-design-mcp:3.0.0
 ```
 
 **If the proxy strips the prefix**, the app still listens at the root but has no
@@ -623,7 +623,7 @@ location /design-system/ {
 ```bash
 docker run -d -p 8080:8080 \
   -e SEKURA_EXTERNAL_URL=https://example.com/design-system \
-  sekura-design-mcp:3.0.0-alpha.0
+  sekura-design-mcp:3.0.0
 ```
 
 **With Traefik or ingress-nginx, neither is needed.** `X-Forwarded-Prefix` is
@@ -789,4 +789,4 @@ Run `npm run test:integration` for structured MCP contracts and `npm run test:re
 
 The build embeds declarations and migration content in `dist/data/mcp-reference.json`, so stdio and HTTP installations work without source files or the original working directory. Rebuild after changing behavior APIs or migration documentation. `npm run test:mcp` checks all component specifications, every recipe format, public APIs and resources through an MCP client.
 
-Dependency policy: use the newest supported LTS line when a project offers one (Node 24, Angular 21), otherwise its latest stable release. Angular packages validate generated recipes and are not runtime dependencies of Sekura. The overall release remains `3.0.0-alpha.0`; component maturity does not mean the manual acceptance record is complete.
+Dependency policy: use the newest supported LTS line when a project offers one (Node 24, Angular 21), otherwise its latest stable release. Angular packages validate generated recipes and are not runtime dependencies of Sekura. The package version is `3.0.0`; component maturity does not mean the manual acceptance record is complete.

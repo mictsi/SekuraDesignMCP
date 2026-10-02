@@ -1,22 +1,22 @@
-# Migrating from Sekura 2.1 to 3.0 alpha
+# Migrating from Sekura 2.1 to 3.0
 
 The redesign changes presentation while retaining the existing `sk-*` class names,
 `--sk-*` token names, component IDs, behavior exports, themes, densities, and recipe
-IDs. It is an alpha: verify it in the consuming application before rolling it out.
+IDs. Verify it in the consuming application before rolling it out.
 No application records, routes, permissions, or stored documents need migration.
 
 ## Branches and rollback baseline
 
 - `feature/2.1.0` preserves the previous `main` at `dc4d498`.
-- `3.0.0-alpha` contains the redesign; its package version is `3.0.0-alpha.0`.
-- `main` remains at the archived baseline. These branches are local until pushed.
+- `3.0.0` contains the redesign; the package version is `3.0.0`.
+- `main` includes the redesign merged from `3.0.0`.
 - `compatibility/v2-contract.json` records the public names from that baseline.
   `npm run test:compatibility` rejects removals. This is an API-name check, not a
   guarantee that every application-specific override still looks correct.
 
 ## What changes
 
-| Area | Version 2 | Version 3 alpha | Consumer action |
+| Area | Version 2 | Version 3 | Consumer action |
 |---|---|---|---|
 | Identity | Violet-leaning cobalt and blue-grey surfaces | Clear blue actions, neutral canvas and chrome | Remove literal color overrides; use semantic tokens |
 | Dark mode | Grey-blue surface and text steps | Deep charcoal surfaces; bright neutral text | Use semantic text tokens; remove opacity from essential text |
@@ -51,7 +51,7 @@ Exit: a reproducible current application build and a named owner for acceptance.
 
 ## Phase 2 — isolated preview
 
-1. Build the alpha branch with `npm ci` and `npm run verify`.
+1. Build the release branch with `npm ci` and `npm run verify`.
 2. Install CSS, behaviors, and any native React package from the **same build**.
    Regenerate token exports and design-tool artifacts from that build too.
 3. Switch the complete stylesheet behind an application release flag. Do not load
@@ -73,7 +73,7 @@ font, component detail or spacing rule, and does not recreate v2 behavior.
 Remove the attribute once the application's layouts are accepted. Scope the
 attribute around an application root, not around unrelated sibling fragments.
 
-Exit: the application's existing workflows work using the matching alpha assets.
+Exit: the application's existing workflows work using the matching release assets.
 
 ## Phase 3 — adapt composition
 
@@ -126,7 +126,7 @@ at least one stable application release has passed.
 
 Rollback by selecting the previous application build or restoring its pinned
 Sekura packages and generated assets together. Do not revert application data or
-clear unrelated preferences. The alpha introduces only optional demo-local keys:
+clear unrelated preferences. Version 3 introduces only optional demo-local keys:
 `sk-nav-collapsed`, `sk-nav-width`, `sk-demo-workspace-note`, and
 `sk-demo-workspace-star`. They do not modify an application's domain data.
 
@@ -170,6 +170,6 @@ The multi-tree selection event adds `checked`; range sliders emit
 
 Review the advanced [workbench](sample/workbench.html) and
 [support contracts](sample/support.html). Search providers, file transport,
-command execution and persistence remain application-owned. All 71 components are marked stable. The overall v3 release remains alpha.
+command execution and persistence remain application-owned. All 71 components are marked stable. The package version is 3.0.0.
 Implementation completion and automated checks do not substitute for the
 application and screen-reader review documented in MANUAL-VALIDATION.md.
