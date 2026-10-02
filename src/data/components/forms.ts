@@ -17,7 +17,7 @@ export const formComponents: ComponentSpec[] = [
     anatomy: [
       { part: 'Label', required: true, description: 'A real <label for>. Always visible; if the design says otherwise, the design is wrong more often than it is right.' },
       { part: 'Requirement marker', required: false, description: 'The word "Optional" on optional fields. Sekura marks the minority case, and never uses a bare asterisk.' },
-      { part: 'Hint', required: false, description: 'Format guidance, placed *above* the control so it is read before the user starts typing rather than after they finish.' },
+      { part: 'Hint', required: false, description: 'Format guidance linked with aria-describedby. In shared rows it belongs in sk-field__support below the control; standalone fields may place it above.' },
       { part: 'Control', required: true, description: 'The input itself.' },
       { part: 'Error', required: false, description: 'Placed below the control, with an icon and text. Announced politely on blur, assertively on submit.' },
       { part: 'Character counter', required: false, description: 'Below the control, opposite the error. Announced only at thresholds, not on every keystroke.' },
@@ -41,7 +41,7 @@ export const formComponents: ComponentSpec[] = [
     ],
     props: [
       { name: 'label', type: 'string', required: true, description: 'Visible label text.' },
-      { name: 'hint', type: 'string', description: 'Format guidance shown above the control.' },
+      { name: 'hint', type: 'string', description: 'Format guidance associated with the control; place in the support region for shared rows.' },
       { name: 'error', type: 'string', description: 'Validation message. Presence switches the field to invalid.' },
       { name: 'optional', type: 'boolean', default: 'false', description: 'Marks the field "Optional". Required fields are unmarked.' },
       { name: 'layout', type: "'stacked' | 'inline' | 'horizontal'", default: "'stacked'", description: 'Label placement.' },
@@ -82,7 +82,8 @@ export const formComponents: ComponentSpec[] = [
       'Keep the label visible. A placeholder is not a label; it vanishes exactly when a user needs to check what they are filling in.',
       'Validate on blur for format, on submit for everything, and never on every keystroke.',
       'Preserve the user’s input when server validation fails.',
-      'Put the hint above the control and the error below it.',
+      'In a standalone field, format guidance may precede the control. In a shared row, use sk-field-row with label, sk-field__control and sk-field__support in that order; put hints and errors in the support region.',
+      'Align the visible control boxes, not the outer label-and-hint wrappers. Use the same size and density for peer controls.',
     ],
     donts: [
       'Do not use placeholder text as the only label.',
@@ -119,6 +120,20 @@ export const formComponents: ComponentSpec[] = [
   gap: var(--sk-space-6);
   min-inline-size: 0;
 }
+
+/* Shared label/control/support tracks keep wrapped labels and hints from
+   shifting peer controls. Without subgrid support, retain a safe single column. */
+.sk-field-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sk-space-6) var(--sk-space-16); min-inline-size: 0; }
+.sk-field-row > .sk-field, .sk-field-row__actions { display: grid; grid-template-rows: auto auto 1fr; grid-row: span 3; gap: var(--sk-space-6); min-inline-size: 0; }
+@supports (grid-template-rows: subgrid) {
+  .sk-field-row { grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr)); }
+  .sk-field-row > .sk-field, .sk-field-row__actions { grid-template-rows: subgrid; }
+}
+.sk-field-row > .sk-field > .sk-field__label { grid-row: 1; align-self: end; }
+.sk-field-row > .sk-field > .sk-field__control, .sk-field-row__actions > * { grid-row: 2; align-self: start; min-inline-size: 0; }
+.sk-field-row__actions > * { justify-self: start; }
+.sk-field-row > .sk-field > .sk-field__support { grid-row: 3; }
+.sk-field__support { display: flex; flex-direction: column; gap: var(--sk-space-6); min-inline-size: 0; }
 
 .sk-field__label {
   display: flex;
@@ -272,7 +287,7 @@ export const formComponents: ComponentSpec[] = [
     ],
     tokensUsed: ['color-field-bg', 'color-field-border', 'color-field-border-hover', 'color-field-border-error', 'color-text-primary', 'color-text-placeholder', 'color-focus-ring', 'radius-md'],
     darkMode:
-      'The field background is surface-base (the *page* colour), not a lighter raised colour — a lighter well on a dark page reads as disabled to most people, the opposite of the intent. The border does the work of defining the control, so it steps up to neutral-500 to hold 3:1 against both the page and a raised card. Placeholder text uses neutral-400 rather than the light-mode neutral-500, which would fall under 4.5:1 on dark. Browser autofill styling is explicitly overridden, because Chrome injects a hard-coded pale yellow that is unreadable in dark mode.',
+      'The field background is surface-base (the *page* colour), not a lighter raised colour — a lighter well on a dark page reads as disabled to most people, the opposite of the intent. Use color-field-border for an audited control boundary and color-text-placeholder for bright neutral placeholder text. Never reuse light-mode text values or reduce input text opacity in dark mode. Browser autofill styling is explicitly overridden, because Chrome injects a hard-coded pale yellow that is unreadable in dark mode.',
     accessibility: {
       role: 'Native <input>.',
       keyboard: [
@@ -358,6 +373,13 @@ export const formComponents: ComponentSpec[] = [
     border-color var(--sk-duration-fast) var(--sk-easing-standard),
     background-color var(--sk-duration-fast) var(--sk-easing-standard);
 }
+
+/* Native date editors otherwise add internal padding on top of field padding. */
+.sk-input:is([type="date"], [type="time"], [type="datetime-local"]) {
+  block-size: max(var(--sk-control-size, var(--sk-control-height-md)), calc(1lh + 2 * var(--sk-border-width-hairline)));
+  padding-block: 0;
+}
+.sk-input::-webkit-datetime-edit { padding: 0; }
 
 .sk-input::placeholder { color: var(--sk-color-text-placeholder); opacity: 1; }
 .sk-input:hover:not(:disabled, [readonly]) { border-color: var(--sk-color-field-border-hover); }
@@ -1242,7 +1264,7 @@ export const formComponents: ComponentSpec[] = [
     ],
     tokensUsed: ['color-control-checked', 'color-control-track', 'color-surface-base', 'color-focus-ring', 'radius-full'],
     darkMode:
-      'The off-state track is the failure point: a light-grey track on a light page has enough contrast, but the same relative value on dark does not. control-track is therefore pinned at neutral-400 in light and neutral-500 in dark, both audited at 3:1 against their own page. The thumb stays the page-base colour in both themes so it always reads as a raised object rather than a hole.',
+      'The off-state track is the failure point: a light-grey track on a light page has enough contrast, but the same relative value on dark does not. color-control-track is audited at 3:1 against its surrounding surfaces in each theme. The thumb stays the page-base colour in both themes so it always reads as a raised object rather than a hole.',
     accessibility: {
       role: 'input[type="checkbox"] with role="switch".',
       keyboard: [
@@ -1712,7 +1734,8 @@ export const formComponents: ComponentSpec[] = [
   color: var(--sk-color-text-primary);
   font-family: var(--sk-font-family-sans);
   font-size: var(--sk-font-size-body-md);
-  padding-block: var(--sk-space-8);
+  line-height: 1.25;
+  padding-block: max(0px, calc((var(--sk-control-size, var(--sk-control-height-md)) - 1lh - 2 * var(--sk-border-width-hairline)) / 2));
 }
 .sk-search__input:focus-visible { outline: none; }
 .sk-search__input::placeholder { color: var(--sk-color-text-placeholder); opacity: 1; }
@@ -1728,7 +1751,7 @@ export const formComponents: ComponentSpec[] = [
   align-items: center;
   justify-content: center;
   inline-size: 1.5rem;
-  block-size: 1.5rem;
+  block-size: min(1.5rem, calc(var(--sk-control-size, var(--sk-control-height-md)) - 2 * var(--sk-border-width-hairline)));
   padding: 0;
   border: none;
   border-radius: var(--sk-radius-full);
@@ -1741,7 +1764,7 @@ export const formComponents: ComponentSpec[] = [
 .sk-search__clear:hover { background-color: var(--sk-color-surface-hover); color: var(--sk-color-text-primary); }
 .sk-search__clear > svg { fill: currentColor; }
 
-.sk-search--sm { min-block-size: var(--sk-control-height-sm); flex-basis: 14rem; }
+.sk-search--sm { --sk-control-size: var(--sk-control-height-sm); min-block-size: var(--sk-control-height-sm); flex-basis: 14rem; }
 .sk-search--sm .sk-search__input { font-size: var(--sk-font-size-body-sm); }
 @media (forced-colors: active) {
   .sk-search { border-color: CanvasText; }
@@ -1799,7 +1822,7 @@ export const formComponents: ComponentSpec[] = [
     ],
     tokensUsed: ['color-control-track', 'color-control-checked', 'color-surface-base', 'color-focus-ring', 'radius-full'],
     darkMode:
-      'Both the unfilled track and the filled portion must independently clear 3:1 against the page, and against each other, so the boundary between them is visible. In dark mode the unfilled track steps to neutral-500 and the fill to cobalt-400 — reusing the light-mode pair would leave the fill barely distinguishable from the track. The thumb keeps a surface-base fill plus a border so it stays a distinct object over both track segments.',
+      'Both the unfilled track and the filled portion must independently clear 3:1 against the page, and against each other, so the boundary between them is visible. Use color-control-track and color-control-checked so the audited theme mappings provide both the unfilled and filled segments. The thumb keeps a surface-base fill plus a border so it stays a distinct object over both track segments.',
     accessibility: {
       role: 'Native <input type="range">, or role="slider" when a native input cannot express the interaction.',
       keyboard: [

@@ -9,6 +9,9 @@ it, and `npm run check:version` fails the build if a literal drifts back in.
 
 ## 3.0.0-alpha.0 — 2026-10-02
 
+- Align search, filter and native date controls; add shared field rows, explicit alignment guidance and cross-browser geometry checks.
+- Use rectangular badges with 4px corners and deeper neutral charcoal dark surfaces.
+
 - Redesign the shared palette, typography, shell, controls and overlays around a compact neutral workspace and continuous document canvas.
 - Preserve the v2 integration names; add a compatibility contract check, optional v2 geometry bridge and phased migration plan.
 - Add document canvas, content header, activity list and save-state compositions, a document workspace example, and refresh every existing example.

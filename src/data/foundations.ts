@@ -23,10 +23,14 @@ export const foundations: Foundation[] = [
     summary: 'Sekura 3 uses a compact neutral shell and continuous reading canvas, with compatible integration names.',
     rules: ['Keep existing sk-* classes, semantic token names and behavior exports when upgrading.', 'Use a 48px global header, 272px navigation and 760px reading column through layout tokens.', 'Reserve elevation for floating surfaces; avoid a card around the whole document.', 'Use platform fonts; no proprietary font is bundled.', 'Application permissions, publication, structured editing and collaboration remain application-owned.', 'Use data-sk-geometry="v2" only as a temporary geometry bridge; validate and remove it during migration.'],
     body: `## Visual direction
-A neutral canvas, compact navigation, blue primary actions and clearly separated metadata support long working sessions. Document titles use 32/40px; reading text uses 16/24px; controls use 14/20px. Metadata may use 12/16px when its contrast remains sufficient.
+A neutral canvas (deep charcoal in dark mode), compact navigation, blue primary actions and clearly separated metadata support long working sessions. Document titles use 32/40px; reading text uses 16/24px; controls use 14/20px. Metadata may use 12/16px when its contrast remains sufficient.
 
 ## Compatibility
 Existing token names, component IDs, CSS classes, recipes and behavior exports remain supported. The migration plan documents geometry changes, the temporary v2 bridge and rollback. All package surfaces derive their version from package.json.
+
+## Shape and dark surfaces
+
+Badges and tag tokens use compact rectangles with 4px corners, not capsules. Dark surfaces progress from a #121315 canvas to #1a1a1a panels and #22252a overlays. Recessed regions use #0d0e10. Keep readable text and visible boundaries; darkening the canvas must not dim labels or focus indicators. Primary dark text uses neutral #fafafa, secondary #f1f1f1 and metadata #dedede. Light text uses neutral #1a1a1a, #454545 and #555555. Use size, weight and spacing for hierarchy; never fade essential text with opacity. Reserve blue for links/actions and semantic colors for status. Product CSS still consumes semantic tokens.
 
 ## Application boundary
 The reference contains a complete knowledge-workspace product. Sekura adopts its visual language and reusable interaction contracts, not its database, ACLs, publication state machine or collaborative editor. Save state describes acknowledged work at an explicit boundary. Local-only state must say so.
@@ -148,9 +152,9 @@ design system becomes a stylesheet.`,
     ],
     body: `## The three layers
 
-**Primitives** are raw values: \`cobalt-600\` is \`#3a4fdd\` and means nothing on its
+**Primitives** are raw values: \`cobalt-600\` is \`#1868db\` and means nothing on its
 own. Eight ramps (neutral, cobalt, aqua, jade, amber, crimson, azure, violet) of
-eleven to thirteen steps each.
+contrast-tested steps.
 
 **Semantic tokens** name roles: \`--sk-color-surface-raised\`,
 \`--sk-color-text-secondary\`, \`--sk-color-action-danger-bg\`. Each resolves to a
@@ -160,19 +164,21 @@ different primitive per theme. This is the only layer product code may touch.
 
 ## Why the ramp steps are where they are
 
-Two steps in the neutral ramp are pinned by contrast rather than by eye:
+The neutral ramp separates boundary contrast from readable text:
 
-- \`neutral-400\` (\`#8590a3\`) is the lightest grey that still clears **3:1 on
-  white**, so borders drawn with it are locatable (WCAG 1.4.11).
-- \`neutral-500\` (\`#676f82\`) is the lightest grey that clears **4.5:1 on the
-  subtle surface**, so tertiary text stays readable everywhere it appears.
+- \`neutral-400\` (\`#858585\`) provides visible control boundaries on white
+  and dark surfaces; semantic boundary pairings are audited at 3:1.
+- \`neutral-500\` (\`#555555\`) provides high-contrast supporting text on light
+  surfaces. It is not a dark-mode text recommendation.
+- Dark-mode text uses brighter achromatic steps: primary \`#fafafa\`, secondary
+  \`#f1f1f1\` and metadata \`#dedede\`. Do not reduce essential text opacity.
 
-Moving either of these lighter breaks a promise the system makes. The audit will
-catch it.
+Use semantic roles, not primitive steps, in product code. Re-run the declared
+contrast audit whenever a palette or mapping changes.
 
 ## The contrast contract
 
-The system declares 73 pairings and verifies each in all four themes — 292 checks
+The system declares 86 pairings and verifies each in all four themes — 344 checks
 in total. Run \`audit_theme\` to see them, or \`check_contrast\` for an arbitrary
 pair. The declared pairings are the promise; a pairing that is not declared is not
 promised, and must not be used to carry meaning.
@@ -323,6 +329,9 @@ used it for an hour.`,
       'Flex-first composition. Most Sekura layouts respond to their container and need no media query at all.',
     rules: [
       'Compose with flex. Use grid only for genuine two-dimensional alignment.',
+      'Align peer control borders, not the outer wrappers that include labels and hints. Use one size and density per control row.',
+      'For related labeled fields, use sk-field-row with label, sk-field__control and sk-field__support; place hints and errors in the support region.',
+      'Keep filter chips and view-density controls separate from the filter-input row. Never repair alignment with positional offsets.',
       'Horizontal groups set flex-wrap: wrap.',
       'Declare flex explicitly on children; do not rely on the 0 1 auto default.',
       'Set min-inline-size: 0 on any flex child that can contain text.',
@@ -340,6 +349,36 @@ Flex answers the right question implicitly. A wrapping flex row reflows when *it
 container* runs out of room, wherever that container happens to be. So most Sekura
 layouts contain no media query, and the ones that do are shell-level decisions
 (does the navigation rail persist?) rather than content decisions.
+
+## Control alignment contract
+
+1. **Choose the alignment edge.** Peer search boxes, selects, dates and buttons
+   align by their outer control borders. Icons align to the control centre. A
+   label-and-hint wrapper is not the alignment box.
+2. **Use matching size and density.** All small controls use the same
+   control-height-sm token, including compound search and date controls. Use
+   minimum sizes and token-derived padding; allow larger text and touch targets
+   to expand the row. Never compensate with top offsets, transforms or negative margins.
+3. **Separate label, control and support.** For side-by-side labeled fields use
+   sk-field-row. Each sk-field contains a label, a sk-field__control element or
+   compound-control wrapper, then a sk-field__support containing hints and errors.
+   Shared grid tracks align controls even when one label wraps. Supporting text
+   grows below the inputs. Keep aria-describedby pointing to the real hint/error IDs.
+4. **Treat action-only cells explicitly.** Use sk-field-row__actions for a button
+   beside labeled inputs. It occupies the control track without a fake label.
+   Plain unlabeled control rows may use a centre-aligned Cluster. Do not centre a
+   bare button against the whole height of a labeled field.
+5. **Keep secondary rows independent.** Applied-filter chips and view-density
+   choices belong in their own wrapping row. Their appearance must not move the
+   search or date controls. Preserve DOM order when wrapping; do not visually reorder.
+6. **Verify actual geometry.** At desktop widths, peer borders should share a top
+   edge and height within 1 CSS pixel. Test every density, long labels, multiline
+   hints, visible validation, 320px, 200% text, RTL and touch in Chromium, Firefox
+   and WebKit. Compare compound wrappers, not their borderless inner inputs.
+
+A sk-field-row uses shared label/control/support tracks where subgrid is supported
+and falls back to a single column otherwise. It wraps at a 14rem minimum column
+width; it must never squeeze date text or hide labels to preserve a single row.
 
 ## The four habits
 
@@ -807,7 +846,7 @@ common live-region bug.
 ## Forms
 
 - Visible, persistent labels. A placeholder is not a label.
-- Hint above the control, error below it.
+- Associate hints and errors through aria-describedby. In shared field rows, keep both in the support region below the aligned controls; standalone hints may precede the input.
 - \`aria-describedby\` listing hint then error, in that order — order determines
   reading order.
 - \`aria-invalid\` on failure, removed when fixed.

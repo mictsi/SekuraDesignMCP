@@ -330,7 +330,7 @@ export const layouts: LayoutRecipe[] = [
     regions: [
       { name: 'Page header', description: 'Title and cancel.', responsive: 'Standard wrap.' },
       { name: 'Error summary', description: 'Appears above the form after a failed submit, linking to each bad field.', responsive: 'Full width.' },
-      { name: 'Form sections', description: 'Fieldsets with legends.', responsive: 'Single column throughout. Related short fields may share a row via a Cluster.' },
+      { name: 'Form sections', description: 'Fieldsets with legends.', responsive: 'Single column throughout. Related short fields share label/control/support tracks through sk-field-row.' },
       { name: 'Action bar', description: 'Save and cancel.', responsive: 'Sticks to the bottom on long forms.' },
     ],
     components: ['page-header', 'fieldset', 'form-field', 'text-field', 'select', 'checkbox', 'alert', 'button', 'stack'],
@@ -376,15 +376,15 @@ export const layouts: LayoutRecipe[] = [
                    placeholder="Website redesign" aria-describedby="project-name-hint" spellcheck="false" />
           </div>
 
-          <!-- Value and unit share a row, wrapping rather than cramping -->
-          <div class="sk-cluster sk-cluster--gap-12 sk-cluster--align-start">
-            <div class="sk-field sk-cluster__grow">
+          <!-- Shared label and control tracks survive wrapping labels -->
+          <div class="sk-field-row">
+            <div class="sk-field">
               <label class="sk-field__label" for="reminder">Reminder</label>
-              <input class="sk-input" id="reminder" type="text" inputmode="numeric" value="3600" />
+              <input class="sk-input sk-field__control" id="reminder" type="text" inputmode="numeric" value="3600" />
             </div>
-            <div class="sk-field sk-cluster__grow">
+            <div class="sk-field">
               <label class="sk-field__label" for="env">Environment</label>
-              <div class="sk-select-wrapper"><select class="sk-select" id="env"> ... </select></div>
+              <div class="sk-select-wrapper sk-field__control"><select class="sk-select" id="env"> ... </select></div>
             </div>
           </div>
         </div>

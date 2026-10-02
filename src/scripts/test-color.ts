@@ -137,14 +137,15 @@ check('hsl: white is achromatic', (() => { const h = rgbToHsl('#ffffff'); return
  * Ramp step selection
  * ------------------------------------------------------------------ */
 
-const step = pickStepForContrast(neutral, '#ffffff', 4.5);
+// Fixed reference ramp tests selection independently of design palette revisions.
+const step = pickStepForContrast({ '100': '#aaaaaa', '500': '#666666', '900': '#111111' }, '#ffffff', 4.5);
 check('pickStep: finds a passing step', step !== null);
 check('pickStep: the chosen step really passes', step !== null && step.ratio >= 4.5);
 // It should pick the *lowest* passing step, so the palette stays calm rather
 // than defaulting everything to near-black.
 check(
   'pickStep: picks the lowest passing step, not the darkest',
-  step !== null && step.ratio < 6,
+  step !== null && step.step === '500',
   step ? `chose ${step.step} at ${step.ratio.toFixed(2)}` : ''
 );
 check('pickStep: returns null when nothing qualifies', pickStepForContrast(neutral, '#ffffff', 25) === null);

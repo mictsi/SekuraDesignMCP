@@ -1263,6 +1263,19 @@ export function layoutPage(): Page {
   });
 
   p.add(rules('responsive-layout'));
+  p.section('Align controls, not field wrappers', `<p class="docs-para">Use the same size and density for peer controls. Labeled fields share label, control and support tracks; hints and errors grow below the inputs. Action-only cells use <code class="sk-code">sk-field-row__actions</code>. Keep filter chips and view controls in their own row. Never use offsets or negative margins to patch alignment.</p>` + demo(`<div class="sk-field-row">
+  <div class="sk-field">
+    <label class="sk-field__label" for="align-project">Project name</label>
+    <input class="sk-input sk-field__control" id="align-project" value="Website redesign" aria-describedby="align-project-hint" />
+    <div class="sk-field__support"><p class="sk-field__hint" id="align-project-hint">Hints can wrap onto several lines without changing the position of the input next to them.</p></div>
+  </div>
+  <div class="sk-field">
+    <label class="sk-field__label" for="align-date">Due date</label>
+    <input class="sk-input sk-field__control" id="align-date" type="date" aria-describedby="align-date-hint" />
+    <div class="sk-field__support"><p class="sk-field__hint" id="align-date-hint">Optional.</p></div>
+  </div>
+</div>`) + `<p class="docs-para">Check matching border positions and heights within 1 CSS pixel at normal text size, then test long labels, errors, every density, mobile, RTL and enlarged text. Compare compound wrappers, not their inner inputs.</p>`);
+
 
   p.section(
     'Why flex first',

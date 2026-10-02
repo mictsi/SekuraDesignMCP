@@ -199,6 +199,7 @@ export const utilitiesCss = `@layer sk-utilities {
   @media (pointer: coarse) {
     .sk-button, .sk-icon-button, .sk-side-nav__item, .sk-menu__item, .sk-segmented__option { min-block-size: var(--sk-layout-touch-target); }
     .sk-icon-button { min-inline-size: var(--sk-layout-touch-target); }
+    .sk-field-row :is(.sk-input, .sk-search, .sk-select, .sk-button) { --sk-control-size: var(--sk-layout-touch-target); }
   }
 
 }`;

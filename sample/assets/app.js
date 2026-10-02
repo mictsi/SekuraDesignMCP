@@ -425,7 +425,7 @@
             existing.innerHTML =
               '<svg aria-hidden="true" focusable="false" width="16" height="16">' +
               '<use href="#sk-icon-warning"></use></svg><span></span>';
-            wrapper.appendChild(existing);
+            (wrapper.querySelector('.sk-field__support') || wrapper).appendChild(existing);
           }
           $('span', existing).textContent = message;
 

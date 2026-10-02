@@ -676,7 +676,7 @@ export const dataDisplayComponents: ComponentSpec[] = [
     whenToUse: ['Categorising: environment, record type, plan tier.', 'Counts beside a label.', 'Attributes such as "Beta" or "Deprecated".'],
     whenNotToUse: ['Resource state — use Status indicator, which is built for it.', 'Anything clickable — use a Chip or Button.', 'Long text. A badge holds one or two words.'],
     anatomy: [
-      { part: 'Container', required: true, description: 'Pill or rounded rectangle.' },
+      { part: 'Container', required: true, description: 'Compact rectangle with 4px corners.' },
       { part: 'Label', required: true, description: 'One or two words.' },
       { part: 'Icon', required: false, description: 'Leading, decorative.' },
       { part: 'Dot', required: false, description: 'Leading marker for extra non-colour distinction.' },
@@ -698,7 +698,7 @@ export const dataDisplayComponents: ComponentSpec[] = [
       { name: 'intent', type: "'neutral' | 'brand' | 'success' | 'warning' | 'danger'", default: "'neutral'", description: 'Colour.' },
       { name: 'solid', type: 'boolean', default: 'false', description: 'Filled instead of tinted.' },
     ],
-    tokensUsed: ['color-status-neutral-surface', 'color-status-neutral-text', 'color-status-neutral-border', 'color-surface-brand', 'color-text-on-brand', 'radius-full'],
+    tokensUsed: ['color-status-neutral-surface', 'color-status-neutral-text', 'color-status-neutral-border', 'color-surface-brand', 'color-text-on-brand', 'radius-sm'],
     darkMode:
       'Tinted badges carry a border in addition to the surface tint. In light mode the tint alone is enough to define the shape; on a dark page a 950-step tint against a 950-step surface has almost no edge, so the border is what makes the badge a discrete object. Solid badges need no border in either theme.',
     accessibility: {
@@ -728,7 +728,7 @@ export const dataDisplayComponents: ComponentSpec[] = [
   min-block-size: 1.5rem;
   padding-inline: var(--sk-space-8);
   border: var(--sk-border-width-hairline) solid transparent;
-  border-radius: var(--sk-radius-full);
+  border-radius: var(--sk-radius-sm);
   font-size: var(--sk-font-size-label-sm);
   line-height: var(--sk-line-height-label-sm);
   font-weight: var(--sk-font-weight-medium);

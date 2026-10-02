@@ -264,8 +264,13 @@ await test('tree keyboard navigation expands and selects visible items', async (
 await test('RTL popover tracks its anchor and stays inside the viewport', async () => {
   await go('example-list'); await page.evaluate(() => document.documentElement.dir = 'rtl');
   const trigger = page.locator('[data-sk-popover-target]'); await trigger.click();
-  const a = await trigger.boundingBox(), box = await page.locator('#project-filters').boundingBox();
-  assert.ok(Math.abs(a.x + a.width - box.x - box.width) < 2);
+  for (const width of [1280, 1920]) {
+    await page.setViewportSize({ width, height: 900 }); await settle();
+    const a = await trigger.boundingBox(), box = await page.locator('#project-filters').boundingBox();
+    // RTL start alignment is the right edge, unless viewport padding shifts it.
+    const expected = Math.max(8, Math.min(a.x + a.width - box.width, width - box.width - 8));
+    assert.ok(Math.abs(box.x - expected) < 2);
+  }
   for (const width of [390, 320]) {
     await page.setViewportSize({ width, height: 600 }); await settle();
     const r = await page.locator('#project-filters').boundingBox(); assert.ok(r.x >= 0 && r.x + r.width <= width && r.y + r.height <= 600);

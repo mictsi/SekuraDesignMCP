@@ -19,6 +19,9 @@ No application records, routes, permissions, or stored documents need migration.
 | Area | Version 2 | Version 3 alpha | Consumer action |
 |---|---|---|---|
 | Identity | Violet-leaning cobalt and blue-grey surfaces | Clear blue actions, neutral canvas and chrome | Remove literal color overrides; use semantic tokens |
+| Dark mode | Grey-blue surface and text steps | Deep charcoal surfaces; bright neutral text | Use semantic text tokens; remove opacity from essential text |
+| Badges | Capsule shape | 4px rectangular corners, matching tags | Remove custom pill-radius overrides |
+| Field rows | Independently stacked fields | Shared label/control/support tracks | Adopt `sk-field-row` for related fields; keep hints and errors in `sk-field__support` |
 | Typography | Inter and JetBrains Mono preferred | Platform sans and monospace, no font download | Check wrapping, translated labels, charts and PDFs |
 | Reading | Fluid page titles and a character-based measure | 32/40px titles, 16/24px body, 760px document column | Adopt `sk-document` where appropriate; heading semantics stay native |
 | Controls | Medium controls 40 / 36 / 32px by density | 36 / 32 / 28px, with 14px control text | Check composed toolbars and fixed row heights |
@@ -79,6 +82,11 @@ Exit: the application's existing workflows work using the matching alpha assets.
   `--sk-layout-detail-width`. Do not assume every toolbar is exactly 32px tall.
 - Migrate reading/detail views to `sk-document` and `sk-content-header` as useful.
   Keep data-intensive views wide; keep tables and code scrolling locally.
+- Align peer controls by their visible borders with matching size and density.
+  For related fields use `sk-field-row`, a label, `sk-field__control`, and
+  `sk-field__support`; put dynamic errors inside that support region. Use
+  `sk-field-row__actions` for unlabeled actions. Do not use offsets to align
+  unrelated wrappers. Keep applied chips and density controls in their own row.
 - Use `sk-activity-list` for recent work and compact resource listings. Preserve
   real links, row-specific action names, selection and filter state.
 - Use `sk-save-state` only with truthful application state. A local checkpoint is

@@ -65,7 +65,7 @@ Three things are deliberately different from most design systems:
   dark mode and why. Dark mode is a first-class theme with its own rules, not a
   filter applied to the light theme.
 - **The contrast contract is machine-verified.** The system declares 73 colour
-  pairings and verifies all of them across four themes — 292 checks — on every
+  pairings and verifies all of them across four themes — 344 checks — on every
   build. A palette change that breaks a promise fails the build.
 - **Layout is flex-first.** Composition primitives wrap rather than overflow, and
   widths are ideals rather than demands, so most layouts respond to their
@@ -146,7 +146,7 @@ Three layers, and product code may only touch the middle one.
 Primitives          Semantic                    Components
 ──────────          ────────                    ──────────
 cobalt-600     →    color-action-primary-bg  →  .sk-button--primary
-#3a4fdd             (per theme)                 background-color: var(--sk-color-action-primary-bg)
+#1868db             (per theme)                 background-color: var(--sk-color-action-primary-bg)
 ```
 
 **Primitives** are raw, context-free values. Eight ramps of 11–13 steps.
@@ -198,7 +198,7 @@ source, so a primitive edit propagates everywhere in one step.
 
 | Ramp | Role |
 |---|---|
-| `neutral` | Cool grey, slightly blue-cast. Surfaces, text, borders. |
+| `neutral` | Achromatic text and borders; deep charcoal surfaces. |
 | `cobalt` | Brand hue. Primary actions, selection, focus. |
 | `aqua` | Secondary accent. Non-action emphasis. |
 | `jade` | Success, healthy, applied. |
@@ -207,19 +207,17 @@ source, so a primitive edit propagates everywhere in one step.
 | `azure` | Informational, in progress. |
 | `violet` | **Reserved** for AI and automation affordances. |
 
-### 4.2 Two steps are pinned by contrast, not by eye
+### 4.2 Contrast governs the ramp
 
-- **`neutral-400` = `#8590a3`** — the lightest grey that still clears **3:1 on
-  white**, so borders drawn with it remain locatable (WCAG 1.4.11).
-- **`neutral-500` = `#676f82`** — the lightest grey that clears **4.5:1 on the
-  subtle surface**, so tertiary text stays readable wherever it appears.
-
-Moving either lighter breaks a promise the system makes, and the audit will catch
-it.
+`neutral-400` (`#858585`) supports visible control boundaries; `neutral-500`
+(`#555555`) supports light-mode text. Dark-mode readable text uses brighter neutral
+steps: primary `#fafafa`, secondary `#f1f1f1`, metadata `#dedede`. Use size, weight
+and spacing for hierarchy, never opacity on essential text. Product code uses
+semantic tokens, and palette changes must pass the declared contrast audit.
 
 ### 4.3 The contrast contract
 
-The system declares 73 pairings and verifies each in all four themes.
+The system declares 86 pairings and verifies each in all four themes.
 
 | Use | Ratio | Criterion |
 |---|---|---|
@@ -442,6 +440,29 @@ control uses `sk-density` for the application-wide preference.
 ---
 
 ## 8. Responsive layout
+
+Badges and tag tokens use 4px corners. Dark mode uses a deep charcoal canvas
+(`#121315`), panels (`#1a1a1a`) and overlays (`#22252a`); consumers use semantic
+tokens rather than these literal values.
+
+### Control alignment
+
+Align the **visible control borders**, not wrappers containing labels and hints.
+Peer controls use the same size modifier and density; their top edges and heights
+should match within 1 CSS pixel at normal text size. Use token-derived padding,
+never positional offsets, negative margins or transforms to conceal a mismatch.
+
+For related fields use `sk-field-row`, with each `sk-field` containing a visible
+label, `sk-field__control` and `sk-field__support` in that order. Put hints and errors
+inside the support region and keep their `aria-describedby` associations. Shared
+label tracks accommodate wrapping without shifting inputs. Put unlabeled actions
+in `sk-field-row__actions`; do not add empty labels. Keep chips and view controls
+in a separate wrapping row. Use a centre-aligned Cluster only for unlabeled peers.
+
+Check each density, long labels, multiline hints, validation, 320px, 200% text,
+RTL and touch in Chromium, Firefox and WebKit. Compare the outer search, date or
+number wrapper rather than its borderless input. Reflow to fewer columns before
+content clips; allow enlarged text and touch targets to increase control height.
 
 ### 8.1 Why flex first
 

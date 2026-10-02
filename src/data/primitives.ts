@@ -14,25 +14,25 @@
 export type Ramp = Record<string, string>;
 
 /**
- * Neutral — a restrained grey ramp. Slight chroma in middle steps keeps it from
- * looking muddy beside Cobalt, and stops dark surfaces reading as brown.
+ * Neutral — achromatic text steps and deep charcoal surfaces. Essential text
+ * stays neutral and readable; colour emphasis belongs to actions and status.
  */
 export const neutral: Ramp = {
   '0': '#ffffff',
-  '50': '#f7f8f9',
-  '100': '#f1f2f4',
-  '200': '#dcdfe4',
-  '300': '#b3b9c4',
-  '350': '#a9abaf',
-  '400': '#8590a2',
-  '500': '#626874',
-  '600': '#505761',
-  '700': '#414349',
-  '800': '#36383c',
-  '850': '#2b2c2f',
-  '900': '#292a2e',
-  '950': '#1f1f21',
-  '975': '#18191a',
+  '50': '#fafafa',
+  '100': '#f1f1f1',
+  '200': '#dedede',
+  '300': '#b8b8b8',
+  '350': '#a9a9a9',
+  '400': '#858585',
+  '500': '#555555',
+  '600': '#454545',
+  '700': '#3c3c3c',
+  '800': '#2b2b2b',
+  '850': '#22252a',
+  '900': '#1a1a1a',
+  '950': '#121315',
+  '975': '#0d0e10',
   '1000': '#000000',
 };
 

@@ -18,6 +18,10 @@ Build the site, then run `npm run demo:server`. Use `/form-lab.html`, `/example-
 ## Version 3 migration acceptance
 
 Use `/example-workspace.html` and `/migration.html` alongside the existing flows.
+Check `/example-list.html` search, filters and date inputs for matching control
+borders at all densities. On `/example-form.html`, use long labels, multiline
+hints and validation errors; they must not shift the schedule controls. Confirm
+that neutral text remains readable on the darker canvas and badges have 4px corners.
 Compare an application with and without `data-sk-geometry="v2"`. Check all three
 densities, custom brand tokens and long translated navigation labels. On mobile,
 open Details, follow a document heading, reopen and dismiss it, then confirm that

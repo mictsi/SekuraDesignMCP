@@ -27,46 +27,37 @@
         </div>
       </header>
 
-      <!-- Cluster: wraps to as many rows as it needs rather than overflowing.
-           This is what stops a toolbar producing a horizontal scrollbar at
-           360px, with no media query involved. -->
-      <div class="sk-cluster sk-cluster--gap-8">
-        <form class="sk-search sk-search--sm" role="search" onsubmit="return false">
-          <label class="sk-visually-hidden" for="project-q">Search projects</label>
-          <svg class="sk-search__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-search"></use></svg>
-          <input class="sk-search__input" id="project-q" type="search" autocomplete="off"
-                 placeholder="Search projects and owners"
-                 aria-controls="project-table"
-                 data-sk-filter-input="#project-table" />
-        </form>
-
-        <button type="button" class="sk-button sk-button--secondary sk-button--sm"
-                data-sk-popover-target="project-filters" aria-expanded="false" aria-controls="project-filters">
-          <svg class="sk-button__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-filter"></use></svg>
-          <span class="sk-button__label">Filters</span>
-          <span class="sk-badge sk-badge--brand sk-badge--sm" data-sk-filter-count>0</span>
-        </button>
-
-        <span class="sk-cluster sk-cluster--gap-8" data-sk-filter-chips></span>
-
-        <!-- A date range is two inputs, never one combined "12 Aug – 21 Aug"
-             box: a screen reader announces that as a single value and a
-             keyboard user cannot edit half of it. -->
-        <div class="sk-cluster sk-cluster--gap-8 sk-cluster--align-start">
-          <div class="sk-field">
-            <label class="sk-field__label" for="due-from">Due from</label>
-            <input class="sk-input sk-input--sm" id="due-from" type="date"
-                   placeholder="From" autocomplete="off" spellcheck="false" />
-          </div>
-          <div class="sk-field">
-            <label class="sk-field__label" for="due-to">Due to</label>
-            <input class="sk-input sk-input--sm" id="due-to" type="date"
-                   placeholder="To" autocomplete="off" spellcheck="false" />
-          </div>
+      <!-- Align label, control and support on shared tracks. Chips and row
+           density are separate so their wrapping cannot move filter controls. -->
+      <div class="sk-field-row" data-sk-project-filters>
+        <div class="sk-field">
+          <label class="sk-field__label" for="project-q">Search projects</label>
+          <form class="sk-search sk-search--sm sk-field__control" role="search" onsubmit="return false">
+            <svg class="sk-search__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-search"></use></svg>
+            <input class="sk-search__input" id="project-q" type="search" autocomplete="off"
+                   placeholder="Projects and owners" aria-controls="project-table" data-sk-filter-input="#project-table" />
+          </form>
         </div>
-
+        <div class="sk-field">
+          <label class="sk-field__label" for="due-from">Due from</label>
+          <input class="sk-input sk-input--sm sk-field__control" id="due-from" type="date" autocomplete="off" />
+        </div>
+        <div class="sk-field">
+          <label class="sk-field__label" for="due-to">Due to</label>
+          <input class="sk-input sk-input--sm sk-field__control" id="due-to" type="date" autocomplete="off" />
+        </div>
+        <div class="sk-field-row__actions">
+          <button type="button" class="sk-button sk-button--secondary sk-button--sm"
+                  data-sk-popover-target="project-filters" aria-expanded="false" aria-controls="project-filters">
+            <svg class="sk-button__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-filter"></use></svg>
+            <span class="sk-button__label">Filters</span>
+            <span class="sk-badge sk-badge--brand sk-badge--sm" data-sk-filter-count>0</span>
+          </button>
+        </div>
+      </div>
+      <div class="sk-cluster sk-cluster--gap-8">
+        <span class="sk-cluster sk-cluster--gap-8" data-sk-filter-chips></span>
         <span class="sk-cluster__push"></span>
-
         <div class="sk-segmented" role="radiogroup" aria-label="Project row density"
              aria-describedby="project-density-hint" data-sk-segmented data-sk-density-target="project-table">
           <button type="button" class="sk-segmented__option" role="radio" data-sk-density-option="comfortable">Comfortable</button>

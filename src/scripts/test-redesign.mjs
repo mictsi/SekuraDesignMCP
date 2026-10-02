@@ -13,10 +13,61 @@ try {
   for (const [name, engine] of Object.entries({ chromium, firefox, webkit })) {
     const browser = await engine.launch();
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce' });
+    page.setDefaultTimeout(5000);
     const errors = [];
     page.on('pageerror', e => errors.push(e.message));
-    const test = async (label, run) => { try { await run(); passed++; console.log(`PASS ${name}: ${label}`); } catch (e) { failures.push(`${name}: ${label}: ${e.message}`); } };
+    const test = async (label, run) => { try { await page.setViewportSize({ width: 1440, height: 1000 }); await run(); passed++; console.log(`PASS ${name}: ${label}`); } catch (e) { failures.push(`${name}: ${label}: ${e.message}`); } };
     try {
+      await test('project search, dates and filters share border alignment in every density', async () => {
+        await page.goto(base + '/example-list.html');
+        const selector = '[data-sk-project-filters] .sk-field__control, [data-sk-project-filters] button';
+        for (const [density, height] of [['comfortable', 32], ['compact', 28], ['dense', 24]]) {
+          await page.evaluate(mode => document.documentElement.dataset.skDensity = mode, density);
+          await page.waitForFunction(({ selector, height }) => Array.from(document.querySelectorAll(selector)).every(el => Math.abs(el.getBoundingClientRect().height - height) < 1), { selector, height }, { timeout: 1500 });
+          const boxes = await page.locator(selector).evaluateAll(es => es.map(el => { const r = el.getBoundingClientRect(); return { top: r.top, height: r.height }; }));
+          assert.ok(boxes.every(r => Math.abs(r.height - height) < 1 && Math.abs(r.top - boxes[0].top) < 1), JSON.stringify({ density, boxes }));
+        }
+        await page.locator('label[for=due-from]').evaluate(el => { el.textContent = 'Earliest planned delivery date for the selected project group'; });
+        const tops = await page.locator(selector).evaluateAll(es => es.map(el => el.getBoundingClientRect().top));
+        assert.ok(Math.max(...tops) - Math.min(...tops) < 1, 'wrapped label shifts the control track');
+        await page.locator('label[for=due-from]').evaluate(el => { el.textContent = 'Due from'; });
+        await page.locator('#due-from').fill('2026-08-01');
+        await page.locator('#due-to').fill('2026-12-31');
+        await page.locator('#project-q').fill('Website');
+        assert.equal(await page.locator('#project-table tbody tr:visible').count(), 1);
+        await page.evaluate(() => { document.documentElement.dataset.skTheme = 'dark'; document.documentElement.dataset.skDensity = 'comfortable'; });
+        await page.screenshot({ animations: 'disabled', path: `.run/review/${name}-project-charcoal.png` });
+        const style = await page.locator('.sk-badge').first().evaluate(el => ({ radius: getComputedStyle(el).borderTopLeftRadius, text: getComputedStyle(document.documentElement).getPropertyValue('--sk-color-text-secondary').trim() }));
+        assert.equal(style.radius, '4px'); assert.equal(style.text, '#f1f1f1');
+        await page.setViewportSize({ width: 320, height: 800 });
+        await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+        for (const dir of ['ltr', 'rtl']) {
+          await page.evaluate(value => document.documentElement.dir = value, dir);
+          assert.equal(await page.locator('main').evaluate(el => el.scrollWidth <= el.clientWidth + 1), true);
+        }
+        await page.setViewportSize({ width: 1440, height: 1000 });
+      });
+      await test('schedule inputs align despite long labels, hints and validation', async () => {
+        await page.goto(base + '/example-form.html');
+        const controls = page.locator('[data-sk-project-schedule] .sk-field__control');
+        await page.locator('label[for=start-date]').evaluate(el => { el.textContent = 'Planned start date for this project and its dependent work'; });
+        await page.locator('#start-date-hint').evaluate(el => { el.textContent = 'Long translated guidance. '.repeat(12); });
+        await page.locator('#target-days').fill(''); await page.locator('#target-days').blur();
+        assert.equal(await page.locator('#target-days-error').isVisible(), true);
+        assert.equal(await page.locator('#target-days-error').evaluate(el => el.parentElement.classList.contains('sk-field__support')), true);
+        const boxes = await controls.evaluateAll(es => es.map(el => { const r = el.getBoundingClientRect(); return { top: r.top, height: r.height }; }));
+        assert.ok(Math.abs(boxes[0].top - boxes[1].top) < 1 && Math.abs(boxes[0].height - boxes[1].height) < 1, JSON.stringify(boxes));
+        await page.locator('#target-days').fill('45'); await page.locator('#target-days').blur();
+        assert.equal(await page.locator('#target-days-error').count(), 0);
+      });
+      await test('touch input expands every peer in the filter row consistently', async () => {
+        const touch = await browser.newContext({ hasTouch: true, viewport: { width: 1440, height: 1000 } });
+        try {
+          const mobile = await touch.newPage(); await mobile.goto(base + '/example-list.html');
+          const heights = await mobile.locator('[data-sk-project-filters] .sk-field__control, [data-sk-project-filters] button').evaluateAll(es => es.map(el => el.getBoundingClientRect().height));
+          assert.ok(heights.every(h => h >= 44) && Math.max(...heights) - Math.min(...heights) < 1, JSON.stringify(heights));
+        } finally { await touch.close(); }
+      });
       await test('notes and stars persist locally; storage failure preserves the draft', async () => {
         await page.goto(base + '/example-workspace.html');
         await page.locator('#workspace-note').fill('Review the next decision with the team.');
@@ -62,7 +113,7 @@ try {
         assert.equal(await page.locator('#workspace-details').getAttribute('aria-modal'), 'true');
         assert.equal(await page.locator('.sk-document').evaluate(el => el.inert), true);
         assert.equal(await page.locator('.sk-drawer__backdrop').count(), 1);
-        await page.screenshot({ path: `.run/review/${name}-workspace-details.png` });
+        await page.screenshot({ animations: 'disabled', path: `.run/review/${name}-workspace-details.png` });
         await page.keyboard.press('Escape');
         assert.equal(await page.locator('#workspace-details').isVisible(), false);
         assert.equal(await page.locator('.sk-document').evaluate(el => el.inert), false);
@@ -110,10 +161,10 @@ try {
         await page.goto(base + '/example-workspace.html');
         for (const theme of ['light', 'dark']) {
           await page.evaluate(theme => document.documentElement.dataset.skTheme = theme, theme);
-          await page.screenshot({ path: `.run/review/${name}-workspace-${theme}.png` });
+          await page.screenshot({ animations: 'disabled', path: `.run/review/${name}-workspace-${theme}.png` });
         }
         await page.setViewportSize({ width: 390, height: 844 });
-        await page.screenshot({ path: `.run/review/${name}-workspace-mobile.png` });
+        await page.screenshot({ animations: 'disabled', path: `.run/review/${name}-workspace-mobile.png` });
         await page.addStyleTag({ content: 'html { font-size: 200%; }' });
         for (const dir of ['ltr', 'rtl']) {
           await page.evaluate(dir => document.documentElement.dir = dir, dir);

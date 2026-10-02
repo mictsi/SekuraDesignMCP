@@ -315,9 +315,11 @@ export const layoutComponents: ComponentSpec[] = [
   text-wrap: pretty;
 }
 
-/* Actions never shrink below their content and wrap as a unit. */
+/* The action group can shrink to the available row, then wrap its buttons. */
 .sk-page-header__actions {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  min-inline-size: 0;
+  max-inline-size: 100%;
   display: flex;
   flex-wrap: wrap;
   align-items: center;

@@ -1234,11 +1234,13 @@ Work in this order:
 3. \`get_component\` for each component you will use, then \`get_component_code\` for the markup and CSS.
 4. \`get_foundation({ id: "responsive-layout" })\` before writing any layout CSS.
 5. \`get_foundation({ id: "workspace-design" })\` for the v3 visual direction and migration boundaries. Preserve existing integration names.
-5. \`validate_integration\` with the selected components, markup, stylesheets, initialization and handled events; then compile, mount and exercise application outcomes.
+6. \`validate_integration\` with the selected components, markup, stylesheets, initialization and handled events; then compile, mount and exercise application outcomes.
 
 Hard requirements:
 - Semantic tokens only. No hex values, no primitive tokens, no arbitrary spacing.
 - Flex-first: horizontal groups wrap, text-bearing flex children get \`min-inline-size: 0\`, widths are \`flex-basis\` not \`width\`.
+- Align peer control borders with matching size/density. For labeled rows use sk-field-row: label, sk-field__control, sk-field__support. Put hints/errors below controls and action-only cells in sk-field-row__actions. Keep chips and view controls separate. No positional alignment patches.
+- Verify aligned top edges and heights within 1 CSS pixel, including long labels, errors, every density, mobile, RTL and enlarged text.
 - Must work in light and dark. Check the dark-mode note on every component you use.
 - Every interactive element keyboard operable with a visible focus indicator.
 - Loading, empty, error and no-access states all designed, not just the happy path.`,
