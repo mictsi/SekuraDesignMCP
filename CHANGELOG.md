@@ -9,6 +9,10 @@ it, and `npm run check:version` fails the build if a literal drifts back in.
 
 ## 3.0.0-alpha.0 — 2026-10-02
 
+- Replace curved inset selection rails with consistent 4px leading accents across side navigation, tree rows, table selection, combobox options, command results and documentation section navigation, including RTL and forced colors.
+- Complete the ten beta implementations: reusable command palette, async and multi-select comboboxes, exact/range sliders, tri-state lazy trees, robust upload retries, and documented workspace/timeline states. Keep beta maturity pending the human acceptance required by DESIGN.md.
+- Add advanced workbench examples, explicit controller/data boundaries and cross-browser completion regressions to verify, CI and run.sh build.
+
 - Align search, filter and native date controls; add shared field rows, explicit alignment guidance and cross-browser geometry checks.
 - Use rectangular badges with 4px corners and deeper neutral charcoal dark surfaces.
 

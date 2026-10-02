@@ -1436,13 +1436,15 @@ export const formComponents: ComponentSpec[] = [
       { name: 'Collapsed', description: 'Input only.', trigger: 'default' },
       { name: 'Expanded', description: 'Listbox open, aria-expanded="true".', trigger: '[aria-expanded="true"]' },
       { name: 'Active option', description: 'Visually highlighted via aria-activedescendant. DOM focus stays in the input throughout.', trigger: '[data-active]' },
-      { name: 'Loading', description: 'Spinner in the input, "Searching…" in the live region.', trigger: '[data-loading]' },
-      { name: 'No results', description: 'Explanatory empty state offering a next step.', trigger: '[data-empty]' },
+      { name: 'Loading', description: 'Searching message and busy semantics while results load.', trigger: '[aria-busy="true"]' },
+      { name: 'No results', description: 'Explanatory empty state offering a next step.', trigger: '[data-sk-combobox-message]' },
     ],
     props: [
       { name: 'options', type: 'Array<{value, label, description?}>', required: true, description: 'Current option list.' },
       { name: 'multiple', type: 'boolean', default: 'false', description: 'Token multi-select.' },
-      { name: 'onSearch', type: '(query: string) => void', description: 'Async search callback. Debounce at 250ms.' },
+      { name: 'onSearch', type: '(query: string) => void', description: 'Legacy DOM search callback; call refresh after changing options.' },
+      { name: 'loadOptions', type: '(query, signal) => Promise<ComboboxItem[]>', description: 'Managed async results with debounce, cancellation, empty and error states.' },
+      { name: 'displayLabel', type: 'boolean', default: 'false', description: 'Display labels instead of the legacy value; read selected IDs through values or the change event.' },
       { name: 'allowCustom', type: 'boolean', default: 'false', description: 'Permit values not in the list.' },
     ],
     tokensUsed: ['color-surface-overlay', 'color-surface-selected', 'color-border-default', 'color-focus-ring', 'elevation-3', 'radius-md'],
@@ -1508,7 +1510,8 @@ export const formComponents: ComponentSpec[] = [
     css: `.sk-combobox--sm { --sk-control-size: var(--sk-control-height-sm); }
 .sk-combobox { position: relative; display: flex; flex-direction: column; min-inline-size: 0; }
 
-.sk-combobox__list {
+.sk-combobox__list,
+.sk-combobox__popup {
   position: absolute;
   inset-block-start: calc(100% + var(--sk-space-4));
   inset-inline: 0;
@@ -1526,6 +1529,9 @@ export const formComponents: ComponentSpec[] = [
   border-radius: var(--sk-radius-md);
   box-shadow: var(--sk-elevation-3);
 }
+
+.sk-combobox__popup { inset-inline-end: auto; }
+.sk-combobox__popup > .sk-combobox__list { position: static; margin: 0; padding: 0; border: 0; box-shadow: none; max-block-size: min(18rem, calc(100dvh - 4rem)); animation: none; }
 
 .sk-combobox__option {
   display: flex;
@@ -1552,13 +1558,19 @@ export const formComponents: ComponentSpec[] = [
   background-color: var(--sk-color-surface-selected);
 }
 /* Selection is not colour-only: the active option also gains a leading brand bar. */
-.sk-combobox__option[data-active] { box-shadow: inset 3px 0 0 0 var(--sk-color-border-brand); }
+.sk-combobox__option[data-active] { position: relative; }
+.sk-combobox__option[data-active]::before { content: ""; position: absolute; inset-inline-start: 0; inset-block: var(--sk-space-4); inline-size: var(--sk-space-4); border-radius: var(--sk-radius-xs); background-color: var(--sk-color-border-brand); }
+@media (forced-colors: active) { .sk-combobox__option[data-active]::before { background-color: HighlightText; forced-color-adjust: none; } }
+
 
 .sk-combobox__empty {
+  margin: 0;
   padding: var(--sk-space-16) var(--sk-space-12);
   font-size: var(--sk-font-size-body-sm);
   color: var(--sk-color-text-secondary);
 }
+
+@media (pointer: coarse) { .sk-combobox__remove, .sk-combobox__option { min-block-size: 2.75rem; min-inline-size: 2.75rem; } }
 
 /* --- Multi-select tokens --- */
 .sk-combobox--multi .sk-combobox__field {
@@ -1580,8 +1592,15 @@ export const formComponents: ComponentSpec[] = [
 .sk-combobox--multi .sk-input { flex: 1 1 6rem; min-inline-size: 0; border: none; background: transparent; }
 .sk-combobox--multi .sk-input:focus-visible { outline: none; }
 
+.sk-combobox__tokens { display: contents; }
+.sk-combobox__remove { display: inline-flex; align-items: center; justify-content: center; min-inline-size: 1.5rem; min-block-size: 1.5rem; padding: 0; border: 0; border-radius: var(--sk-radius-sm); background: transparent; color: inherit; cursor: pointer; }
+.sk-combobox__remove:focus-visible { outline: var(--sk-focus-ring-width) solid var(--sk-color-focus-ring); outline-offset: var(--sk-focus-ring-offset); }
+.sk-combobox__remove:disabled, .sk-combobox__option[aria-disabled="true"] { cursor: not-allowed; }
+.sk-combobox__option[aria-selected="true"] { font-weight: var(--sk-font-weight-semibold); }
 .sk-combobox__token {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
   display: inline-flex;
   align-items: center;
   gap: var(--sk-space-4);
@@ -1603,7 +1622,8 @@ export const formComponents: ComponentSpec[] = [
    background — both discarded. aria-activedescendant is still correct, but a
    sighted HCM user would have nothing to look at. */
 @media (forced-colors: active) {
-  .sk-combobox__list { border: 1px solid CanvasText; }
+  .sk-combobox__list, .sk-combobox__popup { border: 1px solid CanvasText; }
+  .sk-combobox__popup > .sk-combobox__list { border: 0; }
   .sk-combobox__option[data-active],
   .sk-combobox__option:hover { background-color: Highlight; color: HighlightText; }
 }
@@ -1810,7 +1830,7 @@ export const formComponents: ComponentSpec[] = [
       { name: 'Rest', description: 'Track, fill and thumb.', trigger: 'default' },
       { name: 'Hover', description: 'Thumb grows slightly.', trigger: ':hover' },
       { name: 'Focus visible', description: 'Ring around the thumb.', trigger: ':focus-visible' },
-      { name: 'Dragging', description: 'Thumb enlarged; readout updates continuously but is announced only on release.', trigger: '[data-dragging]' },
+      { name: 'Dragging', description: 'Native range value and readout update; no duplicate live-region announcements.', trigger: ':active' },
       { name: 'Disabled', description: 'Grey throughout.', trigger: ':disabled' },
     ],
     props: [
@@ -1834,7 +1854,7 @@ export const formComponents: ComponentSpec[] = [
         'aria-valuenow, aria-valuemin and aria-valuemax are supplied by the native input.',
         'aria-valuetext is essential whenever the raw number is not self-explanatory: "3600 seconds (1 hour)", not "3600".',
         'Each thumb of a range slider needs its own accessible name: "Earliest due date", "Latest due date".',
-        'Announce on release, not during drag — continuous announcement floods the screen reader.',
+        'Let the native slider announce value changes; keep the duplicate output aria-live=off.',
       ],
       wcag: ['1.4.11 Non-text Contrast.', '2.1.1 Keyboard.', '2.5.1 Pointer Gestures — dragging must have a keyboard equivalent, which the native input provides.', '2.5.8 Target Size.', '4.1.2 Name, Role, Value.'],
       screenReader: 'Announced as "<label>, slider, <valuetext>, minimum <min>, maximum <max>".',
@@ -1861,6 +1881,7 @@ export const formComponents: ComponentSpec[] = [
     <input class="sk-slider__input" id="reminder-slider" type="range"
            min="60" max="86400" step="60" value="3600"
            data-sk-unit="seconds" aria-valuetext="3600 seconds, 1 hour" />
+    <input class="sk-input sk-slider__number" type="number" data-sk-slider-value="reminder-slider" aria-label="Exact reminder lead time in seconds" min="60" max="86400" step="60" value="3600" />
     <output class="sk-slider__output" for="reminder-slider">1 hour</output>
   </div>
 </div>`,
@@ -1870,6 +1891,13 @@ export const formComponents: ComponentSpec[] = [
   gap: var(--sk-space-16);
   min-inline-size: 0;
 }
+
+.sk-slider--with-input { flex-wrap: wrap; }
+.sk-slider__number { flex: 0 1 7rem; inline-size: 7rem; min-inline-size: 0; }
+.sk-slider--range { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sk-space-12); }
+.sk-slider__bound { display: grid; grid-template-columns: minmax(0, 1fr) minmax(4rem, 7rem); align-items: center; gap: var(--sk-space-8); }
+.sk-slider__bound > label { grid-column: 1 / -1; }
+.sk-slider__bound .sk-slider__number { inline-size: 100%; }
 
 /* The track takes all available width; the readout keeps its intrinsic size. */
 .sk-slider__input {
@@ -1949,6 +1977,8 @@ export const formComponents: ComponentSpec[] = [
 }
 
 @media (pointer: coarse) {
+  .sk-slider__input { min-block-size: 2.75rem; }
+  .sk-slider__input::-moz-range-thumb { inline-size: 1.75rem; block-size: 1.75rem; }
   .sk-slider__input::-webkit-slider-thumb { inline-size: 1.75rem; block-size: 1.75rem; margin-block-start: -0.6875rem; }
 }
 
@@ -1997,13 +2027,15 @@ export const formComponents: ComponentSpec[] = [
       { name: 'Empty', description: 'Prompt and constraints.', trigger: 'default' },
       { name: 'Drag over', description: 'Brand border and tint. Must not be the only indication a drop will work.', trigger: '[data-dragover]' },
       { name: 'Uploading', description: 'Per-file progress bar with a cancel button.', trigger: '[data-uploading]' },
-      { name: 'Complete', description: 'Success icon per file.', trigger: '[data-complete]' },
-      { name: 'Rejected', description: 'File listed with the specific reason it was refused.', trigger: '[data-rejected]' },
+      { name: 'Complete', description: 'Explicit Uploaded text per file.', trigger: '[data-complete]' },
+      { name: 'Rejected', description: 'Visible status names each refused file and its reason; accepted files remain selected.', trigger: 'role=status text' },
+      { name: 'Failed', description: 'Keep the file with Retry and Remove buttons.', trigger: '[data-error]' },
     ],
     props: [
       { name: 'accept', type: 'string', description: 'MIME types or extensions. Also state them in visible text — accept is a hint, not validation.' },
       { name: 'multiple', type: 'boolean', default: 'false', description: 'Allow several files.' },
-      { name: 'maxSize', type: 'number', description: 'Bytes. Enforce on the server as well.' },
+      { name: 'maxSize', type: 'number', description: 'Bytes. Map to createUpload(root, { maxBytes }) or data-sk-max-bytes. Enforce on the server as well.' },
+      { name: 'upload', type: '(file, signal, progress) => Promise<void>', description: 'Application transport. Without it this control selects files only.' },
     ],
     tokensUsed: ['color-border-default', 'color-border-brand', 'color-surface-sunken', 'color-surface-selected', 'color-status-danger-text', 'radius-lg'],
     darkMode:
@@ -2083,6 +2115,9 @@ export const formComponents: ComponentSpec[] = [
               background-color var(--sk-duration-fast) var(--sk-easing-standard);
 }
 
+.sk-upload--compact .sk-upload__zone { align-items: flex-start; padding: 0; border: 0; background: transparent; }
+.sk-upload--compact .sk-upload__icon, .sk-upload--compact .sk-upload__hint-drag { display: none; }
+.sk-upload__file[data-error] { border-color: var(--sk-color-field-border-error); }
 .sk-upload__icon { fill: var(--sk-color-text-tertiary); }
 
 .sk-upload__prompt {

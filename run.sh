@@ -321,6 +321,7 @@ cmd_build() {
     npm run --silent test:browsers | sed -n -E '/Cross-browser workflows:|failed/s/^/    /p'
     npm run --silent test:design
     npm run --silent test:redesign
+    npm run --silent test:completion
   fi
 
   if have_docker; then

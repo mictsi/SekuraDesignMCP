@@ -290,7 +290,7 @@ export const navigationComponents: ComponentSpec[] = [
       { part: 'Nav landmark', required: true, description: '<nav aria-label="Primary">. The label is what distinguishes it from other navs.' },
       { part: 'Groups', required: false, description: 'Labelled sections. Group labels are headings, not clickable.' },
       { part: 'Items', required: true, description: 'Links with an icon and a visible text label.' },
-      { part: 'Current marker', required: true, description: 'aria-current="page" plus a 3px leading bar. Two signals, not one.' },
+      { part: 'Current marker', required: true, description: 'aria-current="page" plus a 4px leading bar. Two signals, not one.' },
       { part: 'Nested items', required: false, description: 'One level of nesting only, inside a disclosure.' },
       { part: 'Collapse toggle', required: false, description: 'Shrinks the rail to icons. Persisted per user.' },
     ],
@@ -306,7 +306,7 @@ export const navigationComponents: ComponentSpec[] = [
     states: [
       { name: 'Rest', description: 'Items at text-secondary.', trigger: 'default' },
       { name: 'Hover', description: 'Subtle wash, text goes primary.', trigger: ':hover' },
-      { name: 'Current', description: 'Selected surface, brand text, 3px leading bar, aria-current="page".', trigger: '[aria-current="page"]' },
+      { name: 'Current', description: 'Selected surface, brand text, 4px leading bar, aria-current="page".', trigger: '[aria-current="page"]' },
       { name: 'Focus visible', description: 'Inset focus ring so it is not clipped by the rail edge.', trigger: ':focus-visible' },
       { name: 'Expanded group', description: 'Disclosure open, aria-expanded="true".', trigger: '[aria-expanded="true"]' },
     ],
@@ -317,7 +317,7 @@ export const navigationComponents: ComponentSpec[] = [
     ],
     tokensUsed: ['color-surface-subtle', 'color-surface-selected', 'color-text-secondary', 'color-text-brand', 'color-border-brand', 'color-focus-ring', 'radius-md'],
     darkMode:
-      'The current-page marker is the detail that breaks. In light mode a cobalt-50 tint is plainly visible; in dark mode cobalt-950 against neutral-950 is nearly identical in lightness. The 3px brand-coloured leading bar is therefore not decorative — it is the primary signal in dark mode, and the tint is the secondary one. Any implementation that ships only the tint will look broken to dark-mode users.',
+      'The current-page marker is the detail that breaks. In light mode a cobalt-50 tint is plainly visible; in dark mode cobalt-950 against neutral-950 is nearly identical in lightness. The 4px brand-coloured leading bar is therefore not decorative — it is the primary signal in dark mode, and the tint is the secondary one. Any implementation that ships only the tint will look broken to dark-mode users.',
     accessibility: {
       role: '<nav aria-label="Primary"> containing a <ul>.',
       keyboard: [
@@ -446,9 +446,9 @@ export const navigationComponents: ComponentSpec[] = [
   content: "";
   position: absolute;
   inset-inline-start: 0;
-  inset-block: var(--sk-space-6);
-  inline-size: 3px;
-  border-radius: var(--sk-radius-full);
+  inset-block: var(--sk-space-4);
+  inline-size: var(--sk-space-4);
+  border-radius: var(--sk-radius-xs);
   background-color: var(--sk-color-border-brand);
 }
 
@@ -491,7 +491,7 @@ export const navigationComponents: ComponentSpec[] = [
 @media (forced-colors: active) {
   .sk-side-nav { border-inline-end: 1px solid CanvasText; }
   .sk-side-nav__item[aria-current="page"] { background-color: Highlight; color: HighlightText; }
-  .sk-side-nav__item[aria-current="page"]::before { background-color: HighlightText; }
+  .sk-side-nav__item[aria-current="page"]::before { background-color: HighlightText; forced-color-adjust: none; }
   .sk-side-nav__item:focus-visible { outline-color: Highlight; }
 }
 `,
@@ -1427,18 +1427,19 @@ a.sk-stepper__link:focus-visible {
     ],
     variants: [
       { name: 'Default', className: 'sk-command-palette', description: 'Search plus grouped results.', use: 'Standard.' },
-      { name: 'Scoped', className: 'sk-command-palette--scoped', description: 'Restricted to one kind, entered with a prefix such as ">" for actions.', use: 'Power users who know what they want.' },
+      { name: 'Scoped', className: 'sk-command-palette--scoped', description: 'The application provider interprets a prefix such as ">" and returns commands in that scope.', use: 'Power users who know what they want.' },
     ],
     sizes: [{ name: 'Medium', className: '', height: '32rem max', typeStyle: 'body-md', description: 'The only size.' }],
     states: [
       { name: 'Closed', description: 'Not rendered.', trigger: 'default' },
       { name: 'Open, empty', description: 'Recent items and suggested actions.', trigger: '[data-empty-query]' },
-      { name: 'Searching', description: 'Debounced loading state that does not clear the previous results — a flashing empty list is worse than slightly stale results.', trigger: '[data-loading]' },
+      { name: 'Searching', description: 'A visible searching message replaces stale options so they cannot execute.', trigger: '[aria-busy="true"]' },
       { name: 'Results', description: 'Grouped, with the first item active.', trigger: '[data-results]' },
-      { name: 'No results', description: 'Suggestions and a "search everywhere" escape hatch.', trigger: '[data-no-results]' },
+      { name: 'No results', description: 'A visible message suggests trying another query.', trigger: '[data-no-results]' },
+      { name: 'Failed search', description: 'Keep the query and show a type-to-retry message.', trigger: '[data-error]' },
     ],
     props: [
-      { name: 'sources', type: 'CommandSource[]', required: true, description: 'Providers for each result kind.' },
+      { name: 'sources', type: 'Array<(query, signal) => Promise<CommandItem[]>>', description: 'Optional providers returning id, label, context, group and disabled. Without providers, searches authored options.' },
       { name: 'shortcut', type: 'string', default: "'Mod+K'", description: 'Opening shortcut. Mod is Cmd on macOS, Ctrl elsewhere.' },
       { name: 'recentLimit', type: 'number', default: '5', description: 'Recent items shown on an empty query.' },
     ],
@@ -1472,30 +1473,30 @@ a.sk-stepper__link:focus-visible {
       'Show the discoverable shortcut in the top bar button so users learn it.',
     ],
     dos: [
-      'Keep the previous results visible while loading.',
-      'Rank recent and frequent items first.',
+      'Keep the query visible and announce loading; prevent stale commands from running.',
+      'Show session recents first on an empty query; providers own other ranking.',
       'Show the keyboard shortcut somewhere visible so it is discoverable.',
     ],
     donts: [
       'Do not make the palette the only path to a feature.',
       'Do not steal Mod+K while a text input has focus.',
-      'Do not clear results to an empty list mid-search.',
+      'Do not leave an empty list without a searching, retry or no-results message.',
     ],
     html: `<div class="sk-command-palette" role="dialog" aria-modal="true" aria-label="Command palette">
   <div class="sk-command-palette__panel">
     <div class="sk-command-palette__search">
       <svg aria-hidden="true" focusable="false" width="20" height="20"><use href="#sk-icon-search" /></svg>
       <input class="sk-command-palette__input" type="text" role="combobox"
-             aria-expanded="true" aria-controls="cp-results" aria-autocomplete="list"
-             aria-activedescendant="cp-item-0" autocomplete="off"
-             placeholder="Search projects, tasks and actions" />
-      <kbd class="sk-kbd">Esc</kbd>
+             aria-expanded="true" aria-controls="command-example-results" aria-autocomplete="list"
+             aria-activedescendant="command-example-item-0" autocomplete="off"
+             placeholder="Search projects, tasks and actions" aria-label="Search commands" />
+      <button type="button" class="sk-button sk-button--ghost sk-button--sm" data-sk-palette-close aria-label="Close command palette">Close</button>
     </div>
 
-    <div class="sk-command-palette__results" id="cp-results" role="listbox" aria-label="Results">
+    <div class="sk-command-palette__results" id="command-example-results" role="listbox" aria-label="Results">
       <div role="group" aria-label="Navigation">
         <p class="sk-command-palette__group-label" aria-hidden="true">Navigation</p>
-        <div class="sk-command-palette__item" id="cp-item-0" role="option" aria-selected="true" data-active>
+        <div class="sk-command-palette__item" id="command-example-item-0" role="option" aria-selected="true" data-active>
           <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-globe" /></svg>
           <span class="sk-command-palette__label">Projects</span>
           <span class="sk-command-palette__context">128 projects</span>
@@ -1554,6 +1555,7 @@ a.sk-stepper__link:focus-visible {
   font-size: var(--sk-font-size-body-lg);
 }
 .sk-command-palette__input:focus-visible { outline: none; }
+.sk-command-palette__item[aria-disabled="true"] { cursor: not-allowed; color: var(--sk-color-text-disabled); }
 .sk-command-palette__input::placeholder { color: var(--sk-color-text-placeholder); }
 
 .sk-command-palette__results {
@@ -1588,8 +1590,11 @@ a.sk-stepper__link:focus-visible {
 
 .sk-command-palette__item[data-active] {
   background-color: var(--sk-color-surface-selected);
-  box-shadow: inset 3px 0 0 0 var(--sk-color-border-brand);
+  position: relative;
 }
+.sk-command-palette__item[data-active]::before { content: ""; position: absolute; inset-inline-start: 0; inset-block: var(--sk-space-4); inline-size: var(--sk-space-4); border-radius: var(--sk-radius-xs); background-color: var(--sk-color-border-brand); }
+@media (forced-colors: active) { .sk-command-palette__item[data-active]::before { background-color: HighlightText; forced-color-adjust: none; } }
+
 
 @media (max-width: 30rem) {
   .sk-command-palette { padding: 0; padding-block-start: 0; }

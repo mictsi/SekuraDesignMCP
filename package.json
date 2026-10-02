@@ -1,7 +1,7 @@
 {
   "name": "sekura-design-mcp",
   "version": "3.0.0-alpha.0",
-  "description": "Sekura Design System \u2014 MCP server exposing the complete design, UX, accessibility and dark-mode specification as machine-readable tools.",
+  "description": "Sekura Design System — MCP server exposing the complete design, UX, accessibility and dark-mode specification as machine-readable tools.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -20,7 +20,7 @@
     "emit:css": "node dist/scripts/emit-css.js",
     "smoke": "node dist/scripts/smoke.js",
     "test:errors": "node dist/scripts/test-errors.js",
-    "verify": "npm run build && npm run check:version && npm run check:deps && npm run check:env && npm run test:color && npm run test:urls && npm run audit:contrast && npm run lint:css && npm run smoke && npm run test:errors && npm run test:integration && npm run test:request && npm run build:behaviours && npm run test:compatibility && npm run test:codegen && npm run test:blazor && npm run test:behaviours && npm run emit:css && npm run site:build && npm run verify:sample && npm run site:publish && npm run test:rtl && npm run test:announce && npm run build:design-kit && npm run build:react && npm run test:browsers && npm run test:design && npm run test:redesign && npm run test:a11y",
+    "verify": "npm run build && npm run check:version && npm run check:deps && npm run check:env && npm run test:color && npm run test:urls && npm run audit:contrast && npm run lint:css && npm run smoke && npm run test:errors && npm run test:integration && npm run test:request && npm run build:behaviours && npm run test:compatibility && npm run test:codegen && npm run test:blazor && npm run test:behaviours && npm run emit:css && npm run site:build && npm run verify:sample && npm run site:publish && npm run test:rtl && npm run test:announce && npm run build:design-kit && npm run build:react && npm run test:browsers && npm run test:design && npm run test:redesign && npm run test:completion && npm run test:a11y",
     "verify:sample": "node dist/scripts/verify-sample.js",
     "site:build": "node dist/scripts/build-site.js",
     "site:publish": "npm run site:build && node dist/scripts/publish-site.js",
@@ -44,7 +44,8 @@
     "build:design-kit": "tsc -p tsconfig.figma.json && node src/scripts/build-design-kit.mjs",
     "test:request": "node src/scripts/test-request.mjs",
     "test:compatibility": "node src/scripts/test-compatibility.mjs",
-    "test:redesign": "node src/scripts/test-redesign.mjs"
+    "test:redesign": "node src/scripts/test-redesign.mjs",
+    "test:completion": "node src/scripts/test-component-completion.mjs"
   },
   "keywords": [
     "mcp",

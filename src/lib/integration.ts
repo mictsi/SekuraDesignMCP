@@ -72,7 +72,7 @@ export function validateIntegration(input: z.input<typeof integrationInput>) {
     if (ids.has(id)) issue('duplicate-id', `Duplicate ID: ${id}.`, 'Assign unique IDs per instance and update every reference.');
     ids.add(id);
   }
-  const references = ['for', 'aria-controls', 'aria-labelledby', 'aria-describedby', 'aria-activedescendant', 'data-sk-disclosure', 'data-sk-menu-trigger', 'data-sk-combobox', 'data-sk-popover-trigger', 'data-sk-dialog-open', 'data-sk-drawer-open', 'data-sk-tooltip-target'];
+  const references = ['for', 'aria-controls', 'aria-labelledby', 'aria-describedby', 'aria-activedescendant', 'data-sk-disclosure', 'data-sk-menu-trigger', 'data-sk-combobox', 'data-sk-popover-trigger', 'data-sk-dialog-open', 'data-sk-drawer-open', 'data-sk-tooltip-target', 'data-sk-palette-open', 'data-sk-slider-value'];
   for (const node of nodes) {
     for (const name of references) for (const id of (attr(node, name) ?? '').split(/\s+/).filter(Boolean)) {
       if (!ids.has(id.replace(/^#/, ''))) issue('missing-target', `${name} points to missing target ${id}.`, 'Include the target in markup or declare its ID in externalIds.');

@@ -25,9 +25,10 @@ import {
   createTooltip,
 } from './controllers/overlays.js';
 import { createSelection, createThemeManager } from './controllers/misc.js';
+import { createCommandPalette } from './controllers/command-palette.js';
 import { createTree } from './controllers/tree.js';
 import { createUpload } from './controllers/upload.js';
-import { createSlider, guardAction } from './controllers/slider.js';
+import { createSlider, createRangeSlider, guardAction } from './controllers/slider.js';
 
 const MARK = 'skEnhanced';
 const registry = new WeakMap<Element, Map<string, Cleanup>>();
@@ -101,9 +102,16 @@ export function enhance(root: ParentNode = document): EnhanceResult {
     form.addEventListener('submit', handler, true);
     return () => form.removeEventListener('submit', handler, true);
   }, 'submit-guard');
-  each<HTMLElement>('.sk-tree[role=tree]', el => createTree(el).destroy, 'tree');
+  each<HTMLElement>('[data-sk-command-palette]', root => {
+    const controller = createCommandPalette(root, { shortcut: root.dataset.skPaletteShortcut || false });
+    const click = (event: MouseEvent) => { const trigger = (event.target as Element).closest<HTMLElement>('[data-sk-palette-open]'); if (trigger?.dataset.skPaletteOpen === root.id) controller.show(); };
+    document.addEventListener('click', click);
+    return () => { document.removeEventListener('click', click); controller.destroy(); };
+  }, 'command-palette');
+  each<HTMLElement>('.sk-tree[role=tree]:not([data-sk-custom-tree])', el => createTree(el).destroy, 'tree');
   each<HTMLElement>('.sk-upload:not([data-sk-custom-upload])', el => createUpload(el).destroy, 'upload');
-  each<HTMLInputElement>('.sk-slider__input', input => createSlider(input).destroy, 'slider');
+  each<HTMLElement>('.sk-slider--range:not([data-sk-custom-slider])', root => createRangeSlider(root).destroy, 'range-slider');
+  each<HTMLInputElement>('.sk-slider__input', input => { if (!input.closest('.sk-slider--range, [data-sk-custom-slider]')) return createSlider(input).destroy; }, 'slider');
 
   /* ---- Disclosure ---- */
   each<HTMLElement>('[data-sk-disclosure]', (trigger) => {

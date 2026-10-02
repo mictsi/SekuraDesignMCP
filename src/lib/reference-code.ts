@@ -6,7 +6,7 @@ type Node = DefaultTreeAdapterMap['node'];
 const voids = new Set('area base br col embed hr img input link meta param source track wbr'.split(' '));
 const booleans = new Set('disabled checked selected multiple required readonly autofocus hidden open inert novalidate'.split(' '));
 const reactAttrs: Record<string, string> = { class: 'className', for: 'htmlFor', datetime: 'dateTime', tabindex: 'tabIndex', readonly: 'readOnly', autofocus: 'autoFocus', autocomplete: 'autoComplete', spellcheck: 'spellCheck', inputmode: 'inputMode', maxlength: 'maxLength', minlength: 'minLength', colspan: 'colSpan', rowspan: 'rowSpan', novalidate: 'noValidate', 'stroke-width': 'strokeWidth', 'stroke-linecap': 'strokeLinecap', 'stroke-linejoin': 'strokeLinejoin', 'fill-rule': 'fillRule', 'clip-rule': 'clipRule', 'xlink:href': 'href' };
-const refs = new Set('for aria-controls aria-labelledby aria-describedby aria-activedescendant aria-owns headers data-sk-combobox data-sk-tag-input data-sk-menu-trigger data-sk-popover-trigger data-sk-tooltip-target data-sk-dialog-open data-sk-drawer-open data-sk-disclosure'.split(' '));
+const refs = new Set('for aria-controls aria-labelledby aria-describedby aria-activedescendant aria-owns headers data-sk-combobox data-sk-tag-input data-sk-menu-trigger data-sk-popover-trigger data-sk-tooltip-target data-sk-dialog-open data-sk-drawer-open data-sk-disclosure data-sk-palette-open data-sk-slider-value'.split(' '));
 const escape = (text: string): string => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /** Parse authored HTML; every framework receives the same native element tree. */

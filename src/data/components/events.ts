@@ -8,16 +8,17 @@ export interface EventContract {
 const event = (name: string, detail: Record<string, string> = {}, applicationRequired = false): EventContract => ({ name, detail, source: name.startsWith('sk:') ? 'controller' : 'native', applicationRequired });
 const change = (name: string, key = 'value', type = 'string') => event(name, { [key]: type }, true);
 export const componentEvents: Record<string, EventContract[]> = {
+  'command-palette': [event('sk:command-palette:open'), event('sk:command-palette:close'), change('sk:command-palette:select', 'id')],
   button: [event('click', {}, true)], 'icon-button': [event('click', {}, true)],
   'split-button': [event('click', {}, true), change('sk:menu:select', 'value', 'string | null')],
   menu: [event('sk:menu:beforeopen'), event('sk:menu:open'), event('sk:menu:close'), change('sk:menu:select', 'value', 'string | null')],
-  combobox: [event('sk:combobox:open'), event('sk:combobox:close'), change('sk:combobox:select'), event('sk:combobox:clear', {}, true)],
+  combobox: [event('sk:combobox:open'), event('sk:combobox:close'), change('sk:combobox:select'), event('sk:combobox:clear', {}, true), change('sk:combobox:change', 'values', 'string[]')],
   tabs: [event('sk:tabs:select', { id: 'string' })],
   'segmented-control': [change('sk:segmented:change')], 'button-group': [change('sk:segmented:change')],
-  slider: [change('sk:slider:change', 'value', 'number')],
+  slider: [change('sk:slider:change', 'value', 'number'), change('sk:slider:range-change', 'values', '[number, number]')],
   'number-input': [change('sk:number:change', 'value', 'number | null')],
   'tag-input': [change('sk:taginput:change', 'tags', 'string[]')],
-  'tree-view': [event('sk:tree:select', { item: 'HTMLElement (DOM only)', value: 'string | undefined' }, true)],
+  'tree-view': [event('sk:tree:select', { item: 'HTMLElement (DOM only)', value: 'string | undefined', checked: '"true" | "false" | "mixed" | undefined' }, true), event('sk:tree:expand', { item: 'HTMLElement (DOM only)', expanded: 'boolean' })],
   'file-upload': [change('sk:upload:change', 'files', 'File[] (DOM only)')],
   table: [change('sk:selection:change', 'count', 'number')],
   disclosure: [event('sk:disclosure:open'), event('sk:disclosure:close')],
@@ -34,6 +35,7 @@ export const componentEvents: Record<string, EventContract[]> = {
 
 /** Required marker for automatic enhancement, where CSS alone is insufficient. */
 export const componentMarkers: Record<string, string> = {
+  'command-palette': 'data-sk-command-palette',
   menu: 'data-sk-menu-trigger', 'split-button': 'data-sk-menu-trigger', combobox: 'data-sk-combobox',
   tabs: 'data-sk-tabs', 'segmented-control': 'data-sk-segmented',
   accordion: 'data-sk-accordion', disclosure: 'data-sk-disclosure',

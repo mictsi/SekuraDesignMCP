@@ -2384,7 +2384,11 @@ await JS.InvokeVoidAsync("Sekura.dispose", Root);`, { lang: 'ts' })}
         <tbody>
           ${[
             ['createMenu', 'Real focus movement between items, wrap, Home/End, type-ahead, skipping disabled items, Escape restoring focus to the trigger, Tab closing rather than trapping.'],
-            ['createCombobox', 'The ARIA 1.2 pattern: DOM focus <strong>stays in the input</strong> while <code class="sk-code">aria-activedescendant</code> moves. Debounced search, result-count announcement, two-stage Escape.'],
+            ['createCombobox', 'The ARIA 1.2 pattern: DOM focus <strong>stays in the input</strong> while <code class="sk-code">aria-activedescendant</code> moves. Multi-select tokens, custom values, cancellable async providers, retry by typing, result-count announcements and two-stage Escape.'],
+            ['createCommandPalette', 'Modal search, inert background, grouped results, async providers, session recents, configurable modifier shortcut and focus return. Application code executes commands.'],
+            ['createTree', 'Roving focus, RTL arrows, typeahead, tri-state multi-selection and cancellable lazy children with expand-to-retry.'],
+            ['createSlider / createRangeSlider', 'Native keyboard/touch semantics, exact number entry, form reset and two non-crossing range bounds.'],
+            ['createUpload', 'File selection, validation, progress, retry, cancellation, disabled state and stale-callback protection; transport is supplied by the application.'],
             ['createTabs', 'Roving tabindex so the list is one tab stop, RTL-aware arrows, automatic or manual activation, panel visibility.'],
             ['createSegmented', 'Radiogroup semantics with a roving tabindex.'],
             ['createDisclosure / createAccordion', 'Correct <code class="sk-code">aria-expanded</code>, content removed from the tab order when collapsed, arrow navigation between headers.'],
@@ -2533,6 +2537,6 @@ export function examplesIndexPage(entries: ExampleEntry[]): Page {
 
 export function migrationPage(): Page {
   const p = new Page({ file: 'migration.html', title: 'Upgrade to Sekura 3', eyebrow: 'Migration', lead: 'A staged visual upgrade that preserves existing integration names and application behavior.' });
-  p.markdown(readFileSync('MIGRATION.md', 'utf8').replace(/^# .*\n/, ''), { idPrefix: 'migration-' });
+  p.markdown(readFileSync('MIGRATION.md', 'utf8').replace(/^# .*\n/, '').replace(/\]\(sample\//g, ']('), { idPrefix: 'migration-' });
   return p;
 }

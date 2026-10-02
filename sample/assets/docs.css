@@ -114,10 +114,9 @@
   .docs-toc__list { display: flex; flex-direction: column; gap: var(--sk-space-2); margin: 0; padding: 0; list-style: none; }
   .docs-toc__link {
     display: block;
-    padding: var(--sk-space-4) var(--sk-space-8);
-    border-inline-start: var(--sk-border-width-thick) solid transparent;
-    margin-inline-start: calc(var(--sk-border-width-thick) * -1);
-    border-radius: 0 var(--sk-radius-sm) var(--sk-radius-sm) 0;
+    position: relative;
+    padding: var(--sk-space-4) var(--sk-space-12);
+    border-radius: var(--sk-radius-sm);
     color: var(--sk-color-text-secondary);
     font-size: var(--sk-font-size-body-sm);
     line-height: var(--sk-line-height-body-sm);
@@ -127,9 +126,21 @@
   /* The bar, not the tint, is what marks the current section on dark. */
   .docs-toc__link[aria-current="true"] {
     color: var(--sk-color-text-brand);
-    border-inline-start-color: var(--sk-color-border-brand);
     background-color: var(--sk-color-surface-selected);
     font-weight: var(--sk-font-weight-medium);
+  }
+  .docs-toc__link[aria-current="true"]::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block: var(--sk-space-4);
+    inline-size: var(--sk-space-4);
+    border-radius: var(--sk-radius-xs);
+    background-color: var(--sk-color-border-brand);
+  }
+  @media (forced-colors: active) {
+    .docs-toc__link[aria-current="true"] { background-color: Highlight; color: HighlightText; }
+    .docs-toc__link[aria-current="true"]::before { background-color: HighlightText; forced-color-adjust: none; }
   }
 
   /* ================================================================== *

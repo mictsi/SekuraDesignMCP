@@ -691,6 +691,26 @@ Every component in this system documents, without exception:
 
 ---
 
+### Selection markers
+
+Side navigation, tree rows, selected table rows, combobox options, command
+results and the documentation table of contents share a **4px leading accent**. Use an absolutely positioned `::before`
+with `inset-inline-start: 0`, `inset-block: var(--sk-space-4)`, width
+`var(--sk-space-4)` and `var(--sk-radius-xs)` corners. Keep the marker independent
+of the row radius; do not recreate it with an inset shadow. Logical positioning
+mirrors it in RTL. Preserve label padding so the bar never covers text or checks.
+
+Use `color-border-brand` with `color-surface-selected`. Selection is semantic:
+`aria-current="page"` for navigation, `aria-selected` for single tree/table
+selection, `aria-checked` for multi-tree selection, and `data-active` paired with
+`aria-activedescendant` for combobox/command keyboard navigation. Focus retains a
+separate visible ring. Active, selected and disabled are distinct states.
+
+In forced colors, use Highlight/HighlightText and protect the system-colored
+marker with `forced-color-adjust: none`. Test both directions, dense rows, narrow
+layouts, enlarged text and forced colors. Tabs keep their underline; checkboxes,
+radio buttons, step progress and status indicators keep their semantic shapes.
+
 ## 13. Component catalogue
 
 **55 components across seven categories.** Full specifications are available via

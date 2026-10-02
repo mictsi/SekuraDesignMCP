@@ -8,12 +8,14 @@ export const rootClasses: Record<string, string> = {
   'search-field': 'sk-search', 'file-upload': 'sk-upload', 'number-input': 'sk-number',
   'date-range-picker': 'sk-date-range', 'status-indicator': 'sk-status',
   'loading-screen': 'sk-loading', 'stat-tile': 'sk-stat', 'description-list': 'sk-dl', 'tree-view': 'sk-tree',
+  'document-canvas': 'sk-document',
 };
 export function rootClass(spec: ComponentSpec): string { return rootClasses[spec.id] ?? `sk-${spec.id}`; }
 
 export const controllers: Record<string, string> = {
   button: 'guardAction', 'icon-button': 'guardAction', 'split-button': 'createMenu',
   'tree-view': 'createTree', 'file-upload': 'createUpload',
+  'command-palette': 'createCommandPalette',
   menu: 'createMenu', combobox: 'createCombobox', tabs: 'createTabs',
   disclosure: 'createDisclosure', accordion: 'createAccordion',
   'date-picker': 'createDatePicker', 'date-range-picker': 'createDateRange',
@@ -50,7 +52,11 @@ export function referenceMarkup(spec: ComponentSpec): string {
       if (attr('role') === 'tablist') set('data-sk-tabs');
       if (attr('role') === 'radiogroup' && (cls.includes('sk-segmented') || cls.includes('sk-button-group--segmented'))) set('data-sk-segmented');
       if (attr('aria-haspopup') === 'menu' && attr('aria-controls')) set('data-sk-menu-trigger', attr('aria-controls'));
-      if (node.tagName === 'input' && attr('role') === 'combobox' && attr('aria-controls') && !attr('data-sk-tag-input')) set('data-sk-combobox', attr('aria-controls'));
+      if (node.tagName === 'input' && attr('role') === 'combobox' && attr('aria-controls') && !attr('data-sk-tag-input') && spec.id !== 'command-palette') set('data-sk-combobox', attr('aria-controls'));
+      if (spec.id === 'command-palette' && cls.includes('sk-command-palette')) {
+        set('data-sk-command-palette'); set('id', 'command-palette-example'); set('hidden');
+        openers.push(`<button type="button" class="sk-button sk-button--secondary" data-sk-palette-open="${attr('id')}">Open command palette</button>`);
+      }
       if (node.tagName === 'dialog') {
         set('data-sk-dialog'); set('id', `${spec.id}-surface-${++surfaceCount}`);
         if (spec.id === 'dialog') openers.push(`<button type="button" class="sk-button sk-button--secondary" data-sk-dialog-open="${attr('id')}">Review project deletion</button>`);

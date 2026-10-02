@@ -42,3 +42,29 @@ Automated acceptance also captures light, dark, mobile and modal screenshots in
 - Evidence / issue:
 
 Production conformance and a published team design library remain unclaimed until these checks are recorded.
+
+## Beta promotion acceptance
+
+The ten beta implementations have automated completion coverage in
+`test:completion`; promotion still requires screen-reader and real-use checks
+under DESIGN.md. Record browser, OS, assistive technology, reviewer and result.
+
+- Combobox: announce active options while focus stays in the input; verify token
+  removal, readonly, failed async search, empty results and recovery.
+- Command palette: announce the named dialog, group and active result; verify
+  trapped focus, Close/Escape, return focus, session recents and failed providers.
+- Tree: announce checked/mixed parents, position and expansion; verify lazy
+  loading, expand-to-retry, cancellation and RTL keyboard navigation.
+- Slider: independently name both bounds, expose meaningful units, support exact
+  entry, reset, touch and keyboard without duplicate live announcements.
+- Upload: announce rejection reasons, progress and failure; retry or cancel by
+  keyboard. Validate files on the server in the consuming application.
+- Timeline: confirm chronological reading order, absolute timestamps, native
+  details and textual outcomes independently of marker color.
+- Document canvas, content header, save state and activity list: check landmarks,
+  heading order, sticky focus visibility, wrapping actions, empty content and
+  truthful local/server save boundaries in the workspace example.
+
+Inspect all six 4px leading accents in RTL and Windows forced colors. WebKit
+currently does not expose the same forced-color-adjust emulation as Chromium and
+Firefox; its geometry is covered, but it does not replace Windows review.

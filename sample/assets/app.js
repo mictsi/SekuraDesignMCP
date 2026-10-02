@@ -567,100 +567,11 @@
   function initCommandPalette() {
     var palette = $('#command-palette');
     if (!palette) return;
-
-    var input = $('.sk-command-palette__input', palette);
-    var results = $('.sk-command-palette__results', palette);
-    var status = $('[data-sk-palette-status]', palette);
-    var returnFocus = null;
-
-    var items = $$('.sk-command-palette__item', palette).map(function (el, i) {
-      el.id = el.id || 'cp-item-' + i;
-      return { el: el, text: el.textContent.toLowerCase(), href: el.dataset.href };
+    var controller = Sekura.createCommandPalette(palette, {
+      onSelect: function (item) { if (item.dataset.href) window.location.href = item.dataset.href; }
     });
-    var active = 0;
-
-    function setActive(i) {
-      var visible = items.filter(function (it) { return !it.el.hidden; });
-      if (!visible.length) return;
-      active = Math.max(0, Math.min(i, visible.length - 1));
-      items.forEach(function (it) { delete it.el.dataset.active; it.el.setAttribute('aria-selected', 'false'); });
-      var target = visible[active];
-      target.el.dataset.active = '';
-      target.el.setAttribute('aria-selected', 'true');
-      // DOM focus stays in the input; this is what moves the visual cursor.
-      input.setAttribute('aria-activedescendant', target.el.id);
-      target.el.scrollIntoView({ block: 'nearest' });
-    }
-
-    function filter() {
-      var q = input.value.trim().toLowerCase();
-      var shown = 0;
-      items.forEach(function (it) {
-        var match = !q || it.text.indexOf(q) !== -1;
-        it.el.hidden = !match;
-        if (match) shown++;
-      });
-      $$('[data-sk-palette-group]', palette).forEach(function (group) {
-        group.hidden = $$('.sk-command-palette__item:not([hidden])', group).length === 0;
-      });
-      var empty = $('[data-sk-palette-empty]', palette);
-      if (empty) empty.hidden = shown !== 0;
-      status.textContent = shown + (shown === 1 ? ' result' : ' results') + '.';
-      setActive(0);
-    }
-
-    function open() {
-      returnFocus = document.activeElement;
-      palette.hidden = false;
-      input.value = '';
-      filter();
-      input.focus();
-    }
-
-    function close() {
-      palette.hidden = true;
-      if (returnFocus && document.contains(returnFocus)) returnFocus.focus();
-      returnFocus = null;
-    }
-
-    $$('[data-sk-palette-open]').forEach(function (btn) {
-      btn.addEventListener('click', open);
-    });
-
-    document.addEventListener('keydown', function (e) {
-      var mod = e.metaKey || e.ctrlKey;
-      if (mod && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        palette.hidden ? open() : close();
-      }
-    });
-
-    input.addEventListener('input', filter);
-
-    input.addEventListener('keydown', function (e) {
-      if (e.key === 'ArrowDown') { e.preventDefault(); setActive(active + 1); }
-      else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(active - 1); }
-      else if (e.key === 'Home') { e.preventDefault(); setActive(0); }
-      else if (e.key === 'End') { e.preventDefault(); setActive(items.length); }
-      else if (e.key === 'Escape') { e.preventDefault(); close(); }
-      else if (e.key === 'Enter') {
-        e.preventDefault();
-        var visible = items.filter(function (it) { return !it.el.hidden; });
-        var target = visible[active];
-        if (target && target.href) window.location.href = target.href;
-        else close();
-      }
-    });
-
-    palette.addEventListener('click', function (e) {
-      if (e.target === palette) close();
-    });
-
-    items.forEach(function (it) {
-      it.el.addEventListener('click', function () {
-        if (it.href) window.location.href = it.href;
-        else close();
-      });
+    $$('[data-sk-palette-open]').filter(function (button) { return !button.dataset.skPaletteOpen; }).forEach(function (button) {
+      button.addEventListener('click', controller.show);
     });
   }
 

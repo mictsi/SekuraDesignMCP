@@ -233,9 +233,12 @@ export const dataDisplayComponents: ComponentSpec[] = [
 
 .sk-table tbody tr[aria-selected="true"] {
   background-color: var(--sk-color-surface-selected);
-  /* Leading bar, because the tint alone is imperceptible on dark. */
-  box-shadow: inset 3px 0 0 0 var(--sk-color-border-brand);
+
 }
+
+.sk-table tbody tr[aria-selected="true"] > :first-child { position: relative; }
+.sk-table tbody tr[aria-selected="true"] > :first-child::before { content: ""; position: absolute; inset-inline-start: 0; inset-block: var(--sk-space-4); inline-size: var(--sk-space-4); border-radius: var(--sk-radius-xs); background-color: var(--sk-color-border-brand); }
+@media (forced-colors: active) { .sk-table tbody tr[aria-selected="true"] > :first-child::before { background-color: HighlightText; forced-color-adjust: none; } }
 
 .sk-table__cell--numeric { text-align: end; font-variant-numeric: tabular-nums; }
 .sk-table__cell--mono { font-family: var(--sk-font-family-mono); font-size: var(--sk-font-size-code-sm); }
@@ -1311,7 +1314,7 @@ export const dataDisplayComponents: ComponentSpec[] = [
     states: [
       { name: 'Complete', description: 'Settled event.', trigger: 'default' },
       { name: 'In progress', description: 'Pulsing marker.', trigger: '[data-pending]' },
-      { name: 'Failed', description: 'Crimson marker with a warning glyph.', trigger: '[data-failed]' },
+      { name: 'Failed', description: 'Danger marker accompanied by explicit failure text.', trigger: '[data-failed]' },
     ],
     props: [
       { name: 'events', type: 'Array<{id, at, actor, type, summary, detail?}>', required: true, description: 'The events.' },
@@ -1339,7 +1342,7 @@ export const dataDisplayComponents: ComponentSpec[] = [
     ],
     dos: ['Use <time datetime>.', 'State the sort order visibly.', 'Put the event type in the text, not only the marker.'],
     donts: ['Do not use relative time alone.', 'Do not rely on marker colour to convey the event type.', 'Do not mix sort orders within one timeline.'],
-    html: `<ol class="sk-timeline">
+    html: `<ol class="sk-timeline" aria-label="Change history, newest first">
   <li class="sk-timeline__event">
     <span class="sk-timeline__marker" aria-hidden="true"></span>
     <div class="sk-timeline__content">
@@ -1399,8 +1402,9 @@ export const dataDisplayComponents: ComponentSpec[] = [
 
 .sk-timeline__event[data-pending] .sk-timeline__marker {
   background-color: var(--sk-color-status-info-solid);
-  animation: sk-status-pulse 1.8s var(--sk-easing-standard) infinite;
+  animation: sk-timeline-pulse 1.8s var(--sk-easing-standard) infinite;
 }
+@keyframes sk-timeline-pulse { 50% { transform: scale(1.15); } }
 .sk-timeline__event[data-failed] .sk-timeline__marker { background-color: var(--sk-color-status-danger-solid); }
 .sk-timeline__event[data-success] .sk-timeline__marker { background-color: var(--sk-color-status-success-solid); }
 
@@ -1417,6 +1421,10 @@ export const dataDisplayComponents: ComponentSpec[] = [
 }
 
 .sk-timeline--compact .sk-timeline__event { padding-block-end: var(--sk-space-8); }
+.sk-timeline--grouped { display: flex; flex-direction: column; gap: var(--sk-space-16); }
+.sk-timeline__detail { overflow-wrap: anywhere; }
+.sk-timeline__detail > summary { cursor: pointer; padding-block: var(--sk-space-8); min-block-size: 1.5rem; }
+.sk-timeline__detail > summary:focus-visible { outline: var(--sk-focus-ring-width) solid var(--sk-color-focus-ring); outline-offset: var(--sk-focus-ring-offset); }
 
 @media (prefers-reduced-motion: reduce) {
   .sk-timeline__event[data-pending] .sk-timeline__marker { animation: none; }
@@ -1472,7 +1480,7 @@ export const dataDisplayComponents: ComponentSpec[] = [
     props: [
       { name: 'nodes', type: 'TreeNode[]', required: true, description: 'The hierarchy.' },
       { name: 'multiSelect', type: 'boolean', default: 'false', description: 'Checkbox selection.' },
-      { name: 'loadChildren', type: '(id) => Promise<TreeNode[]>', description: 'Lazy loading.' },
+      { name: 'loadChildren', type: '(item, signal) => Promise<HTMLElement[]>', description: 'Render child treeitems for data-sk-loadable parents. The controller inserts children, cancels stale loads and supports expand-to-retry.' },
     ],
     tokensUsed: ['color-surface-selected', 'color-border-brand', 'color-border-subtle', 'color-text-secondary', 'color-focus-ring'],
     darkMode: 'Indent guides use border-subtle and go darker on dark. Selection again pairs the tint with a leading brand bar, because a tint-only selected row is invisible on dark — this is the same rule as Side navigation, Table and Pagination, and it applies everywhere selection is shown.',
@@ -1486,12 +1494,12 @@ export const dataDisplayComponents: ComponentSpec[] = [
         { keys: 'Home / End', action: 'First or last visible item.' },
         { keys: 'A–Z', action: 'Type-ahead to the next matching visible item.' },
         { keys: '* (asterisk)', action: 'Expand all siblings at the current level.' },
-        { keys: 'Enter', action: 'Activate the item.' },
+        { keys: 'Enter / Space', action: 'Select the item; multi-select toggles its enabled descendants.' },
       ],
       aria: [
         'aria-expanded only on nodes that have children. Putting it on a leaf tells users there is more to find when there is not.',
         'aria-level, aria-setsize and aria-posinset when the DOM structure does not make position derivable.',
-        'aria-selected for selection; multi-select needs aria-multiselectable on the tree.',
+        'Use aria-selected for single selection. Multi-select uses aria-checked, including mixed parents, and aria-multiselectable on the tree.',
         'Roving tabindex: exactly one item has tabindex="0".',
         'Implement the full keyboard contract or use a plain nested list instead. A partial tree is worse than no tree.',
       ],
@@ -1558,11 +1566,21 @@ export const dataDisplayComponents: ComponentSpec[] = [
 .sk-tree__label { flex: 1 1 auto; min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sk-tree__count { flex: 0 0 auto; font-size: var(--sk-font-size-body-xs); color: var(--sk-color-text-tertiary); font-variant-numeric: tabular-nums; }
 
-.sk-tree__item[aria-selected="true"] > .sk-tree__row {
+.sk-tree__item[aria-selected="true"] > .sk-tree__row,
+.sk-tree__item[aria-checked="true"] > .sk-tree__row {
   background-color: var(--sk-color-surface-selected);
   color: var(--sk-color-text-brand);
-  /* Bar, not tint: the same rule as side nav, tables and pagination. */
-  box-shadow: inset 3px 0 0 0 var(--sk-color-border-brand);
+}
+/* A straight leading accent, independent of the row corner radius. */
+.sk-tree__item[aria-selected="true"] > .sk-tree__row::before,
+.sk-tree__item[aria-checked="true"] > .sk-tree__row::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block: var(--sk-space-4);
+  inline-size: var(--sk-space-4);
+  border-radius: var(--sk-radius-xs);
+  background-color: var(--sk-color-border-brand);
 }
 
 .sk-tree__item:focus-visible > .sk-tree__row,
@@ -1572,13 +1590,23 @@ export const dataDisplayComponents: ComponentSpec[] = [
 }
 
 .sk-tree--compact .sk-tree__row { min-block-size: 1.75rem; }
+.sk-tree__check { display: inline-flex; flex: 0 0 1rem; align-items: center; justify-content: center; inline-size: 1rem; block-size: 1rem; border: var(--sk-border-width-hairline) solid currentColor; border-radius: var(--sk-radius-xs); }
+.sk-tree__item[aria-checked="true"] > .sk-tree__row .sk-tree__check::after { content: "✓"; }
+.sk-tree__item[aria-checked="mixed"] > .sk-tree__row .sk-tree__check::after { content: "−"; }
+.sk-tree__item[aria-disabled="true"] > .sk-tree__row { cursor: not-allowed; color: var(--sk-color-text-disabled); }
+.sk-tree__item[aria-busy="true"] > .sk-tree__row::after { content: "Loading…"; font-size: var(--sk-font-size-body-xs); }
+.sk-tree__item[data-load-error] > .sk-tree__row::after { content: "Expand to retry"; font-size: var(--sk-font-size-body-xs); color: var(--sk-color-status-danger-text); }
+@media (pointer: coarse) { .sk-tree .sk-tree__row { min-block-size: 2.75rem; } }
 
 @media (prefers-reduced-motion: reduce) { .sk-tree__chevron { transition: none; } }
 
 /* Same failure as the table: selection is a background tint. The indent guides
    also vanish, and without them the hierarchy flattens. */
 @media (forced-colors: active) {
-  .sk-tree__item[aria-selected="true"] > .sk-tree__row { background-color: Highlight; color: HighlightText; }
+  .sk-tree__item[aria-selected="true"] > .sk-tree__row,
+.sk-tree__item[aria-checked="true"] > .sk-tree__row { background-color: Highlight; color: HighlightText; }
+  .sk-tree__item[aria-selected="true"] > .sk-tree__row::before,
+  .sk-tree__item[aria-checked="true"] > .sk-tree__row::before { background-color: HighlightText; forced-color-adjust: none; }
   .sk-tree ul[role="group"] { border-inline-start-color: CanvasText; }
   .sk-tree__item:focus-visible > .sk-tree__row { outline-color: Highlight; }
 }

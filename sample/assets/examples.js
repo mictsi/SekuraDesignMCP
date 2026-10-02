@@ -176,6 +176,38 @@
   function workbench() {
     var preview = $('[data-sk-bench-preview]');
     if (!preview) return;
+    // These providers are explicit local simulations. Controllers own the UI lifecycle.
+    var owned = [];
+    function delayed(signal, produce) {
+      return new Promise(function (resolve, reject) {
+        if (signal.aborted) { reject(new DOMException('Cancelled', 'AbortError')); return; }
+        var abort = function () { clearTimeout(timer); reject(new DOMException('Cancelled', 'AbortError')); };
+        var timer = setTimeout(function () { signal.removeEventListener('abort', abort); try { resolve(produce()); } catch (error) { reject(error); } }, 450);
+        signal.addEventListener('abort', abort, { once: true });
+      });
+    }
+    if ($('#bench-tags')) {
+      owned.push(Sekura.createCombobox($('#bench-tags'), $('#bench-tags-list'), { multiple: true, allowCustom: true, onChange: function (values) { $('#bench-tags-state').textContent = values.length ? 'Selected: ' + values.join(', ') : 'No tags selected.'; } }));
+      owned.push(Sekura.createCombobox($('#bench-async'), $('#bench-async-list'), { displayLabel: true, loadOptions: function (query, signal) {
+        return delayed(signal, function () { if (query === 'error') throw new Error('Example failure'); return [{ value: 'ana', label: 'Ana Silva' }, { value: 'andre', label: 'Andre Kim' }, { value: 'sam', label: 'Sam Taylor' }].filter(function (item) { return item.label.toLowerCase().includes(query.toLowerCase()); }); });
+      }, onChange: function (values) { $('#bench-async-state').textContent = values.length ? 'Contributor ID: ' + values[0] : 'No contributor selected.'; } }));
+      var tree = $('#bench-tree');
+      owned.push(Sekura.createTree(tree, { loadChildren: function (item, signal) {
+        return delayed(signal, function () {
+          if ($('#bench-tree-fail').checked) { $('#bench-tree-fail').checked = false; throw new Error('Example failure'); }
+          return ['Read documents', 'Edit documents', 'Manage settings'].map(function (label, index) {
+            var node = document.createElement('li'); node.className = 'sk-tree__item'; node.setAttribute('role', 'treeitem'); node.dataset.value = 'scope-' + index;
+            var row = document.createElement('span'); row.className = 'sk-tree__row'; var text = document.createElement('span'); text.className = 'sk-tree__label'; text.textContent = label; row.appendChild(text); node.appendChild(row); return node;
+          });
+        });
+      } }));
+      tree.addEventListener('sk:tree:select', function () { var names = $$('[role=treeitem][aria-checked=true]', tree).filter(function (node) { return !node.querySelector('[role=group]'); }).map(function (node) { return node.querySelector('.sk-tree__label').textContent; }); $('#bench-tree-state').textContent = names.length ? 'Selected: ' + names.join(', ') : 'No permissions selected.'; });
+      var palette = Sekura.createCommandPalette($('#bench-palette'), { shortcut: false, sources: [function (query, signal) {
+        return delayed(signal, function () { if (query === 'error') throw new Error('Example failure'); var scoped = query.startsWith('>'); var term = (scoped ? query.slice(1) : query).trim().toLowerCase(); return [{ id: 'open', label: 'Open handbook', group: 'Navigation' }, { id: 'create', label: 'Create document', group: 'Actions' }, { id: 'archive', label: 'Archive document', group: 'Actions', disabled: true }].filter(function (item) { return (!scoped || item.group === 'Actions') && item.label.toLowerCase().includes(term); }); });
+      }], onSelect: function (item, id) { $('#bench-palette-state').textContent = 'Selected command: ' + id + '. This example does not execute a server action.'; } });
+      owned.push(palette); $('#bench-palette-open').onclick = palette.show;
+      window.addEventListener('pagehide', function (event) { if (!event.persisted) owned.forEach(function (controller) { controller.destroy(); }); }, { once: true });
+    }
     $('[data-sk-bench-theme]').onchange = function (event) { preview.dataset.skTheme = event.target.value; };
     $('[data-sk-bench-density]').onchange = function (event) { preview.dataset.skDensity = event.target.value; };
     $('[data-sk-bench-long]').onchange = function (event) { $$('[data-sk-bench-button]').forEach(function (button) { button.textContent = event.target.checked ? 'Save all changes to this project and notify the assigned team' : 'Save changes'; }); };
@@ -210,7 +242,7 @@
     }
     save.onclick = run; retry.onclick = run; cancel.onclick = function () { if (operation) operation.abort(); };
     var upload = $('[data-sk-custom-upload]');
-    if (upload) Sekura.createUpload(upload, { upload: function (file, signal, progress) {
+    if (upload) owned.push(Sekura.createUpload(upload, { upload: function (file, signal, progress) {
       return new Promise(function (resolve, reject) {
         var percent = 0;
         var timer = setInterval(function () {
@@ -219,7 +251,7 @@
         }, 180);
         signal.addEventListener('abort', function () { clearInterval(timer); reject(new DOMException('Cancelled', 'AbortError')); }, { once: true });
       });
-    } });
+    } }));
   }
 
   function setup() {

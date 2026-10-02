@@ -442,6 +442,14 @@
           "detail": {},
           "source": "controller",
           "applicationRequired": true
+        },
+        {
+          "name": "sk:combobox:change",
+          "detail": {
+            "values": "string[]"
+          },
+          "source": "controller",
+          "applicationRequired": true
         }
       ],
       "autoMarker": "data-sk-combobox",
@@ -477,7 +485,11 @@
       "cssFile": "components/slider.css",
       "rootClass": "sk-slider",
       "cssDependencies": [
-        "form-field"
+        "form-field",
+        "text-field",
+        "combobox",
+        "number-input",
+        "date-picker"
       ],
       "svgSymbols": [],
       "controller": "createSlider",
@@ -489,6 +501,14 @@
           "name": "sk:slider:change",
           "detail": {
             "value": "number"
+          },
+          "source": "controller",
+          "applicationRequired": true
+        },
+        {
+          "name": "sk:slider:range-change",
+          "detail": {
+            "values": "[number, number]"
           },
           "source": "controller",
           "applicationRequired": true
@@ -915,18 +935,41 @@
       "cssFile": "components/command-palette.css",
       "rootClass": "sk-command-palette",
       "cssDependencies": [
-        "kbd"
+        "button",
+        "button-group",
+        "dialog"
       ],
       "svgSymbols": [
         "sk-icon-search",
         "sk-icon-globe"
       ],
-      "controller": null,
-      "behavior": "application",
+      "controller": "createCommandPalette",
+      "behavior": "controller",
       "frameworkOutput": "reference-recipe",
       "nativeReactExport": null,
-      "events": [],
-      "autoMarker": null,
+      "events": [
+        {
+          "name": "sk:command-palette:open",
+          "detail": {},
+          "source": "controller",
+          "applicationRequired": false
+        },
+        {
+          "name": "sk:command-palette:close",
+          "detail": {},
+          "source": "controller",
+          "applicationRequired": false
+        },
+        {
+          "name": "sk:command-palette:select",
+          "detail": {
+            "id": "string"
+          },
+          "source": "controller",
+          "applicationRequired": true
+        }
+      ],
+      "autoMarker": "data-sk-command-palette",
       "applicationResponsibilities": [
         "Provide real content and application state.",
         "Handle persistence, permissions, network errors and navigation.",
@@ -1412,10 +1455,20 @@
           "name": "sk:tree:select",
           "detail": {
             "item": "HTMLElement (DOM only)",
-            "value": "string | undefined"
+            "value": "string | undefined",
+            "checked": "\"true\" | \"false\" | \"mixed\" | undefined"
           },
           "source": "controller",
           "applicationRequired": true
+        },
+        {
+          "name": "sk:tree:expand",
+          "detail": {
+            "item": "HTMLElement (DOM only)",
+            "expanded": "boolean"
+          },
+          "source": "controller",
+          "applicationRequired": false
         }
       ],
       "autoMarker": null,
@@ -1802,7 +1855,7 @@
     {
       "id": "document-canvas",
       "cssFile": "components/document-canvas.css",
-      "rootClass": "sk-document-canvas",
+      "rootClass": "sk-document",
       "cssDependencies": [
         "link"
       ],

@@ -129,7 +129,7 @@ jobs:
         run: npm run build:design-kit && npm run build:react && npm run test:browsers
 
       - name: Design and example regressions
-        run: npm run test:design && npm run test:redesign
+        run: npm run test:design && npm run test:redesign && npm run test:completion
 
       - name: RTL regression
         # Logical properties are claimed to make RTL work with no extra CSS.

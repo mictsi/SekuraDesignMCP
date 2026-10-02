@@ -11,6 +11,10 @@ assert.equal(validateIntegration(valid).valid, true);
 const broken = validateIntegration({ ...valid, markup: '<div class="sk-button" id="a" aria-describedby="gone">Save</div><span id="a"></span>', stylesheets: [], initialization: 'none', handledEvents: [] });
 for (const rule of ['wrong-element', 'duplicate-id', 'missing-target', 'missing-stylesheet', 'missing-behavior', 'unhandled-action']) assert.ok(broken.findings.some(f => f.rule === rule), rule);
 assert.equal(broken.valid, false);
+for (const marker of ['data-sk-palette-open', 'data-sk-slider-value']) {
+  const reference = validateIntegration({ ...valid, markup: `<button class="sk-button" type="button" ${marker}="missing">Action</button>` });
+  assert.ok(reference.findings.some(f => f.rule === 'missing-target' && f.message.includes(marker)), marker);
+}
 assert.ok(validateIntegration({ ...valid, componentIds: ['nonexistent'] }).findings.some(f => f.rule === 'unknown-component'));
 const [a, b] = InMemoryTransport.createLinkedPair();
 const server = createServer(); const client = new Client({ name: 'integration-test', version: '1' });
@@ -26,5 +30,5 @@ try {
   assert.equal((result.structuredContent as { valid: boolean }).valid, true);
   const missing = await client.callTool({ name: 'get_component_code', arguments: { id: 'no-such-component', framework: 'html' } });
   assert.equal(missing.isError, true);
-  console.log('Integration contracts: all 67 recipes, actionable failures and MCP structured/error responses passed');
+  console.log(`Integration contracts: all ${components.length} recipes, actionable failures and MCP structured/error responses passed`);
 } finally { await client.close(); await server.close(); }

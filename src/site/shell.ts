@@ -449,7 +449,7 @@ function commandPalette(entries: Array<{ file: string; label: string; group: str
       <input class="sk-command-palette__input" id="cp-input" type="text" role="combobox"
              aria-expanded="true" aria-controls="cp-results" aria-autocomplete="list"
              autocomplete="off" placeholder="Search the design system" />
-      <kbd class="sk-kbd">Esc</kbd>
+      <button type="button" class="sk-button sk-button--ghost sk-button--sm" data-sk-palette-close aria-label="Close search">Close</button>
     </div>
     <div class="sk-command-palette__results" id="cp-results" role="listbox" aria-label="Results">
       ${body}

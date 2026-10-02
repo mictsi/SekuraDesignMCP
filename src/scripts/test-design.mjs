@@ -183,7 +183,7 @@ await test('upload simulator supports failure and retry', async () => {
   await page.locator('[data-sk-custom-upload] input[type=file]').setInputFiles({ name: 'demo.csv', mimeType: 'text/csv', buffer: Buffer.from('name\nDemo') });
   await page.waitForTimeout(1050); assert.equal(await page.getByRole('button', { name: 'Retry demo.csv' }).isVisible(), true);
   await page.locator('[data-sk-upload-fail]').uncheck(); await page.getByRole('button', { name: 'Retry demo.csv' }).click(); await page.waitForTimeout(1050);
-  assert.match(await page.locator('[data-sk-custom-upload] .sk-upload__file-meta').textContent(), /Uploaded/);
+  assert.match(await page.locator('[data-sk-custom-upload] [data-sk-upload-state]').textContent(), /Uploaded/);
   await page.getByRole('button', { name: 'Remove demo.csv' }).click(); assert.equal(await page.locator('[data-sk-custom-upload] .sk-upload__file').count(), 0);
 });
 await test('settings persist and photo has a real preview', async () => {
@@ -281,7 +281,7 @@ await test('RTL popover tracks its anchor and stays inside the viewport', async 
 // Compile actual React recipes into a consumer bundle and mount two instances.
 await test('generated React controls mount with unique IDs and working behavior', async () => {
   const dir = resolve('tmp/design-consumer'); mkdirSync(dir, { recursive: true });
-  const selected = ['number-input', 'accordion', 'combobox', 'date-picker', 'slider', 'dialog'];
+  const selected = ['number-input', 'accordion', 'combobox', 'date-picker', 'slider', 'dialog', 'command-palette'];
   selected.forEach(id => writeFileSync(join(dir, id + '.tsx'), generateCode(components.find(c => c.id === id), 'react')));
   const imports = selected.map((id, i) => `import * as C${i} from './${id}';`).join('\n');
   writeFileSync(join(dir, 'entry.tsx'), `import React from 'react'; import {createRoot} from 'react-dom/client'; ${imports}\nconst registry = [${selected.map((_,i)=>`Object.values(C${i})[0]`).join(',')}]; let root; window.renderRecipe = (index) => { root?.unmount(); root = createRoot(document.getElementById('mount')); const Component=registry[index]; root.render(<><Component/><Component/></>); };`);
@@ -293,6 +293,8 @@ await test('generated React controls mount with unique IDs and working behavior'
     if (selected[i] === 'number-input') { await page.locator('[data-sk-step="1"]').first().click(); assert.equal(await page.locator('[data-sk-number]').first().inputValue(), '46'); }
     if (selected[i] === 'accordion') { const trigger = page.locator('[data-sk-accordion-trigger]').nth(1); await trigger.click(); assert.equal(await trigger.getAttribute('aria-expanded'), 'true'); }
     if (selected[i] === 'date-picker') { await page.locator('[data-sk-datepicker-trigger]').first().click(); assert.equal(await page.locator('[data-sk-datepicker-trigger]').first().getAttribute('aria-expanded'), 'true'); await page.keyboard.press('Escape'); }
+    if (selected[i] === 'slider') { const exact = page.locator('[data-sk-slider-value]').first(); await exact.fill('7200'); await exact.press('Tab'); assert.equal(await page.locator('.sk-slider__input').first().inputValue(), '7200'); assert.equal(await page.locator('.sk-slider__input').nth(1).inputValue(), '3600'); }
+    if (selected[i] === 'command-palette') { await page.locator('[data-sk-palette-open]').first().click(); assert.equal(await page.locator('[data-sk-command-palette]:visible').count(), 1); await page.locator('[data-sk-command-palette]:visible .sk-command-palette__input').press('Escape'); assert.equal(await page.locator('[data-sk-command-palette]:visible').count(), 0); }
     if (selected[i] === 'dialog') { await page.locator('[data-sk-dialog-open]').first().click(); const dialog = page.locator('dialog[open]'); assert.equal(await dialog.count(), 1); await dialog.locator('[data-sk-confirm-phrase]').fill('Website redesign'); assert.equal(await dialog.locator('[data-sk-confirm-button]').isEnabled(), true); await page.keyboard.press('Escape'); }
   }
 });

@@ -144,3 +144,32 @@ reference contains publishing, ACL, editor and collaboration workflows. This
 release adopts the reusable visual language and interaction principles. The
 workspace example is explicitly a local demonstration, not a secure multi-user
 content system.
+
+## Completed beta implementations
+
+Selection accents now use a straight 4px logical leading edge in side navigation,
+trees, tables, comboboxes, command results and documentation section navigation. Remove consumer CSS that paints a
+second selection shadow or hard-codes a right edge. Tabs retain their underline.
+
+The optional APIs are additive: `createCommandPalette`, `createRangeSlider`,
+`createTree(root, { multiSelect, loadChildren })` and combobox `loadOptions`, `multiple`,
+`allowCustom`, `values`, `onChange` and `displayLabel`. Existing single-combobox
+inputs still receive the selected value by default. Enable `displayLabel` only if
+your application reads selected IDs from the controller or events instead.
+
+Combobox controllers now own a popup wrapper around the listbox; keep status text
+outside role=listbox, and avoid consumer CSS that depends on the listbox being
+a direct child of the field. Existing option IDs and aria-controls remain valid.
+
+Use one controller owner. Custom lazy trees need `data-sk-custom-tree`; custom
+uploads need `data-sk-custom-upload`; manually initialized sliders need
+`data-sk-custom-slider` on their root. Omit the auto markers from manually managed
+comboboxes and palettes. Release controllers with `destroy()` before unmounting.
+The multi-tree selection event adds `checked`; range sliders emit
+`sk:slider:range-change` with `values`. Existing event names remain available.
+
+Review the advanced [workbench](sample/workbench.html) and
+[support contracts](sample/support.html). Search providers, file transport,
+command execution and persistence remain application-owned. Beta maturity is
+retained until the screen-reader and real-use acceptance in DESIGN.md is complete;
+implementation completion and automated checks do not substitute for that review.

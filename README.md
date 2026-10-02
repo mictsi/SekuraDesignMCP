@@ -31,6 +31,12 @@ controllers, and application-owned actions. The [workbench](./sample/workbench.h
 compares every control size and density and demonstrates pending, failure, retry,
 cancellation and real undo. Example data stays local; simulated remote actions are labelled.
 
+The ten beta implementations now include multi-select and async search, a reusable
+command palette, exact/range sliders, tri-state lazy trees, cancellable upload
+retries, and complete workspace/timeline states. `npm run test:completion` checks
+these contracts in Chromium, Firefox and WebKit. Their beta labels remain until
+human screen-reader and real-use acceptance, as required by DESIGN.md.
+
 Generated framework code is an **editable reference recipe**, preserving the native
 markup, unique IDs and controller cleanup. Except for the dedicated React Button,
 these are not general-purpose prop-driven components. Read the emitted API before
@@ -369,6 +375,7 @@ non-zero, so a change that breaks a promise cannot merge green:
 | `test:codegen` | React, Angular and Web Component typechecks; Vue/Svelte compilation; Angular templates |
 | `test:blazor` | All generated Razor components compile with .NET 10 |
 | `test:design` | Example workflows, control alignment, generated React mounts, lifecycle and mobile geometry |
+| `test:completion` | Advanced components, async cleanup, RTL accents and narrow layouts in three browsers |
 | `test:behaviours` | Real key presses in a browser: focus, ARIA, Escape, inert |
 | `site:publish` | Static bundle is portable — nothing root-absolute |
 | `test:errors` | Every failing tool call is marked, coded and actionable |

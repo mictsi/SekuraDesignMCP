@@ -69,7 +69,7 @@ export {
 export { dismissable, type DismissOptions } from './core/dismiss.js';
 export { announce, initAnnouncer, readingTime } from './core/live.js';
 export { position, type Align, type PositionOptions, type Positioner, type Side } from './core/position.js';
-export { createSlider, guardAction, type SliderOptions } from './controllers/slider.js';
+export { createSlider, createRangeSlider, guardAction, type SliderOptions, type RangeSliderOptions } from './controllers/slider.js';
 export { createTypeahead, type Typeahead, type TypeaheadOptions } from './core/typeahead.js';
 
 /* Controllers. */
@@ -112,7 +112,7 @@ export {
   type DateRangeOptions,
   type PlainDate,
 } from './controllers/datefield.js';
-export { createCombobox, type Combobox, type ComboboxOptions } from './controllers/combobox.js';
+export { createCombobox, type Combobox, type ComboboxOptions, type ComboboxItem } from './controllers/combobox.js';
 
 export {
   createNumberInput,
@@ -160,5 +160,7 @@ export {
 /* Auto-initialisation. */
 export { autoEnhance, dispose, enhance, getTheme, type EnhanceResult } from './auto.js';
 
-export { createTree } from './controllers/tree.js';
+export { createTree, type TreeOptions } from './controllers/tree.js';
 export { createUpload, type UploadOptions } from './controllers/upload.js';
+
+export { createCommandPalette, type CommandPaletteOptions, type CommandItem } from './controllers/command-palette.js';

@@ -176,7 +176,7 @@ export const layouts: LayoutRecipe[] = [
       'Never show a count that includes rows the user is not permitted to see.',
     ],
     darkMode:
-      'Row separators go darker, not lighter. Selected rows pair the tint with a 3px leading brand bar, because on dark the tint alone is imperceptible. The sticky header needs an explicit bottom border since a shadow will not separate it from the rows beneath.',
+      'Row separators go darker, not lighter. Selected rows pair the tint with a 4px leading brand bar, because on dark the tint alone is imperceptible. The sticky header needs an explicit bottom border since a shadow will not separate it from the rows beneath.',
     html: `<main class="sk-app-shell__main" id="main" tabindex="-1">
   <div class="sk-app-shell__content sk-stack sk-stack--gap-16">
 
