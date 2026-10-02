@@ -8,18 +8,23 @@ Agents and developers can inspect the same tokens, native markup and interaction
 Application behavior still needs implementation and accessibility verification.
 
 ```
-67 components · 15 foundations · 15 UX patterns · 9 layout recipes
+71 components · 16 foundations · 15 UX patterns · 9 layout recipes
 120 semantic tokens · 4 themes · 3 densities · 8 target frameworks
 Build-derived counts and support: sample/assets/component-manifest.json
 ```
 
 The human-readable specification is [`DESIGN.md`](./DESIGN.md), and there is an
-101-page [documentation site](./sample) — generated from the same data — that
+107-page [documentation site](./sample) — generated from the same data — that
 explains it with live demos, a full colour guide and worked examples.
 
 ---
 
 ## Integration and migration
+
+**Sekura 3 alpha** adopts a compact neutral workspace and continuous document
+canvas. Read the [migration plan](./MIGRATION.md) for staged adoption, the optional
+v2 geometry bridge, compatibility checks and rollback. The previous main is
+preserved on `feature/2.1.0`; redesign work is on `3.0.0-alpha`.
 
 The [support matrix](./sample/support.html) distinguishes CSS, native behavior,
 controllers, and application-owned actions. The [workbench](./sample/workbench.html)
@@ -76,8 +81,8 @@ reports it.
 ./run.sh start-build          # then open http://localhost:4173
 ```
 
-A 101-page documentation site — explanations, a full colour guide, a type
-specimen, live demos, a complete component reference and nine worked examples.
+A 107-page documentation site — explanations, a full colour guide, a type
+specimen, live demos, a complete component reference and ten worked examples.
 
 **It is generated from the design system's own data**, so the colour guide shows
 genuinely audited contrast values and the component pages show the same
@@ -156,7 +161,7 @@ table:
 
 [mcp_servers.sekura-design]
 command = "docker"
-args = ["run", "-i", "--rm", "-e", "SEKURA_MCP_TRANSPORT=stdio", "sekura-design-mcp:2.0.0"]
+args = ["run", "-i", "--rm", "-e", "SEKURA_MCP_TRANSPORT=stdio", "sekura-design-mcp:3.0.0-alpha.0"]
 
 # The first call builds a 5,900-line overview, so allow a little headroom.
 startup_timeout_sec = 30
@@ -175,7 +180,7 @@ Recent Codex versions can add it for you:
 
 ```bash
 codex mcp add sekura-design -- docker run -i --rm \
-  -e SEKURA_MCP_TRANSPORT=stdio sekura-design-mcp:2.0.0
+  -e SEKURA_MCP_TRANSPORT=stdio sekura-design-mcp:3.0.0-alpha.0
 
 codex mcp list          # confirm it registered
 ```
@@ -210,7 +215,7 @@ to start, but these help:
     "sekura-design": {
       "command": "docker",
       "args": ["run", "-i", "--rm", "-e", "SEKURA_MCP_TRANSPORT=stdio",
-               "sekura-design-mcp:2.0.0"]
+               "sekura-design-mcp:3.0.0-alpha.0"]
     }
   }
 }
@@ -395,13 +400,15 @@ runs the full gate chain again (a release cannot skip checks) and publishes:
 | `sekura-docs-<v>.zip` | The documentation site, hostable anywhere |
 | `SHA256SUMS.txt` | Checksums |
 
-Plus a multi-arch image to GHCR, tagged `1.2.3`, `1.2`, `1` and `latest`:
+Stable releases also publish a multi-arch image to GHCR, tagged `1.2.3`, `1.2`,
+`1` and `latest`. Alpha releases use their exact version tag and do not update
+`latest` or the stable documentation site. After publishing an alpha release:
 
 ```bash
-docker run -d -p 8080:8080 ghcr.io/mictsi/sekuradesignmcp:2.0.0
+docker run -d -p 8080:8080 ghcr.io/mictsi/sekuradesignmcp:3.0.0-alpha.0
 ```
 
-and the documentation site to GitHub Pages.
+Stable releases deploy the documentation site to GitHub Pages.
 
 ### Versioning
 
@@ -431,7 +438,7 @@ npm run audit:contrast  # 344 contrast checks — build gate
 npm run lint:css        # structural CSS lint over all 67 stylesheets
 npm run smoke           # checks every tool, component and export
 npm run emit:css        # write dist-css/ and the dependency/event manifest
-npm run site:build      # regenerate the 101-page documentation site
+npm run site:build      # regenerate the 107-page documentation site
 npm run verify:sample   # lint every page against the design system itself
 ```
 
@@ -588,7 +595,7 @@ location /design-system/ {
 }
 ```
 ```bash
-docker run -d -p 8080:8080 -e SEKURA_BASE_PATH=/design-system sekura-design-mcp:2.0.0
+docker run -d -p 8080:8080 -e SEKURA_BASE_PATH=/design-system sekura-design-mcp:3.0.0-alpha.0
 ```
 
 **If the proxy strips the prefix**, the app still listens at the root but has no
@@ -604,7 +611,7 @@ location /design-system/ {
 ```bash
 docker run -d -p 8080:8080 \
   -e SEKURA_EXTERNAL_URL=https://example.com/design-system \
-  sekura-design-mcp:2.0.0
+  sekura-design-mcp:3.0.0-alpha.0
 ```
 
 **With Traefik or ingress-nginx, neither is needed.** `X-Forwarded-Prefix` is
@@ -651,7 +658,7 @@ where a link, a bookmark or a proxy rule eventually points at the wrong one.
 | `/tokens.json` | W3C DTCG format |
 | `/css/sekura.css` | The complete stylesheet; `/css/` also has per-component files |
 | `/js/sekura.iife.min.js` | Behaviours, drop-in `<script>`; `.esm.min.js` alongside |
-| `/docs/` | The 101-page documentation site |
+| `/docs/` | The 107-page documentation site |
 
 Do not assemble those paths by hand from a base you assume. Fetch
 `/manifest.json`, or call the `get_endpoints` MCP tool — only the server knows
@@ -713,7 +720,7 @@ returned a default", and the second is a false claim of safety.
 npm run site:publish        # -> dist-site/
 ```
 
-`dist-site/` is self-contained: 101 pages, the assets, and a 404 page. Upload it
+`dist-site/` is self-contained: 107 pages, the assets, and a 404 page. Upload it
 anywhere. Every reference in it is relative, so the same bundle serves from a
 domain root or any subdirectory with no rebuild:
 

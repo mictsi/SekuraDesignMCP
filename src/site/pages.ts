@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 /**
  * Documentation page builders.
  *
@@ -195,6 +196,13 @@ export function overviewPage(): Page {
       'A design and UX specification for building accessible, dark-mode-first product interfaces — ' +
       'with every colour promise verified by machine rather than by eye.',
   });
+
+  p.section('Version 3 alpha', `<p>A neutral workspace canvas, clear blue actions, compact chrome and
+    readable documents. Existing component names and application behavior contracts remain available.</p>
+    <div class="sk-cluster">
+      <a class="sk-button sk-button--primary" href="example-workspace.html">Explore the workspace</a>
+      <a class="sk-button sk-button--secondary" href="migration.html">Upgrade from v2</a>
+    </div>`);
 
   const stats = [
     { value: String(components.length), label: 'components' },
@@ -1020,16 +1028,15 @@ export function typographyPage(): Page {
     `<div class="docs-twocol">
       <div class="docs-fontcard">
         <p class="docs-fontcard__sample" style="font-family:var(--sk-font-family-sans)">Ag</p>
-        <h3>Inter Variable</h3>
+        <h3>Platform sans</h3>
         <p class="docs-para">
-          The entire interface. Large x-height, unambiguous <code class="sk-code">1 l I</code> and
-          <code class="sk-code">0 O</code>, and a variable axis so the whole scale ships in one file.
+          The interface uses the operating system’s familiar sans-serif stack. No font download is required; test wrapping on each supported platform.
         </p>
         <p class="docs-mono-sample" style="font-family:var(--sk-font-family-sans)">1lI 0O — Handgloves 0123456789</p>
       </div>
       <div class="docs-fontcard">
         <p class="docs-fontcard__sample" style="font-family:var(--sk-font-family-mono)">Ag</p>
-        <h3>JetBrains Mono Variable</h3>
+        <h3>Platform monospace</h3>
         <p class="docs-para">
           Code, identifiers, hostnames, keys, hashes — anything a user compares character by
           character.
@@ -1040,9 +1047,7 @@ export function typographyPage(): Page {
     ${callout(
       'info',
       '',
-      `<p>Both are open-licensed. Subset and self-host with
-      <code class="sk-code">font-display: swap</code> — a third-party font CDN adds a request to the
-      critical path and a privacy question you do not need.</p>`
+      `<p>The default stacks need no bundled fonts. A custom licensed font can override the family tokens; recheck line wrapping and control alignment.</p>`
     )}`
   );
 
@@ -1091,7 +1096,7 @@ export function typographyPage(): Page {
         'Pick the level from structure, the style from hierarchy.',
         'Keep one <code class="sk-code">&lt;h1&gt;</code> per page.',
         'Use <code class="sk-code">tabular-nums</code> for anything compared or updating.',
-        'Cap body text at about 68 characters.',
+        'Keep document text in a responsive column capped at 760px.',
       ],
       [
         'Never skip a heading level to get a smaller size.',
@@ -1353,7 +1358,7 @@ export function layoutPage(): Page {
       <code class="sk-code">flex-basis</code> states an <em>ideal</em> width the layout may depart
       from. <code class="sk-code">width</code> states a demand.
     </p>
-    ${demo('', `.sk-side-nav { flex: 0 0 16rem; }                          /* ideal 16rem, never grows */
+    ${demo('', `.sk-side-nav { flex: 0 0 var(--sk-layout-nav-width); } /* preferred rail width, never grows */
 .sk-search   { flex: 1 1 20rem; max-inline-size: 32rem; }  /* wants 20rem, takes more */`, { lang: 'css' })}`
   );
 
@@ -2510,5 +2515,11 @@ export function examplesIndexPage(entries: ExampleEntry[]): Page {
     </div>`
   );
 
+  return p;
+}
+
+export function migrationPage(): Page {
+  const p = new Page({ file: 'migration.html', title: 'Upgrade to Sekura 3', eyebrow: 'Migration', lead: 'A staged visual upgrade that preserves existing integration names and application behavior.' });
+  p.markdown(readFileSync('MIGRATION.md', 'utf8').replace(/^# .*\n/, ''), { idPrefix: 'migration-' });
   return p;
 }

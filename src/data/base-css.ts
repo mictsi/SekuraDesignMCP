@@ -196,6 +196,11 @@ export const utilitiesCss = `@layer sk-utilities {
      viewport's, which is what makes a card behave correctly in both a sidebar
      and a full-width region. */
   .sk-cq { container-type: inline-size; }
+  @media (pointer: coarse) {
+    .sk-button, .sk-icon-button, .sk-side-nav__item, .sk-menu__item, .sk-segmented__option { min-block-size: var(--sk-layout-touch-target); }
+    .sk-icon-button { min-inline-size: var(--sk-layout-touch-target); }
+  }
+
 }`;
 
 export const proseCss = `@layer sk-base {
@@ -216,14 +221,14 @@ export const proseCss = `@layer sk-base {
     font-weight: var(--sk-font-weight-bold);
     letter-spacing: var(--sk-letter-spacing-heading-xl);
     text-wrap: balance;
-    margin-block-start: var(--sk-space-40);
+    margin-block-start: var(--sk-space-32);
   }
   .sk-prose h2 {
     font-size: var(--sk-font-size-heading-lg);
     line-height: var(--sk-line-height-heading-lg);
     font-weight: var(--sk-font-weight-bold);
     text-wrap: balance;
-    margin-block-start: var(--sk-space-40);
+    margin-block-start: var(--sk-space-32);
   }
   .sk-prose h3 {
     font-size: var(--sk-font-size-heading-md);

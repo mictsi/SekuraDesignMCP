@@ -125,9 +125,9 @@ jobs:
           images: ghcr.io/${{ github.repository }}
           tags: |
             type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=raw,value=latest
+            type=semver,pattern={{major}}.{{minor}},enable=${{ !contains(needs.verify.outputs.version, '-') }}
+            type=semver,pattern={{major}},enable=${{ !contains(needs.verify.outputs.version, '-') }}
+            type=raw,value=latest,enable=${{ !contains(needs.verify.outputs.version, '-') }}
 
       - name: Build and push
         uses: docker/build-push-action@v7
@@ -213,6 +213,7 @@ jobs:
           generate_release_notes: true
 
   pages:
+    if: ${{ !contains(needs.verify.outputs.version, '-') }}
     name: Deploy documentation
     runs-on: ubuntu-latest
     needs: verify

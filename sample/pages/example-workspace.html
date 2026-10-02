@@ -1,0 +1,42 @@
+<header class="sk-content-header sk-content-header--sticky">
+  <nav class="sk-breadcrumbs sk-content-header__context" aria-label="Document location"><ol class="sk-breadcrumbs__list"><li class="sk-breadcrumbs__item"><a class="sk-link" href="example-dashboard.html">Workspace</a></li><li class="sk-breadcrumbs__item"><span aria-current="page">Working together</span></li></ol></nav>
+  <div class="sk-content-header__actions">
+    <button type="button" class="sk-button sk-button--ghost sk-button--sm" data-sk-workspace-star aria-pressed="false">Star document</button>
+    <button type="button" class="sk-button sk-button--secondary sk-button--sm" data-sk-copy-link>Copy link</button>
+    <button type="button" class="sk-button sk-button--secondary sk-button--sm" data-sk-drawer-open="workspace-details" aria-controls="workspace-details" aria-expanded="false">Details</button>
+  </div>
+</header>
+<div class="docs-workspace">
+  <article class="sk-document" aria-labelledby="workspace-title">
+    <header class="sk-document__header">
+      <p class="sk-document__eyebrow">Engineering / Handbook</p>
+      <h1 class="sk-document__title" id="workspace-title">Working together</h1>
+      <div class="sk-cluster sk-cluster--gap-12"><span class="sk-avatar sk-avatar--sm" aria-hidden="true">AL</span><p class="sk-document__meta">Alex Lee · Updated <time datetime="2026-10-02">2 October 2026</time></p><span class="sk-badge sk-badge--neutral">Team guide</span></div>
+    </header>
+    <div class="sk-prose">
+      <p>This is our shared starting point for clear decisions, useful documentation and a workspace that everyone can navigate.</p>
+      <h2 id="make-work-visible">Make work easy to find</h2>
+      <p>Give each project one home. Keep its purpose, owner and next decision together. Link to the source instead of keeping competing copies.</p>
+      <ul><li>Use a short title that describes the work.</li><li>Keep the latest decision near the top.</li><li>Write down the context someone joining tomorrow will need.</li></ul>
+      <h2 id="weekly-rhythm">A weekly rhythm</h2>
+      <p>Small, regular updates help the team understand what changed without another meeting.</p>
+    </div>
+    <div class="sk-table" role="region" aria-label="Weekly team rhythm" tabindex="0" data-sk-density="compact">
+      <table><thead><tr><th scope="col">When</th><th scope="col">Activity</th><th scope="col">Outcome</th></tr></thead><tbody><tr><th scope="row">Monday</th><td>Plan the week</td><td>Owners and next steps</td></tr><tr><th scope="row">Wednesday</th><td>Review decisions</td><td>Recorded tradeoffs</td></tr><tr><th scope="row">Friday</th><td>Share progress</td><td>A useful written update</td></tr></tbody></table>
+    </div>
+    <div class="sk-prose"><h2 id="notes">Your working notes</h2><p>Keep a note while reading. This demonstration saves notes and stars on this device only.</p></div>
+    <form class="docs-workspace-note sk-stack sk-stack--gap-12" data-sk-workspace-note>
+      <div class="sk-field"><label class="sk-field__label" for="workspace-note">Private note on this device</label><textarea class="sk-textarea" id="workspace-note" rows="4" aria-describedby="workspace-note-hint" placeholder="What would you like to follow up on?"></textarea><p class="sk-field__hint" id="workspace-note-hint">Saving this note does not edit or publish the document.</p></div>
+      <div class="sk-cluster sk-cluster--gap-12"><button type="submit" class="sk-button sk-button--primary">Save note</button><p class="sk-save-state" role="status" data-state="pending" data-sk-workspace-save>No note saved yet</p></div>
+      <p class="sk-field__error" data-sk-workspace-error hidden>Your note could not be saved on this device. Your text is still here; try Save note again.</p>
+    </form>
+  </article>
+  <aside class="sk-drawer sk-drawer--inline" id="workspace-details" data-sk-drawer data-sk-modal="(max-width: 79.999rem)" aria-labelledby="workspace-details-title" hidden>
+    <header class="sk-drawer__header"><h2 class="sk-drawer__title" id="workspace-details-title">Document details</h2><button type="button" class="sk-icon-button sk-icon-button--sm" data-sk-drawer-close aria-label="Close document details"><svg aria-hidden="true" width="16" height="16"><use href="#sk-icon-close"></use></svg></button></header>
+    <div class="sk-drawer__body sk-stack sk-stack--gap-24">
+      <dl class="sk-dl"><div class="sk-dl__group"><dt class="sk-dl__term">Owner</dt><dd class="sk-dl__detail">Alex Lee</dd></div><div class="sk-dl__group"><dt class="sk-dl__term">Location</dt><dd class="sk-dl__detail">Engineering / Handbook</dd></div><div class="sk-dl__group"><dt class="sk-dl__term">Visibility</dt><dd class="sk-dl__detail">Public demonstration content</dd></div></dl>
+      <nav aria-label="In this document"><h3 class="sk-fieldset__legend">In this document</h3><ul class="sk-stack sk-stack--gap-8"><li><a class="sk-link" href="#make-work-visible">Make work easy to find</a></li><li><a class="sk-link" href="#weekly-rhythm">A weekly rhythm</a></li><li><a class="sk-link" href="#notes">Your working notes</a></li></ul></nav>
+      <p class="sk-field__hint">Local notes are not shared. This example does not provide collaboration or access management.</p>
+    </div>
+  </aside>
+</div>

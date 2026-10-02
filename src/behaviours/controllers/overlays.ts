@@ -56,6 +56,7 @@ export function createDialog(dialog: HTMLElement, options: DialogOptions = {}): 
   let restore: FocusRestore | null = null;
   let untrap: Cleanup | null = null;
   let undismiss: Cleanup | null = null;
+
   let notifiedOpen = native && (dialog as HTMLDialogElement).open;
 
   if (!native) {
@@ -224,6 +225,8 @@ export function createDrawer(drawer: HTMLElement, options: DrawerOptions = {}): 
   let restore: FocusRestore | null = null;
   let untrap: Cleanup | null = null;
   let undismiss: Cleanup | null = null;
+  // Restore only siblings this modal drawer made inert itself.
+  let restoreOutside: Cleanup | null = null;
 
   // Closed drawers must be inert. A visually off-screen drawer that is still
   // focusable creates invisible tab stops, which is one of the most
@@ -246,6 +249,24 @@ export function createDrawer(drawer: HTMLElement, options: DrawerOptions = {}): 
     toggleAttr(drawer, 'data-open', true);
 
     if (modal) {
+      const changed: HTMLElement[] = [];
+      let ancestor: HTMLElement = drawer;
+      while (ancestor.parentElement) {
+        for (const sibling of ancestor.parentElement.children) {
+          if (sibling instanceof HTMLElement && sibling !== ancestor && !sibling.inert) {
+            sibling.inert = true;
+            changed.push(sibling);
+          }
+        }
+        ancestor = ancestor.parentElement;
+        if (ancestor === document.body) break;
+      }
+      const backdrop = document.createElement('div');
+      backdrop.className = 'sk-drawer__backdrop';
+      backdrop.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(backdrop);
+      backdrop.addEventListener('click', () => close());
+      restoreOutside = () => { changed.forEach(el => { el.inert = false; }); backdrop.remove(); };
       drawer.setAttribute('role', 'dialog');
       drawer.setAttribute('aria-modal', 'true');
       restore = saveFocus();
@@ -271,6 +292,8 @@ export function createDrawer(drawer: HTMLElement, options: DrawerOptions = {}): 
     untrap = null;
     undismiss?.();
     undismiss = null;
+    restoreOutside?.();
+    restoreOutside = null;
     setClosedState();
     restore?.restore();
     restore = null;

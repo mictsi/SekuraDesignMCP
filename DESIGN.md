@@ -1,5 +1,10 @@
 # Sekura Design System
 
+> Sekura 3 alpha redesign: a compact neutral workspace, clear blue actions and a
+> continuous content canvas. Existing integration names remain supported. Start
+> with [the migration plan](MIGRATION.md) before upgrading an application.
+
+
 **Version 1.0.0** · A design and UX specification for accessible, dark-mode-first
 product interfaces.
 
@@ -334,12 +339,11 @@ silent to a screen reader user.
 
 ### 6.1 Families
 
-- **Inter Variable** — the entire interface. Large x-height, unambiguous `1 l I` and
-  `0 O`, single variable file.
-- **JetBrains Mono Variable** — code, identifiers, hostnames, keys, hashes. Anything
-  compared character by character.
+- **Platform sans** — the operating system interface font, with sans-serif fallbacks.
+- **Platform monospace** — code, identifiers, hostnames, keys and hashes.
 
-Both open-licensed. Subset and self-host with `font-display: swap`.
+No fonts are downloaded or bundled. Consumers can supply a licensed family by
+overriding the tokens and checking the resulting wrapping and alignment.
 
 ### 6.2 The scale
 
@@ -348,8 +352,8 @@ Both open-licensed. Subset and self-host with `font-display: swap`.
 tracking) because those four values are only correct together. Tracking tightens as
 size grows.
 
-Display and heading styles use `clamp()` so they interpolate with viewport width
-rather than jumping at a breakpoint mid-sentence.
+Display styles remain fluid. Product titles use 32/40px and wrap naturally;
+reading text uses 16/24px. Use 14px control text and 12px metadata only.
 
 ### 6.3 Heading level is not font size
 
@@ -363,7 +367,7 @@ explicit.
 
 ### 6.4 Measure and numbers
 
-Body text is capped at `68ch`. Table cells and UI labels are exempt — they are
+Document text uses a responsive column capped at 760px (`--sk-container-prose`). Table cells and UI labels are exempt — they are
 scanned, not read.
 
 Use `font-variant-numeric: tabular-nums` for anything in a column, compared, or
@@ -423,9 +427,9 @@ when the whole application needs the same density. The table consumes
 
 | Mode | Control | Row padding | Cell inline padding | Use |
 |---|---|---|---|---|
-| Comfortable | 40px | 12px | 16px | Default. Mixed audiences, touch, marketing. |
-| Compact | 36px | 8px | 16px | Operator consoles, admin tools. |
-| Dense | 32px | 4px | 12px | Data tables, grids and log views only. |
+| Comfortable | 36px | 12px | 16px | Default. Mixed audiences, touch, marketing. |
+| Compact | 32px | 8px | 16px | Operator consoles, admin tools. |
+| Dense | 28px | 4px | 12px | Data tables, grids and log views only. |
 
 Density **never** reduces text below `body-sm` (14px) or a hit target below 24×24
 CSS px. Dense mode always offers a way back and is never the default for a
@@ -495,7 +499,7 @@ is.
 demand.
 
 ```css
-.sk-side-nav { flex: 0 0 16rem; }
+.sk-side-nav { flex: 0 0 var(--sk-layout-nav-width); }
 .sk-search   { flex: 1 1 20rem; max-inline-size: 32rem; }
 ```
 

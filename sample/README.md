@@ -2,7 +2,7 @@
 
 An 100-page documentation site for the Sekura Design System — explanations, a
 full colour guide, a type specimen, live demos, a complete component reference,
-and nine worked examples.
+and ten worked examples.
 
 **Everything is generated from the design system's own data**, so the colour
 guide shows genuinely audited contrast values and the component pages show the
@@ -31,6 +31,7 @@ produces a self-contained bundle in `dist-site/` for any static host.
 ### Get started
 | Page | |
 |---|---|
+| `migration.html` | Staged v2-to-v3 adoption, compatibility bridge and rollback |
 | `index.html` | Overview — the two rules, live theme comparison, where to go next |
 | `structure.html` | The three token layers, naming, groups, themes, density |
 | `develop.html` | Install, the HTML scaffold, using tokens, frameworks, build gates |
@@ -48,7 +49,7 @@ the full narrative in a collapsible section.
 | Page | |
 |---|---|
 | `tokens.html` | All 120 semantic tokens, filterable, with the value in each of the four themes |
-| `components.html` | 67 components grouped by category |
+| `components.html` | 71 components grouped by category |
 | `component-*.html` | One page each: anatomy, variants, states, props, dark-mode note, full keyboard and ARIA contract, CSS |
 | `support.html` | Component root classes, dependencies, controller coverage and application responsibilities |
 | `workbench.html` | Sizes, densities, themes, long content, action failure/cancel/retry/undo and upload simulation |
@@ -56,11 +57,12 @@ the full narrative in a collapsible section.
 | `recipes.html` | 9 page blueprints with markup |
 
 ### Examples
-Nine pages, indexed at `examples.html`, showing the system in a real product — a team project workspace,
+Ten pages, indexed at `examples.html`, showing the system in a real product — a team project workspace,
 chosen because every designer has built one and none of it needs explaining.
 
 | Page | What it is for |
 |---|---|
+| `example-workspace.html` | Reading canvas, docked or modal details, truthful local notes and stars |
 | `example-dashboard.html` | Stat tiles, a chart with a data-table alternative, an activity timeline |
 | `example-list.html` | Search, filters as removable chips, sorting, tri-state bulk selection, typed-confirmation delete |
 | `example-detail.html` | Breadcrumbs, tabs, a split button, an inspection drawer |

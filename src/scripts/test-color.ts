@@ -171,9 +171,9 @@ check(
   `${contrastRatio(neutral['500']!, neutral['100']!).toFixed(2)}`
 );
 check(
-  'neutral-500 also clears 3:1 on a dark card (it is squeezed from both sides)',
-  contrastRatio(neutral['500']!, neutral['900']!) >= 3,
-  `${contrastRatio(neutral['500']!, neutral['900']!).toFixed(2)}`
+  'neutral-400 clears 3:1 on a dark card (the v3 control boundary)',
+  contrastRatio(neutral['400']!, neutral['900']!) >= 3,
+  `${contrastRatio(neutral['400']!, neutral['900']!).toFixed(2)}`
 );
 
 /* ------------------------------------------------------------------ *

@@ -283,6 +283,8 @@ cmd_build() {
   npx tsc -p tsconfig.behaviours.json
   node dist/scripts/build-behaviours.js | sed -n -E '/iife.min|Zero dep/s/^ */    /p'
 
+  npm run --silent test:compatibility
+
   if [[ "$skip_browser" == "yes" ]]; then
     warn "Skipped the behaviour contracts (--no-browser)."
   else
@@ -317,6 +319,8 @@ cmd_build() {
   else
     node dist/scripts/test-rtl.js | sed -n -E '/passed|✗/s/^/    /p'
     npm run --silent test:browsers | sed -n -E '/Cross-browser workflows:|failed/s/^/    /p'
+    npm run --silent test:design
+    npm run --silent test:redesign
   fi
 
   if have_docker; then

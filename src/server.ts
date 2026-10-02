@@ -1233,6 +1233,7 @@ Work in this order:
 2. ${layout ? `\`get_layout({ id: "${layout}" })\`` : 'Pick a layout recipe with `get_layout` — list them via `get_overview`.'}
 3. \`get_component\` for each component you will use, then \`get_component_code\` for the markup and CSS.
 4. \`get_foundation({ id: "responsive-layout" })\` before writing any layout CSS.
+5. \`get_foundation({ id: "workspace-design" })\` for the v3 visual direction and migration boundaries. Preserve existing integration names.
 5. \`validate_integration\` with the selected components, markup, stylesheets, initialization and handled events; then compile, mount and exercise application outcomes.
 
 Hard requirements:

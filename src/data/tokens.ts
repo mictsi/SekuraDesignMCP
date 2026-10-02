@@ -15,6 +15,7 @@ import {
   focusRing,
   fontFamily,
   fontWeight,
+  layout,
   opacity,
   radius,
   ramps,
@@ -169,6 +170,7 @@ export const scales = {
   fontFamily,
   fontWeight,
   containerWidth,
+  layout,
 } as const;
 
 export type ScaleName = keyof typeof scales;

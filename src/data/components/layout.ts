@@ -263,7 +263,7 @@ export const layoutComponents: ComponentSpec[] = [
   min-inline-size: 0;
   padding-block-end: var(--sk-space-16);
   border-block-end: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle);
-  margin-block-end: var(--sk-space-24);
+  margin-block-end: 0;
 }
 
 /* Titles and actions share a row when there is room and stack when there is not.

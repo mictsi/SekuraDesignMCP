@@ -1,3 +1,4 @@
+import { workspaceComponents } from './workspace.js';
 import { actionComponents } from './actions.js';
 import { dataDisplayComponents } from './data-display.js';
 import { feedbackComponents } from './feedback.js';
@@ -16,6 +17,7 @@ export const components: ComponentSpec[] = [
   ...dataDisplayComponents,
   ...overlayComponents,
   ...layoutComponents,
+  ...workspaceComponents,
 ];
 
 for (const component of components) {

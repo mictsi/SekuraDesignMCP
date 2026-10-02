@@ -108,7 +108,7 @@ await test('number, accordion and slider reference demos work', async () => {
   await go('component-accordion'); const headers = page.locator('[data-sk-accordion-trigger]');
   await headers.last().click(); assert.equal(await headers.last().getAttribute('aria-expanded'), 'true');
   assert.equal(await headers.evaluateAll(xs => xs.every(x => x.tabIndex === 0)), true);
-  await go('component-slider'); const range = page.locator('input[type=range]'); await range.focus(); await range.press('End');
+  await go('component-slider'); const range = page.locator('.sk-slider__input'); await range.focus(); await range.press('End');
   assert.equal(await range.inputValue(), '86400'); assert.match(await range.getAttribute('aria-valuetext'), /24 hours/);
   assert.equal(await range.evaluate(el => el.style.getPropertyValue('--sk-slider-progress')), '100%');
 });

@@ -19,6 +19,23 @@ export interface Foundation {
 
 export const foundations: Foundation[] = [
   {
+    id: 'workspace-design', title: 'Workspace design and migration',
+    summary: 'Sekura 3 uses a compact neutral shell and continuous reading canvas, with compatible integration names.',
+    rules: ['Keep existing sk-* classes, semantic token names and behavior exports when upgrading.', 'Use a 48px global header, 272px navigation and 760px reading column through layout tokens.', 'Reserve elevation for floating surfaces; avoid a card around the whole document.', 'Use platform fonts; no proprietary font is bundled.', 'Application permissions, publication, structured editing and collaboration remain application-owned.', 'Use data-sk-geometry="v2" only as a temporary geometry bridge; validate and remove it during migration.'],
+    body: `## Visual direction
+A neutral canvas, compact navigation, blue primary actions and clearly separated metadata support long working sessions. Document titles use 32/40px; reading text uses 16/24px; controls use 14/20px. Metadata may use 12/16px when its contrast remains sufficient.
+
+## Compatibility
+Existing token names, component IDs, CSS classes, recipes and behavior exports remain supported. The migration plan documents geometry changes, the temporary v2 bridge and rollback. All package surfaces derive their version from package.json.
+
+## Application boundary
+The reference contains a complete knowledge-workspace product. Sekura adopts its visual language and reusable interaction contracts, not its database, ACLs, publication state machine or collaborative editor. Save state describes acknowledged work at an explicit boundary. Local-only state must say so.
+
+## Acceptance
+Review every example at mobile and desktop widths, light/dark and high-contrast themes, RTL, increased text and keyboard focus. Preserve input on failure and never report a failed action as successful.`,
+    related: ['principles', 'typography', 'density', 'accessibility'],
+  },
+  {
     id: 'principles',
     title: 'Design principles',
     summary: 'The seven decisions everything else in Sekura follows from.',
@@ -380,7 +397,7 @@ guarantees it never is. The \`.sk-truncate\` utility therefore includes
 demand. Sidebars, search fields and card columns all use basis:
 
 \`\`\`css
-.sk-side-nav { flex: 0 0 16rem; }              /* ideal 16rem, never grows */
+.sk-side-nav { flex: 0 0 var(--sk-layout-nav-width); } /* preferred rail width, never grows */
 .sk-search   { flex: 1 1 20rem; max-inline-size: 32rem; }  /* wants 20rem, takes more */
 \`\`\`
 
@@ -459,22 +476,19 @@ users cannot scroll them at all.`,
       'One sans family, one mono family, and a scale where visual size is decoupled from heading level.',
     rules: [
       'Heading level reflects document structure; type style reflects visual hierarchy. They are not the same axis.',
-      'Never set font size below 13px for content.',
-      'Body text is capped at roughly 68 characters per line.',
+      'Use 14px controls, 16px reading text, and 12px metadata only.',
+      'Document content uses a 760px maximum column with responsive gutters.',
       'Use tabular figures for anything that updates or is compared in a column.',
       'Never disable user zoom.',
     ],
     body: `## Families
 
-- **Inter Variable** for everything in the interface. Chosen for its large x-height,
-  unambiguous \`1 l I\` and \`0 O\`, and its variable axis, which lets the whole scale
-  ship in one file.
-- **JetBrains Mono Variable** for code, identifiers, hostnames, keys and hashes.
-  Anything a user compares character by character.
+- **Platform sans** for interface and reading text. The default stack uses the
+  operating system font; it does not download or bundle a proprietary face.
+- **Platform monospace** for code, identifiers and values compared character by
+  character. Consumers may override either font-family token with a licensed face.
 
-Both are open-licensed. Subset them and self-host with \`font-display: swap\`; a
-third-party font CDN adds a request to the critical path and a privacy question you
-do not need.
+Verify wrapping on every supported platform when changing fonts.
 
 ## The scale
 
@@ -500,10 +514,9 @@ choice to be explicit.
 
 ## Measure
 
-Body text is capped at \`68ch\` (\`--sk-container-prose\`). Beyond about 75
-characters the eye loses its place returning to the next line. Below about 45 it
-breaks reading rhythm. Table cells and UI labels are exempt — they are scanned, not
-read.
+Document text uses a responsive column capped at 760px
+(\`--sk-container-prose\`). Keep horizontal gutters as the viewport narrows.
+Tables and code may use wider layouts with local scrolling.
 
 ## Numbers
 
@@ -985,12 +998,12 @@ focusable by default.`,
     body: `## The modes
 
 **Comfortable** (default) — mixed-ability audiences, touch input, marketing
-surfaces. 40px controls, 12px row padding.
+surfaces. 36px medium controls, 12px row padding. Touch actions expand to 44px.
 
 **Compact** — operator consoles and admin tools where more rows on screen is worth
-a tighter rhythm. 36px controls, 8px row padding.
+a tighter rhythm. 32px medium controls, 8px row padding.
 
-**Dense** — data grids and log views only. 32px controls, 4px row padding. Always
+**Dense** — data tables, grids and log views only. 28px medium controls, 4px row padding. Always
 offer a way back, and never make it the default for a first-time user.
 
 ## What density does not change
@@ -1004,8 +1017,8 @@ offer a way back, and never make it the default for a first-time user.
 
 ## Implementation
 
-Density is a single attribute on the root, so it costs one line to change and
-nothing to maintain:
+Scope density to the data region whenever possible. Use it on the root only for
+an application-wide preference:
 
 \`\`\`html
 <html data-sk-density="compact">

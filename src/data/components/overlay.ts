@@ -34,7 +34,7 @@ export const overlayComponents: ComponentSpec[] = [
     ],
     sizes: [
       { name: 'Small', className: 'sk-dialog--sm', height: 'auto', typeStyle: 'body-md', description: '24rem. Confirmations.' },
-      { name: 'Medium', className: '', height: 'auto', typeStyle: 'body-md', description: '32rem. Default.' },
+      { name: 'Medium', className: '', height: 'auto', typeStyle: 'body-md', description: '37.5rem. Default.' },
       { name: 'Large', className: 'sk-dialog--lg', height: 'auto', typeStyle: 'body-md', description: '48rem. Content-heavy dialogs.' },
     ],
     states: [
@@ -131,7 +131,7 @@ export const overlayComponents: ComponentSpec[] = [
   padding: 0;
   border: none;
   background: transparent;
-  max-inline-size: min(32rem, calc(100vw - var(--sk-space-32)));
+  max-inline-size: min(37.5rem, calc(100vw - var(--sk-space-32)));
   max-block-size: min(48rem, calc(100dvh - var(--sk-space-32)));
   inline-size: 100%;
   color: var(--sk-color-text-primary);
@@ -272,7 +272,7 @@ export const overlayComponents: ComponentSpec[] = [
     ],
     sizes: [
       { name: 'Small', className: 'sk-drawer--sm', height: '20rem wide', typeStyle: 'body-sm', description: 'Filters.' },
-      { name: 'Medium', className: '', height: '28rem wide', typeStyle: 'body-md', description: 'Default.' },
+      { name: 'Medium', className: '', height: '22.5rem wide', typeStyle: 'body-md', description: 'Default.' },
       { name: 'Large', className: 'sk-drawer--lg', height: '40rem wide', typeStyle: 'body-md', description: 'Detail inspection.' },
     ],
     states: [
@@ -393,11 +393,24 @@ export const overlayComponents: ComponentSpec[] = [
 
 /* --- Inline: a flex sibling of the content, so the content simply gets narrower --- */
 .sk-drawer--inline {
-  flex: 0 0 28rem;
+  flex: 0 0 var(--sk-layout-detail-width);
   max-inline-size: 100%;
   block-size: 100%;
 }
 .sk-drawer--inline[hidden], .sk-drawer--inline:not([data-open]) { display: none; }
+
+/* A media-query drawer changes modality through the controller. Style that
+   actual state so the same markup can dock or overlay at any breakpoint. */
+.sk-drawer--inline[aria-modal="true"] {
+  position: fixed;
+  inset-block: 0;
+  inset-inline-end: 0;
+  inline-size: min(var(--sk-layout-detail-width), 100vw);
+  block-size: 100dvh;
+  max-block-size: 100dvh;
+  z-index: var(--sk-z-drawer);
+  box-shadow: var(--sk-elevation-4);
+}
 
 /* --- Modal --- */
 .sk-drawer--modal {
@@ -405,7 +418,7 @@ export const overlayComponents: ComponentSpec[] = [
   inset-block: 0;
   inset-inline-end: 0;
   z-index: var(--sk-z-drawer);
-  inline-size: min(28rem, 100vw);
+  inline-size: min(var(--sk-layout-detail-width), 100vw);
   box-shadow: var(--sk-elevation-4);
   translate: 100% 0;
   transition: translate var(--sk-duration-slow) var(--sk-easing-entrance);
@@ -434,8 +447,8 @@ export const overlayComponents: ComponentSpec[] = [
 }
 .sk-drawer--bottom[data-open] { translate: 0 0; }
 
-.sk-drawer--sm { flex-basis: 20rem; inline-size: min(20rem, 100vw); }
-.sk-drawer--lg { flex-basis: 40rem; inline-size: min(40rem, 100vw); }
+.sk-drawer--sm { --sk-layout-detail-width: 20rem; flex-basis: 20rem; inline-size: min(20rem, 100vw); }
+.sk-drawer--lg { --sk-layout-detail-width: 40rem; flex-basis: 40rem; inline-size: min(40rem, 100vw); }
 
 @media (prefers-reduced-motion: reduce) { .sk-drawer { transition: none; } }
 

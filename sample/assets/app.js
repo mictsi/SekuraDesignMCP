@@ -148,13 +148,45 @@
     var nav = $('#primary-nav');
     if (!trigger || !nav) return;
     var query = matchMedia('(max-width: 63.999rem)');
-    var controller = Sekura.createDrawer(nav, { modal: '(max-width: 63.999rem)', onOpenChange: function (open) { trigger.setAttribute('aria-expanded', String(open)); } });
+    var desktopOpen = true;
+    var width = 272;
+    try {
+      desktopOpen = localStorage.getItem('sk-nav-collapsed') !== 'true';
+      var storedWidth = Number(localStorage.getItem('sk-nav-width'));
+      if (storedWidth >= 208 && storedWidth <= 400) width = storedWidth;
+    } catch (e) {}
+    var range = $('[data-sk-nav-width]');
+    function resize(value) {
+      width = Math.max(208, Math.min(400, Number(value) || 272));
+      nav.style.setProperty('--sk-layout-nav-width', width / 16 + 'rem');
+      if (range) { range.value = String(width); range.setAttribute('aria-valuetext', width + ' pixels'); }
+    }
+    resize(width);
+    if (range) range.addEventListener('input', function () {
+      resize(range.value);
+      try { localStorage.setItem('sk-nav-width', String(width)); } catch (e) {}
+    });
+    var reset = $('[data-sk-nav-reset]');
+    if (reset) reset.addEventListener('click', function () {
+      resize(272);
+      try { localStorage.removeItem('sk-nav-width'); } catch (e) {}
+    });
+    var controller = Sekura.createDrawer(nav, {
+      modal: '(max-width: 63.999rem)',
+      onOpenChange: function (open) { trigger.setAttribute('aria-expanded', String(open)); }
+    });
     function sync() {
-      if (query.matches) controller.close();
+      if (query.matches || !desktopOpen) controller.close();
       else { controller.show(); nav.setAttribute('role', 'navigation'); }
     }
     query.addEventListener('change', sync);
-    trigger.addEventListener('click', function () { controller.open ? controller.close() : controller.show(); });
+    trigger.addEventListener('click', function () {
+      if (!query.matches) {
+        desktopOpen = !controller.open;
+        try { localStorage.setItem('sk-nav-collapsed', String(!desktopOpen)); } catch (e) {}
+      }
+      controller.open ? controller.close() : controller.show();
+    });
     sync();
   }
 

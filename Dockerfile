@@ -15,6 +15,8 @@ RUN npm ci
 COPY tsconfig.json tsconfig.behaviours.json ./
 COPY src ./src
 COPY sample ./sample
+COPY MIGRATION.md ./
+COPY compatibility ./compatibility
 RUN npm run build
 
 # The contrast audit is a build gate, not a report. An image whose palette breaks
@@ -34,7 +36,7 @@ RUN node dist/scripts/emit-css.js
 
 # The behaviours bundle and the documentation site are published by the running
 # container too, so they are built here rather than expected from the host.
-RUN npm run build:behaviours && node dist/scripts/build-site.js
+RUN npm run build:behaviours && npm run test:compatibility && node dist/scripts/build-site.js
 
 # Drop dev dependencies from the tree we are about to copy forward.
 RUN npm prune --omit=dev

@@ -18,6 +18,7 @@ import {
   focusRing,
   fontFamily,
   fontWeight,
+  layout,
   opacity,
   radius,
   ramps,
@@ -32,6 +33,7 @@ import {
   themeInfo,
   type ThemeName,
 } from '../data/tokens.js';
+import { legacyGeometryCss } from '../data/compatibility.js';
 
 export const EXPORT_FORMATS = [
   'css',
@@ -83,6 +85,7 @@ function scaleEntries(): Array<[string, string]> {
   for (const [k, v] of Object.entries(easing)) out.push([`easing-${k}`, v]);
   for (const [k, v] of Object.entries(fontFamily)) out.push([`font-family-${k}`, v]);
   for (const [k, v] of Object.entries(fontWeight)) out.push([`font-weight-${k}`, v]);
+  for (const [k, v] of Object.entries(layout)) out.push([`layout-${k}`, v]);
   for (const [k, v] of Object.entries(containerWidth)) out.push([`container-${k}`, v]);
   for (const [k, v] of Object.entries(typeScale)) {
     out.push([`font-size-${k}`, v.fontSize]);
@@ -156,6 +159,8 @@ export function exportCss(): string {
     lines.push('}');
     lines.push('');
   }
+
+  lines.push(legacyGeometryCss());
 
   // Themes.
   lines.push('/* --- Themes --------------------------------------------------------');

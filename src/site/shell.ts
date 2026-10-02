@@ -33,6 +33,7 @@ export const NAV: NavGroup[] = [
     label: 'Get started',
     items: [
       { file: 'index.html', label: 'Overview' },
+      { file: 'migration.html', label: 'Upgrade to v3' },
       { file: 'structure.html', label: 'How it is structured' },
       { file: 'develop.html', label: 'For developers' },
       { file: 'behaviours.html', label: 'Behaviours package' },
@@ -72,6 +73,7 @@ export const NAV: NavGroup[] = [
       { file: 'examples.html', label: 'All examples' },
       { file: 'workbench.html', label: 'Component workbench' },
       { file: 'form-lab.html', label: 'Forms under real conditions' },
+      { file: 'example-workspace.html', label: 'Document workspace' },
       { file: 'example-dashboard.html', label: 'Dashboard' },
       { file: 'example-list.html', label: 'List page' },
       { file: 'example-detail.html', label: 'Detail page' },
@@ -327,7 +329,7 @@ const THEME_SCRIPT = `<script>
 </script>`;
 
 function renderNav(current: string): string {
-  return NAV.map((group) => {
+  return `<details class="docs-nav-preferences"><summary>Navigation width</summary><label for="nav-width">Width in pixels</label><input id="nav-width" type="range" min="208" max="400" step="16" value="272" data-sk-nav-width /><button class="sk-button sk-button--ghost sk-button--sm" type="button" data-sk-nav-reset>Reset width</button></details>` + NAV.map((group) => {
     const id = `nav-${slugify(group.label)}`;
     const items = group.items
       .map((item) => {
@@ -377,9 +379,9 @@ ${THEME_SCRIPT}
 
 function topBar(): string {
   return `<header class="sk-top-bar sk-top-bar--sticky docs-topbar">
-  <button type="button" class="sk-icon-button sk-top-bar__nav-trigger" aria-expanded="false" aria-controls="primary-nav">
+  <button type="button" class="sk-icon-button sk-top-bar__nav-trigger" data-sk-persistent-nav aria-expanded="false" aria-controls="primary-nav">
     ${icon('menu')}
-    <span class="sk-visually-hidden">Open navigation</span>
+    <span class="sk-visually-hidden">Toggle navigation</span>
   </button>
 
   <a class="sk-top-bar__identity" href="index.html">
@@ -511,6 +513,7 @@ ${commandPalette(ctx.palette)}
 <script src="assets/sekura.iife.min.js"></script>
 <script src="assets/app.js"></script>
 <script src="assets/examples.js"></script>
+<script src="assets/workspace.js"></script>
 <script type="module" src="assets/form-lab.js"></script>
 <script src="assets/docs.js"></script>
 </body>
@@ -531,8 +534,7 @@ export function renderExamplePage(
   <div class="docs-example-banner__inner">
     ${icon('info', 16)}
     <p class="docs-example-banner__text">
-      <strong>Example.</strong> ${escapeHtml(opts.description)}
-      Every pixel comes from the design system — no page-specific colours, sizes or spacing.
+      <strong>Local demo.</strong> ${escapeHtml(opts.description)}
     </p>
     <a class="sk-link docs-example-banner__back" href="index.html">
       Back to the documentation
@@ -556,6 +558,7 @@ ${content}
 <script src="assets/sekura.iife.min.js"></script>
 <script src="assets/app.js"></script>
 <script src="assets/examples.js"></script>
+<script src="assets/workspace.js"></script>
 <script type="module" src="assets/form-lab.js"></script>
 </body>
 </html>
@@ -582,7 +585,7 @@ ${renderNav(opts.file)}
   </nav>
 
   <main class="sk-app-shell__main" id="main" tabindex="-1">
-    <div class="sk-app-shell__content sk-stack sk-stack--gap-24">
+    <div class="sk-app-shell__content sk-stack sk-stack--gap-24${opts.file === 'example-workspace.html' ? ' docs-workspace-content' : ''}">
 ${content}
     </div>
   </main>
@@ -595,6 +598,7 @@ ${commandPalette(ctx.palette)}
 <script src="assets/sekura.iife.min.js"></script>
 <script src="assets/app.js"></script>
 <script src="assets/examples.js"></script>
+<script src="assets/workspace.js"></script>
 <script type="module" src="assets/form-lab.js"></script>
 </body>
 </html>

@@ -106,7 +106,7 @@ export const navigationComponents: ComponentSpec[] = [
     ],
     sizes: [
       { name: 'Compact', className: 'sk-top-bar--compact', height: '3rem', typeStyle: 'body-sm', description: 'Dense operator tools.' },
-      { name: 'Medium', className: '', height: '3.5rem', typeStyle: 'body-md', description: 'Default.' },
+      { name: 'Medium', className: '', height: '3rem', typeStyle: 'body-md', description: 'Default.' },
     ],
     states: [
       { name: 'Rest', description: 'Flat.', trigger: 'default' },
@@ -186,11 +186,11 @@ export const navigationComponents: ComponentSpec[] = [
   align-items: center;
   gap: var(--sk-space-12);
   flex-wrap: nowrap;
-  min-block-size: 3.5rem;
+  min-block-size: var(--sk-layout-header-height);
   padding-inline: var(--sk-space-16);
   /* Lighter than the page in dark mode, darker in light mode — the separation
      direction inverts, which a hard-coded grey cannot express. */
-  background-color: var(--sk-color-surface-subtle);
+  background-color: var(--sk-color-surface-base);
   border-block-end: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle);
   color: var(--sk-color-text-primary);
 }
@@ -209,7 +209,7 @@ export const navigationComponents: ComponentSpec[] = [
   .sk-top-bar__utilities { flex-wrap: wrap; gap: var(--sk-space-2); }
 }
 .sk-top-bar__nav-trigger { flex: 0 0 auto; }
-@media (min-width: 64rem) { .sk-top-bar__nav-trigger { display: none; } }
+@media (min-width: 64rem) { .sk-top-bar__nav-trigger:not([data-sk-persistent-nav]) { display: none; } }
 
 .sk-top-bar__identity {
   flex: 0 1 auto;
@@ -300,7 +300,7 @@ export const navigationComponents: ComponentSpec[] = [
       { name: 'Drawer', className: 'sk-side-nav--drawer', description: 'Overlay drawer with focus trapping.', use: 'Below the lg breakpoint.' },
     ],
     sizes: [
-      { name: 'Standard', className: '', height: '16rem wide', typeStyle: 'body-sm', description: 'Default rail width.' },
+      { name: 'Standard', className: '', height: '17rem wide', typeStyle: 'body-sm', description: 'Default rail width.' },
       { name: 'Collapsed', className: 'sk-side-nav--collapsed', height: '3.5rem wide', typeStyle: 'icon only', description: 'Icon rail.' },
     ],
     states: [
@@ -385,7 +385,7 @@ export const navigationComponents: ComponentSpec[] = [
   flex-direction: column;
   gap: var(--sk-space-4);
   /* Fixed basis, allowed to shrink, never to grow: the content area takes the slack. */
-  flex: 0 0 16rem;
+  flex: 0 0 var(--sk-layout-nav-width);
   min-inline-size: 0;
   padding: var(--sk-space-12) var(--sk-space-8);
   background-color: var(--sk-color-surface-subtle);
@@ -412,9 +412,9 @@ export const navigationComponents: ComponentSpec[] = [
   align-items: center;
   gap: var(--sk-space-10);
   min-inline-size: 0;
-  min-block-size: 2.25rem;
+  min-block-size: 2rem;
   padding-inline: var(--sk-space-12);
-  padding-block: var(--sk-space-6);
+  padding-block: var(--sk-space-4);
   border-radius: var(--sk-radius-md);
   color: var(--sk-color-text-secondary);
   font-size: var(--sk-font-size-body-sm);

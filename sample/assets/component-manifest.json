@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "version": "2.1.0",
+  "version": "3.0.0-alpha.0",
   "base": [
     "tokens.css",
     "base.css"
@@ -1798,12 +1798,96 @@
         "Handle persistence, permissions, network errors and navigation.",
         "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
       ]
+    },
+    {
+      "id": "document-canvas",
+      "cssFile": "components/document-canvas.css",
+      "rootClass": "sk-document-canvas",
+      "cssDependencies": [
+        "link"
+      ],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "nativeReactExport": null,
+      "events": [],
+      "autoMarker": null,
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "content-header",
+      "cssFile": "components/content-header.css",
+      "rootClass": "sk-content-header",
+      "cssDependencies": [
+        "button",
+        "button-group",
+        "link",
+        "breadcrumbs",
+        "alert",
+        "dialog"
+      ],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "nativeReactExport": null,
+      "events": [],
+      "autoMarker": null,
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "save-state",
+      "cssFile": "components/save-state.css",
+      "rootClass": "sk-save-state",
+      "cssDependencies": [],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "nativeReactExport": null,
+      "events": [],
+      "autoMarker": null,
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
+    },
+    {
+      "id": "activity-list",
+      "cssFile": "components/activity-list.css",
+      "rootClass": "sk-activity-list",
+      "cssDependencies": [
+        "link",
+        "alert"
+      ],
+      "svgSymbols": [],
+      "controller": null,
+      "behavior": "application",
+      "frameworkOutput": "reference-recipe",
+      "nativeReactExport": null,
+      "events": [],
+      "autoMarker": null,
+      "applicationResponsibilities": [
+        "Provide real content and application state.",
+        "Handle persistence, permissions, network errors and navigation.",
+        "Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons."
+      ]
     }
   ],
   "counts": {
-    "pages": 101,
-    "components": 67,
-    "foundations": 15,
+    "pages": 107,
+    "components": 71,
+    "foundations": 16,
     "patterns": 15,
     "layouts": 9,
     "tokens": 120

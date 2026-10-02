@@ -1,0 +1,1254 @@
+{
+  "sourceVersion": "2.1.0",
+  "sourceCommit": "dc4d498",
+  "tokens": [
+    "color-surface-base",
+    "color-surface-subtle",
+    "color-surface-sunken",
+    "color-surface-raised",
+    "color-surface-overlay",
+    "color-surface-inverse",
+    "color-surface-hover",
+    "color-surface-active",
+    "color-surface-selected",
+    "color-surface-disabled",
+    "color-surface-brand",
+    "color-surface-brand-subtle",
+    "color-surface-accent",
+    "color-surface-accent-subtle",
+    "color-surface-scrim",
+    "color-text-primary",
+    "color-text-secondary",
+    "color-text-tertiary",
+    "color-text-disabled",
+    "color-text-placeholder",
+    "color-text-on-brand",
+    "color-text-on-accent",
+    "color-text-on-inverse",
+    "color-text-brand",
+    "color-text-link",
+    "color-text-link-hover",
+    "color-text-link-visited",
+    "color-text-code",
+    "color-border-subtle",
+    "color-border-default",
+    "color-border-strong",
+    "color-border-interactive",
+    "color-border-brand",
+    "color-border-disabled",
+    "color-border-inverse",
+    "color-focus-ring",
+    "color-focus-ring-offset",
+    "color-focus-ring-inverse",
+    "color-action-primary-bg",
+    "color-action-primary-bg-hover",
+    "color-action-primary-bg-active",
+    "color-action-primary-text",
+    "color-action-secondary-bg",
+    "color-action-secondary-bg-hover",
+    "color-action-secondary-bg-active",
+    "color-action-secondary-border",
+    "color-action-secondary-text",
+    "color-action-ghost-text",
+    "color-action-ghost-bg-hover",
+    "color-action-ghost-bg-active",
+    "color-action-danger-bg",
+    "color-action-danger-bg-hover",
+    "color-action-danger-bg-active",
+    "color-action-danger-text",
+    "color-action-success-bg",
+    "color-action-success-bg-hover",
+    "color-action-success-bg-active",
+    "color-action-success-text",
+    "color-action-disabled-bg",
+    "color-action-disabled-text",
+    "color-status-success-surface",
+    "color-status-success-border",
+    "color-status-success-text",
+    "color-status-success-solid",
+    "color-status-success-on-solid",
+    "color-status-warning-surface",
+    "color-status-warning-border",
+    "color-status-warning-text",
+    "color-status-warning-solid",
+    "color-status-warning-on-solid",
+    "color-status-danger-surface",
+    "color-status-danger-border",
+    "color-status-danger-text",
+    "color-status-danger-solid",
+    "color-status-danger-on-solid",
+    "color-status-info-surface",
+    "color-status-info-border",
+    "color-status-info-text",
+    "color-status-info-solid",
+    "color-status-info-on-solid",
+    "color-status-neutral-surface",
+    "color-status-neutral-border",
+    "color-status-neutral-text",
+    "color-status-neutral-solid",
+    "color-status-neutral-on-solid",
+    "color-field-bg",
+    "color-field-bg-hover",
+    "color-field-bg-disabled",
+    "color-field-bg-readonly",
+    "color-field-border",
+    "color-field-border-hover",
+    "color-field-border-error",
+    "color-field-border-success",
+    "color-field-selection-bg",
+    "color-field-selection-text",
+    "color-control-checked",
+    "color-control-checked-mark",
+    "color-control-track",
+    "color-chart-1",
+    "color-chart-2",
+    "color-chart-3",
+    "color-chart-4",
+    "color-chart-5",
+    "color-chart-6",
+    "color-chart-7",
+    "color-chart-8",
+    "color-chart-1-on-solid",
+    "color-chart-2-on-solid",
+    "color-chart-3-on-solid",
+    "color-chart-4-on-solid",
+    "color-chart-5-on-solid",
+    "color-chart-6-on-solid",
+    "color-chart-7-on-solid",
+    "color-chart-8-on-solid",
+    "color-chart-grid",
+    "color-chart-axis",
+    "color-chart-label",
+    "color-ai-surface",
+    "color-ai-border",
+    "color-ai-text"
+  ],
+  "scales": {
+    "space": [
+      "0",
+      "1",
+      "2",
+      "4",
+      "6",
+      "8",
+      "10",
+      "12",
+      "16",
+      "20",
+      "24",
+      "28",
+      "32",
+      "40",
+      "48",
+      "56",
+      "64",
+      "80",
+      "96",
+      "128"
+    ],
+    "radius": [
+      "none",
+      "xs",
+      "sm",
+      "md",
+      "lg",
+      "xl",
+      "2xl",
+      "3xl",
+      "full"
+    ],
+    "borderWidth": [
+      "0",
+      "hairline",
+      "thin",
+      "thick",
+      "heavy",
+      "accent"
+    ],
+    "opacity": [
+      "0",
+      "80",
+      "100",
+      "disabled",
+      "muted"
+    ],
+    "zIndex": [
+      "below",
+      "base",
+      "raised",
+      "sticky",
+      "header",
+      "drawer",
+      "overlay",
+      "dialog",
+      "popover",
+      "toast",
+      "tooltip",
+      "skipLink",
+      "debug"
+    ],
+    "duration": [
+      "instant",
+      "fast",
+      "normal",
+      "slow",
+      "slower",
+      "deliberate"
+    ],
+    "easing": [
+      "standard",
+      "entrance",
+      "exit",
+      "emphasised",
+      "linear"
+    ],
+    "fontFamily": [
+      "sans",
+      "mono"
+    ],
+    "fontWeight": [
+      "regular",
+      "medium",
+      "semibold",
+      "bold"
+    ],
+    "containerWidth": [
+      "xs",
+      "sm",
+      "md",
+      "prose",
+      "lg",
+      "xl",
+      "2xl",
+      "full"
+    ]
+  },
+  "typeStyles": [
+    "display-2xl",
+    "display-xl",
+    "display-lg",
+    "heading-xl",
+    "heading-lg",
+    "heading-md",
+    "heading-sm",
+    "heading-xs",
+    "body-lg",
+    "body-md",
+    "body-sm",
+    "body-xs",
+    "label-md",
+    "label-sm",
+    "overline",
+    "code-md",
+    "code-sm"
+  ],
+  "densities": [
+    "comfortable",
+    "compact",
+    "dense"
+  ],
+  "themes": [
+    "light",
+    "dark",
+    "hc-light",
+    "hc-dark"
+  ],
+  "components": [
+    {
+      "id": "button",
+      "classes": [
+        "sk-button",
+        "sk-button--primary",
+        "sk-button--secondary",
+        "sk-button--ghost",
+        "sk-button--danger",
+        "sk-button--danger-ghost",
+        "sk-button--success",
+        "sk-button--sm",
+        "sk-button--lg",
+        "sk-button--full-width",
+        "sk-button__icon",
+        "sk-button__label",
+        "sk-button--truncate",
+        "sk-button__spinner"
+      ]
+    },
+    {
+      "id": "icon-button",
+      "classes": [
+        "sk-icon-button",
+        "sk-icon-button--secondary",
+        "sk-icon-button--primary",
+        "sk-icon-button--danger",
+        "sk-icon-button--sm",
+        "sk-icon-button--lg"
+      ]
+    },
+    {
+      "id": "button-group",
+      "classes": [
+        "sk-button-group",
+        "sk-button",
+        "sk-button-group--vertical",
+        "sk-button-group--sm",
+        "sk-button-group--segmented",
+        "sk-button-group__segment"
+      ]
+    },
+    {
+      "id": "split-button",
+      "classes": [
+        "sk-split-button",
+        "sk-split-button__action",
+        "sk-split-button__trigger",
+        "sk-split-button--secondary",
+        "sk-split-button--primary",
+        "sk-split-button--sm"
+      ]
+    },
+    {
+      "id": "link",
+      "classes": [
+        "sk-link",
+        "sk-prose",
+        "sk-link--standalone",
+        "sk-link--quiet",
+        "sk-link--inverse",
+        "sk-link__external"
+      ]
+    },
+    {
+      "id": "toolbar",
+      "classes": [
+        "sk-toolbar",
+        "sk-toolbar__group",
+        "sk-toolbar__separator",
+        "sk-toolbar--vertical",
+        "sk-toolbar--compact",
+        "sk-toolbar--sm"
+      ]
+    },
+    {
+      "id": "segmented-control",
+      "classes": [
+        "sk-segmented",
+        "sk-segmented__option",
+        "sk-segmented--fitted",
+        "sk-segmented--icon",
+        "sk-segmented--sm"
+      ]
+    },
+    {
+      "id": "form-field",
+      "classes": [
+        "sk-field",
+        "sk-field__label",
+        "sk-field__optional",
+        "sk-field__hint",
+        "sk-field__error",
+        "sk-field__footer",
+        "sk-field__counter",
+        "sk-input",
+        "sk-select",
+        "sk-textarea",
+        "sk-field--sm",
+        "sk-field--lg",
+        "sk-field--inline",
+        "sk-field--horizontal"
+      ]
+    },
+    {
+      "id": "text-field",
+      "classes": [
+        "sk-input",
+        "sk-input--mono",
+        "sk-input--sm",
+        "sk-input--lg",
+        "sk-input-group",
+        "sk-input-group__prefix",
+        "sk-input-group__suffix",
+        "sk-input-group__action"
+      ]
+    },
+    {
+      "id": "textarea",
+      "classes": [
+        "sk-textarea",
+        "sk-textarea--mono",
+        "sk-textarea--auto",
+        "sk-textarea--sm",
+        "sk-textarea--lg",
+        "sk-field__counter"
+      ]
+    },
+    {
+      "id": "select",
+      "classes": [
+        "sk-select-wrapper",
+        "sk-select",
+        "sk-select--quiet",
+        "sk-select--sm",
+        "sk-select--lg"
+      ]
+    },
+    {
+      "id": "checkbox",
+      "classes": [
+        "sk-checkbox",
+        "sk-checkbox__input",
+        "sk-checkbox__box",
+        "sk-checkbox__content",
+        "sk-checkbox__label",
+        "sk-checkbox__description",
+        "sk-checkbox--card",
+        "sk-checkbox--sm"
+      ]
+    },
+    {
+      "id": "radio-group",
+      "classes": [
+        "sk-radio-group",
+        "sk-radio-group--inline",
+        "sk-radio-group--cards",
+        "sk-radio",
+        "sk-radio__input",
+        "sk-radio__control",
+        "sk-radio__content",
+        "sk-radio__label",
+        "sk-radio__description"
+      ]
+    },
+    {
+      "id": "switch",
+      "classes": [
+        "sk-switch",
+        "sk-switch__content",
+        "sk-switch__label",
+        "sk-switch__description",
+        "sk-switch__input",
+        "sk-switch__track",
+        "sk-switch__thumb",
+        "sk-switch--leading",
+        "sk-switch--sm"
+      ]
+    },
+    {
+      "id": "combobox",
+      "classes": [
+        "sk-combobox--sm",
+        "sk-combobox",
+        "sk-combobox__list",
+        "sk-combobox__option",
+        "sk-combobox__option-label",
+        "sk-combobox__option-meta",
+        "sk-combobox__empty",
+        "sk-combobox--multi",
+        "sk-combobox__field",
+        "sk-input",
+        "sk-combobox__token"
+      ]
+    },
+    {
+      "id": "search-field",
+      "classes": [
+        "sk-search",
+        "sk-search__icon",
+        "sk-search__input",
+        "sk-search__clear",
+        "sk-search--sm"
+      ]
+    },
+    {
+      "id": "slider",
+      "classes": [
+        "sk-slider",
+        "sk-slider__input",
+        "sk-slider__output"
+      ]
+    },
+    {
+      "id": "file-upload",
+      "classes": [
+        "sk-upload",
+        "sk-upload__zone",
+        "sk-upload__icon",
+        "sk-upload__prompt",
+        "sk-upload__hint-drag",
+        "sk-upload__constraints",
+        "sk-upload__input",
+        "sk-upload__list",
+        "sk-upload__file",
+        "sk-upload__file-name",
+        "sk-upload__file-meta",
+        "sk-upload__file-error"
+      ]
+    },
+    {
+      "id": "fieldset",
+      "classes": [
+        "sk-fieldset",
+        "sk-fieldset__legend",
+        "sk-fieldset__description",
+        "sk-fieldset__body",
+        "sk-fieldset--bordered",
+        "sk-fieldset--section"
+      ]
+    },
+    {
+      "id": "number-input",
+      "classes": [
+        "sk-number",
+        "sk-input",
+        "sk-number__steppers",
+        "sk-number__step",
+        "sk-number--grouped",
+        "sk-number--sm"
+      ]
+    },
+    {
+      "id": "tag-input",
+      "classes": [
+        "sk-tag-input",
+        "sk-tag-input__tokens",
+        "sk-tag-input__token",
+        "sk-tag-input__remove",
+        "sk-tag-input__input",
+        "sk-tag-input__list",
+        "sk-tag-input__option",
+        "sk-tag-input--sm"
+      ]
+    },
+    {
+      "id": "date-picker",
+      "classes": [
+        "sk-date-picker",
+        "sk-input",
+        "sk-date-picker__trigger",
+        "sk-date-picker__panel",
+        "sk-date-picker--sm",
+        "sk-date-picker--inline",
+        "sk-calendar",
+        "sk-calendar__header",
+        "sk-calendar__month",
+        "sk-calendar__nav",
+        "sk-calendar__grid",
+        "sk-calendar__weekday",
+        "sk-calendar__day"
+      ]
+    },
+    {
+      "id": "date-range-picker",
+      "classes": [
+        "sk-date-range--sm",
+        "sk-date-range",
+        "sk-date-range__calendar",
+        "sk-date-range--presets",
+        "sk-date-range__body",
+        "sk-date-range__presets"
+      ]
+    },
+    {
+      "id": "skip-link",
+      "classes": [
+        "sk-skip-link"
+      ]
+    },
+    {
+      "id": "top-bar",
+      "classes": [
+        "sk-top-bar",
+        "sk-top-bar--sticky",
+        "sk-top-bar__product",
+        "sk-top-bar__search",
+        "sk-top-bar__utilities",
+        "sk-top-bar__nav-trigger",
+        "sk-top-bar__identity",
+        "sk-top-bar__logo",
+        "sk-top-bar__environment",
+        "sk-top-bar__account",
+        "sk-top-bar--brand",
+        "sk-top-bar--compact"
+      ]
+    },
+    {
+      "id": "side-nav",
+      "classes": [
+        "sk-side-nav",
+        "sk-side-nav__list",
+        "sk-side-nav__group-label",
+        "sk-side-nav__item",
+        "sk-side-nav__label",
+        "sk-side-nav__count",
+        "sk-side-nav--collapsed"
+      ]
+    },
+    {
+      "id": "breadcrumbs",
+      "classes": [
+        "sk-breadcrumbs",
+        "sk-breadcrumbs__list",
+        "sk-breadcrumbs__item"
+      ]
+    },
+    {
+      "id": "tabs",
+      "classes": [
+        "sk-tabs",
+        "sk-tabs__list",
+        "sk-tabs__tab",
+        "sk-tabs__count",
+        "sk-tabs__panel",
+        "sk-tabs--enclosed",
+        "sk-tabs--sm"
+      ]
+    },
+    {
+      "id": "pagination",
+      "classes": [
+        "sk-pagination",
+        "sk-pagination--sm",
+        "sk-pagination__page",
+        "sk-pagination__control",
+        "sk-pagination__status",
+        "sk-pagination__list",
+        "sk-pagination__ellipsis"
+      ]
+    },
+    {
+      "id": "stepper",
+      "classes": [
+        "sk-stepper",
+        "sk-stepper__list",
+        "sk-stepper__step",
+        "sk-stepper__link",
+        "sk-stepper__indicator",
+        "sk-stepper__label",
+        "sk-stepper--vertical"
+      ]
+    },
+    {
+      "id": "menu",
+      "classes": [
+        "sk-menu",
+        "sk-menu__item",
+        "sk-menu__icon",
+        "sk-menu__label",
+        "sk-menu__shortcut",
+        "sk-menu__item--danger",
+        "sk-menu__separator",
+        "sk-menu__group-label",
+        "sk-menu--sm"
+      ]
+    },
+    {
+      "id": "command-palette",
+      "classes": [
+        "sk-command-palette",
+        "sk-command-palette__panel",
+        "sk-command-palette__search",
+        "sk-command-palette__input",
+        "sk-command-palette__results",
+        "sk-command-palette__group-label",
+        "sk-command-palette__item",
+        "sk-command-palette__label",
+        "sk-command-palette__context"
+      ]
+    },
+    {
+      "id": "alert",
+      "classes": [
+        "sk-alert",
+        "sk-alert__icon",
+        "sk-alert__content",
+        "sk-alert__title",
+        "sk-alert__body",
+        "sk-alert__actions",
+        "sk-alert__dismiss",
+        "sk-alert--info",
+        "sk-alert--success",
+        "sk-alert--warning",
+        "sk-alert--danger",
+        "sk-alert--ai",
+        "sk-alert--compact",
+        "sk-link"
+      ]
+    },
+    {
+      "id": "toast",
+      "classes": [
+        "sk-toast-region",
+        "sk-toast",
+        "sk-toast__icon",
+        "sk-toast__message",
+        "sk-toast__action",
+        "sk-toast__dismiss",
+        "sk-toast--success",
+        "sk-toast--info",
+        "sk-toast--danger",
+        "sk-toast--loading"
+      ]
+    },
+    {
+      "id": "inline-message",
+      "classes": [
+        "sk-inline-message",
+        "sk-inline-message--info",
+        "sk-inline-message--success",
+        "sk-inline-message--warning",
+        "sk-inline-message--danger"
+      ]
+    },
+    {
+      "id": "progress",
+      "classes": [
+        "sk-progress",
+        "sk-progress__header",
+        "sk-progress__label",
+        "sk-progress__value",
+        "sk-progress__track",
+        "sk-progress__fill",
+        "sk-progress--sm",
+        "sk-progress--segmented",
+        "sk-progress__segment"
+      ]
+    },
+    {
+      "id": "spinner",
+      "classes": [
+        "sk-spinner",
+        "sk-spinner--sm",
+        "sk-spinner--lg",
+        "sk-spinner--on-brand",
+        "sk-spinner-region",
+        "sk-spinner__label"
+      ]
+    },
+    {
+      "id": "skeleton",
+      "classes": [
+        "sk-skeleton-group",
+        "sk-skeleton",
+        "sk-skeleton--text",
+        "sk-skeleton--short",
+        "sk-skeleton--block",
+        "sk-skeleton--circle",
+        "sk-skeleton--table"
+      ]
+    },
+    {
+      "id": "empty-state",
+      "classes": [
+        "sk-empty-state",
+        "sk-empty-state__icon",
+        "sk-empty-state__heading",
+        "sk-empty-state__body",
+        "sk-empty-state__actions",
+        "sk-empty-state--compact",
+        "sk-empty-state--error",
+        "sk-empty-state--no-access"
+      ]
+    },
+    {
+      "id": "status-indicator",
+      "classes": [
+        "sk-status",
+        "sk-status__dot",
+        "sk-status__label",
+        "sk-status__detail",
+        "sk-status--success",
+        "sk-status--warning",
+        "sk-status--danger",
+        "sk-status--neutral",
+        "sk-status--pending",
+        "sk-status--sm"
+      ]
+    },
+    {
+      "id": "meter",
+      "classes": [
+        "sk-meter",
+        "sk-meter__header",
+        "sk-meter__label",
+        "sk-meter__value",
+        "sk-meter__track",
+        "sk-meter__fill",
+        "sk-meter--graded",
+        "sk-meter__note",
+        "sk-meter--segmented",
+        "sk-meter__segment",
+        "sk-meter--sm"
+      ]
+    },
+    {
+      "id": "loading-screen",
+      "classes": [
+        "sk-loading",
+        "sk-loading__label",
+        "sk-loading__slow",
+        "sk-loading__slow-text",
+        "sk-loading--page",
+        "sk-loading--blocking",
+        "sk-loading--sm"
+      ]
+    },
+    {
+      "id": "error-page",
+      "classes": [
+        "sk-error-page",
+        "sk-error-page__icon",
+        "sk-error-page--server",
+        "sk-error-page__heading",
+        "sk-error-page__body",
+        "sk-error-page__actions",
+        "sk-error-page__reference"
+      ]
+    },
+    {
+      "id": "error-boundary",
+      "classes": [
+        "sk-error-boundary",
+        "sk-error-boundary__icon",
+        "sk-error-boundary__content",
+        "sk-error-boundary__heading",
+        "sk-error-boundary__body",
+        "sk-error-boundary__actions",
+        "sk-error-boundary__reference",
+        "sk-error-boundary--compact",
+        "sk-error-boundary--degraded",
+        "sk-error-boundary--sm"
+      ]
+    },
+    {
+      "id": "table",
+      "classes": [
+        "sk-table",
+        "sk-table__caption",
+        "sk-table__caption-detail",
+        "sk-table__cell--numeric",
+        "sk-table__cell--mono",
+        "sk-table__cell--truncate",
+        "sk-table__select-col",
+        "sk-table__sort",
+        "sk-table--striped",
+        "sk-table--bordered",
+        "sk-table--sticky-head",
+        "sk-table--compact",
+        "sk-table--dense",
+        "sk-table__empty"
+      ]
+    },
+    {
+      "id": "card",
+      "classes": [
+        "sk-card",
+        "sk-card__header",
+        "sk-card__title",
+        "sk-card__body",
+        "sk-card__description",
+        "sk-card__footer",
+        "sk-card__media",
+        "sk-card--flat",
+        "sk-card--interactive",
+        "sk-card__link",
+        "sk-card__above-link",
+        "sk-card--compact",
+        "sk-card-grid"
+      ]
+    },
+    {
+      "id": "stat-tile",
+      "classes": [
+        "sk-stat",
+        "sk-stat--carded",
+        "sk-stat__label",
+        "sk-stat__value",
+        "sk-stat__unit",
+        "sk-stat__delta",
+        "sk-stat__delta--good",
+        "sk-stat__delta--bad",
+        "sk-stat__delta--flat",
+        "sk-stat__comparison",
+        "sk-stat--lg",
+        "sk-stat-grid"
+      ]
+    },
+    {
+      "id": "badge",
+      "classes": [
+        "sk-badge",
+        "sk-badge--neutral",
+        "sk-badge--success",
+        "sk-badge--warning",
+        "sk-badge--danger",
+        "sk-badge--brand",
+        "sk-badge--solid",
+        "sk-badge--sm",
+        "sk-badge--count"
+      ]
+    },
+    {
+      "id": "avatar",
+      "classes": [
+        "sk-avatar",
+        "sk-avatar--square",
+        "sk-avatar--xs",
+        "sk-avatar--sm",
+        "sk-avatar--lg",
+        "sk-avatar-with-name",
+        "sk-avatar-with-name__label",
+        "sk-avatar-group",
+        "sk-avatar--overflow"
+      ]
+    },
+    {
+      "id": "description-list",
+      "classes": [
+        "sk-dl",
+        "sk-dl__group",
+        "sk-dl__term",
+        "sk-dl__detail",
+        "sk-dl--inline",
+        "sk-dl--columns",
+        "sk-dl--compact"
+      ]
+    },
+    {
+      "id": "code-block",
+      "classes": [
+        "sk-code-block",
+        "sk-code-block__header",
+        "sk-code-block__language",
+        "sk-code-block__scroll",
+        "sk-code-block__pre",
+        "sk-code-block--wrap",
+        "sk-code-block--numbered",
+        "sk-code-block--terminal",
+        "sk-code-block--diff",
+        "sk-code-block--sm",
+        "sk-code"
+      ]
+    },
+    {
+      "id": "kbd",
+      "classes": [
+        "sk-kbd",
+        "sk-kbd--quiet"
+      ]
+    },
+    {
+      "id": "timeline",
+      "classes": [
+        "sk-timeline",
+        "sk-timeline__event",
+        "sk-timeline__marker",
+        "sk-timeline__content",
+        "sk-timeline__summary",
+        "sk-timeline__meta",
+        "sk-timeline__date-heading",
+        "sk-timeline--compact"
+      ]
+    },
+    {
+      "id": "tree-view",
+      "classes": [
+        "sk-tree",
+        "sk-tree__row",
+        "sk-tree__chevron",
+        "sk-tree__item",
+        "sk-tree__chevron-spacer",
+        "sk-tree__label",
+        "sk-tree__count",
+        "sk-tree--compact"
+      ]
+    },
+    {
+      "id": "disclosure",
+      "classes": [
+        "sk-disclosure",
+        "sk-disclosure__trigger",
+        "sk-disclosure__marker",
+        "sk-disclosure__label",
+        "sk-disclosure__panel",
+        "sk-disclosure--plain",
+        "sk-disclosure--sm"
+      ]
+    },
+    {
+      "id": "accordion",
+      "classes": [
+        "sk-accordion",
+        "sk-accordion__item",
+        "sk-accordion__heading",
+        "sk-accordion__trigger",
+        "sk-accordion__marker",
+        "sk-accordion__label",
+        "sk-accordion__panel",
+        "sk-accordion--separated",
+        "sk-accordion--sm"
+      ]
+    },
+    {
+      "id": "dialog",
+      "classes": [
+        "sk-dialog",
+        "sk-dialog__panel",
+        "sk-dialog__header",
+        "sk-dialog__title",
+        "sk-dialog__body",
+        "sk-dialog__footer",
+        "sk-button",
+        "sk-dialog--sm",
+        "sk-dialog--lg",
+        "sk-dialog--full"
+      ]
+    },
+    {
+      "id": "drawer",
+      "classes": [
+        "sk-drawer",
+        "sk-drawer__header",
+        "sk-drawer__title",
+        "sk-drawer__body",
+        "sk-drawer__footer",
+        "sk-drawer--inline",
+        "sk-drawer--modal",
+        "sk-drawer__backdrop",
+        "sk-drawer--bottom",
+        "sk-drawer--sm",
+        "sk-drawer--lg"
+      ]
+    },
+    {
+      "id": "popover",
+      "classes": [
+        "sk-popover",
+        "sk-popover__header",
+        "sk-popover__title",
+        "sk-popover__body",
+        "sk-popover__footer",
+        "sk-popover--arrow",
+        "sk-popover--sm",
+        "sk-popover--lg"
+      ]
+    },
+    {
+      "id": "tooltip",
+      "classes": [
+        "sk-tooltip",
+        "sk-tooltip--truncation"
+      ]
+    },
+    {
+      "id": "app-shell",
+      "classes": [
+        "sk-app-shell",
+        "sk-app-shell__header",
+        "sk-app-shell__body",
+        "sk-app-shell__nav",
+        "sk-app-shell__main",
+        "sk-app-shell__content",
+        "sk-app-shell__detail",
+        "sk-app-shell--full"
+      ]
+    },
+    {
+      "id": "page-header",
+      "classes": [
+        "sk-page-header",
+        "sk-page-header__main",
+        "sk-page-header__titles",
+        "sk-page-header__title-row",
+        "sk-page-header__title",
+        "sk-page-header__description",
+        "sk-page-header__actions",
+        "sk-page-header--sticky"
+      ]
+    },
+    {
+      "id": "stack",
+      "classes": [
+        "sk-stack",
+        "sk-stack--gap-0",
+        "sk-stack--gap-4",
+        "sk-stack--gap-8",
+        "sk-stack--gap-12",
+        "sk-stack--gap-16",
+        "sk-stack--gap-24",
+        "sk-stack--gap-32",
+        "sk-stack--gap-48",
+        "sk-stack--align-start",
+        "sk-stack--align-center",
+        "sk-stack--align-end",
+        "sk-stack--divided",
+        "sk-stack--split"
+      ]
+    },
+    {
+      "id": "cluster",
+      "classes": [
+        "sk-cluster",
+        "sk-cluster__grow",
+        "sk-cluster__push",
+        "sk-cluster--between",
+        "sk-cluster--end",
+        "sk-cluster--center",
+        "sk-cluster--align-start",
+        "sk-cluster--align-end",
+        "sk-cluster--align-baseline",
+        "sk-cluster--gap-4",
+        "sk-cluster--gap-8",
+        "sk-cluster--gap-12",
+        "sk-cluster--gap-16",
+        "sk-cluster--gap-24",
+        "sk-cluster--nowrap",
+        "sk-cluster--scroll",
+        "sk-cluster--truncate"
+      ]
+    },
+    {
+      "id": "sidebar-layout",
+      "classes": [
+        "sk-sidebar-layout",
+        "sk-sidebar-layout__sidebar",
+        "sk-sidebar-layout__content",
+        "sk-sidebar-layout--end",
+        "sk-sidebar-layout--narrow",
+        "sk-sidebar-layout--wide",
+        "sk-sidebar-layout--sticky"
+      ]
+    },
+    {
+      "id": "grid",
+      "classes": [
+        "sk-grid",
+        "sk-grid--fill",
+        "sk-grid--min-12",
+        "sk-grid--min-16",
+        "sk-grid--min-18",
+        "sk-grid--min-24",
+        "sk-grid--gap-8",
+        "sk-grid--gap-16",
+        "sk-grid--gap-24",
+        "sk-grid--gap-32",
+        "sk-grid--cols-2",
+        "sk-grid--cols-3",
+        "sk-grid--cols-4",
+        "sk-grid__span-full",
+        "sk-grid__span-2"
+      ]
+    },
+    {
+      "id": "divider",
+      "classes": [
+        "sk-divider",
+        "sk-divider--vertical",
+        "sk-divider--labelled",
+        "sk-divider__label"
+      ]
+    }
+  ],
+  "foundations": [
+    "principles",
+    "color",
+    "dark-mode",
+    "responsive-layout",
+    "typography",
+    "spacing",
+    "elevation",
+    "motion",
+    "accessibility",
+    "content-and-voice",
+    "iconography",
+    "density",
+    "internationalisation",
+    "data-visualisation",
+    "theming"
+  ],
+  "patterns": [
+    "destructive-confirmation",
+    "form-validation",
+    "loading-states",
+    "search-and-filter",
+    "bulk-actions",
+    "saving",
+    "notifications",
+    "permissions",
+    "progressive-disclosure",
+    "keyboard-shortcuts",
+    "responsive-tables",
+    "optimistic-ui",
+    "onboarding",
+    "error-recovery",
+    "theme-switching"
+  ],
+  "layouts": [
+    "dashboard",
+    "list-page",
+    "list-detail",
+    "form-page",
+    "wizard",
+    "settings",
+    "detail-page",
+    "auth",
+    "docs"
+  ],
+  "behaviours": [
+    "VERSION",
+    "addDays",
+    "addMonths",
+    "announce",
+    "arrowDelta",
+    "autoEnhance",
+    "combine",
+    "compare",
+    "createAccordion",
+    "createAsyncSwitch",
+    "createCalendar",
+    "createCombobox",
+    "createDatePicker",
+    "createDateRange",
+    "createDialog",
+    "createDisclosure",
+    "createDrawer",
+    "createMenu",
+    "createNumberInput",
+    "createPopover",
+    "createSegmented",
+    "createSelection",
+    "createSlider",
+    "createTabs",
+    "createTagInput",
+    "createThemeManager",
+    "createToaster",
+    "createToolbar",
+    "createTooltip",
+    "createTree",
+    "createTypeahead",
+    "createUpload",
+    "direction",
+    "dismissable",
+    "dispose",
+    "emit",
+    "enhance",
+    "ensureId",
+    "focusable",
+    "fromISO",
+    "getTheme",
+    "guardAction",
+    "initAnnouncer",
+    "isSame",
+    "isVisible",
+    "on",
+    "position",
+    "prefersReducedMotion",
+    "readingTime",
+    "rovingTabindex",
+    "saveFocus",
+    "scopeIds",
+    "toISO",
+    "today",
+    "toggleAttr",
+    "trapFocus",
+    "uid"
+  ]
+}

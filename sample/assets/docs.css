@@ -59,7 +59,11 @@
     }
   }
 
-  .docs-nav { flex-basis: 17rem; }
+  .docs-nav { flex-basis: var(--sk-layout-nav-width); }
+  .docs-nav-preferences { padding: var(--sk-space-8) var(--sk-space-12); font-size: var(--sk-font-size-body-xs); color: var(--sk-color-text-secondary); }
+  .docs-nav-preferences summary { cursor: pointer; min-block-size: var(--sk-space-24); }
+  .docs-nav-preferences label, .docs-nav-preferences input { display: block; inline-size: 100%; margin-block: var(--sk-space-8); }
+  @media (max-width: 63.999rem) { .docs-nav-preferences { display: none; } }
 
   /* Article and on-page contents are flex siblings, so the contents column
      simply disappears when there is no room rather than needing a breakpoint
@@ -68,7 +72,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: flex-start;
-    gap: var(--sk-space-40);
+    gap: var(--sk-space-32);
     inline-size: 100%;
     max-inline-size: var(--sk-container-2xl);
     margin-inline: auto;
@@ -81,7 +85,7 @@
     min-inline-size: 0;
     display: flex;
     flex-direction: column;
-    gap: var(--sk-space-40);
+    gap: var(--sk-space-32);
   }
 
   .docs-toc {
@@ -146,8 +150,8 @@
 
   .docs-title {
     margin: 0;
-    font-size: var(--sk-font-size-display-lg);
-    line-height: var(--sk-line-height-display-lg);
+    font-size: var(--sk-font-size-heading-xl);
+    line-height: var(--sk-line-height-heading-xl);
     font-weight: var(--sk-font-weight-bold);
     letter-spacing: var(--sk-letter-spacing-display-lg);
     text-wrap: balance;
@@ -865,9 +869,9 @@
    * ================================================================== */
 
   .docs-example-banner {
-    background-color: var(--sk-color-ai-surface);
-    border-block-end: var(--sk-border-width-hairline) solid var(--sk-color-ai-border);
-    color: var(--sk-color-ai-text);
+    background-color: var(--sk-color-surface-subtle);
+    border-block-end: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle);
+    color: var(--sk-color-text-secondary);
   }
   .docs-example-banner__inner {
     display: flex;
@@ -957,6 +961,7 @@
     border-radius: var(--sk-radius-lg);
   }
 
+  .sk-auth__card { box-shadow: none; }
   .sk-auth { display: flex; flex-direction: column; min-inline-size: 0; min-block-size: 100dvh; background-color: var(--sk-color-surface-subtle); }
   .sk-auth__main { min-inline-size: 0; display: flex; flex-direction: column; gap: var(--sk-space-24); margin: auto; padding: var(--sk-space-24) var(--sk-space-16); inline-size: 100%; max-inline-size: 24rem; }
   .sk-auth__brand { display: flex; flex-direction: column; align-items: center; gap: var(--sk-space-8); color: var(--sk-color-text-brand); }
@@ -976,7 +981,7 @@
    * existing tokens; there is not one literal colour, size or spacing value.
    * ------------------------------------------------------------------ */
   .mk { display: flex; flex-direction: column; }
-  .mk__main { display: flex; flex-direction: column; gap: var(--sk-space-64); padding-block: var(--sk-space-48); padding-inline: var(--sk-space-16); inline-size: 100%; max-inline-size: var(--sk-container-lg); margin-inline: auto; }
+  .mk__main { display: flex; flex-direction: column; gap: var(--sk-space-48); padding-block: var(--sk-space-40); padding-inline: var(--sk-space-16); inline-size: 100%; max-inline-size: var(--sk-container-lg); margin-inline: auto; }
   .mk__section { display: flex; flex-direction: column; gap: var(--sk-space-24); }
 
   .mk__hero { display: flex; flex-direction: column; align-items: center; gap: var(--sk-space-16); text-align: center; }
@@ -1067,4 +1072,15 @@
   [data-sk-bench-preview] { color: var(--sk-color-text-primary); }
   [data-sk-reduce-motion] *, [data-sk-reduce-motion] *::before, [data-sk-reduce-motion] *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
   [data-sk-mono-ids] .sk-code, [data-sk-mono-ids] .sk-input--mono { font-family: var(--sk-font-family-mono); }
+}
+
+@layer sk-components {
+  .docs-workspace-content { max-inline-size: none; padding: 0; gap: 0; }
+  .docs-workspace { display: flex; align-items: stretch; min-inline-size: 0; }
+  .docs-workspace > article { flex: 1 1 auto; min-inline-size: 0; }
+  .docs-workspace > aside { position: sticky; inset-block-start: 0; align-self: flex-start; max-block-size: calc(100dvh - var(--sk-layout-header-height)); }
+  .docs-workspace-note { margin-block-start: var(--sk-space-32); padding-block-start: var(--sk-space-24); border-block-start: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle); }
+  @media (max-width: 79.999rem) { .docs-workspace > aside { position: fixed; max-block-size: 100dvh; } }
+  .docs-metrics { border-block: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle); padding-block: var(--sk-space-16); }
+  .docs-metrics .sk-stat { padding: var(--sk-space-8); }
 }

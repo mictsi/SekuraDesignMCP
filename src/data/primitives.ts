@@ -7,41 +7,32 @@
  * re-points when the theme changes. Primitives exist so the semantic layer has a
  * disciplined, evenly-stepped set of values to point at.
  *
- * Ramp convention: 50 is the lightest tint, 950 the deepest shade. Steps are tuned so
- * that, against the ramp's own 50, step 600+ clears 4.5:1 and step 500+ clears 3:1.
+ * Ramp convention: 50 is the lightest tint, 950 the deepest shade. Contrast depends
+ * on the actual pairing; semantic requirements are verified by the contrast audit.
  */
 
 export type Ramp = Record<string, string>;
 
 /**
- * Neutral — a cool, very slightly blue-cast grey. The blue cast keeps neutrals from
+ * Neutral — a restrained grey ramp. Slight chroma in middle steps keeps it from
  * looking muddy beside Cobalt, and stops dark surfaces reading as brown.
  */
 export const neutral: Ramp = {
   '0': '#ffffff',
-  '50': '#f7f8fa',
-  '100': '#eef0f4',
-  '200': '#dfe3ea',
-  '300': '#c5ccd8',
-  // 400 and 500 are pinned by contrast, not by eye.
-  //
-  // 400 is the lightest grey still clearing 3:1 on white, so borders drawn with
-  // it stay locatable (WCAG 1.4.11).
-  //
-  // 500 is the lightest clearing 4.5:1 on the *sunken* surface — the darkest
-  // light-mode surface that carries text. It is squeezed from both sides: it is
-  // also the dark-mode border colour, which needs to stay light enough for 3:1
-  // against a dark card. #646e7f satisfies both with little headroom, so the
-  // audit's tightest-pairings report exists to flag it if either side moves.
-  '400': '#8590a3',
-  '500': '#646e7f',
-  '600': '#515b6b',
-  '700': '#3c4553',
-  '800': '#28303c',
-  '850': '#20272f',
-  '900': '#181e27',
-  '950': '#0e131a',
-  '975': '#090d12',
+  '50': '#f7f8f9',
+  '100': '#f1f2f4',
+  '200': '#dcdfe4',
+  '300': '#b3b9c4',
+  '350': '#a9abaf',
+  '400': '#8590a2',
+  '500': '#626874',
+  '600': '#505761',
+  '700': '#414349',
+  '800': '#36383c',
+  '850': '#2b2c2f',
+  '900': '#292a2e',
+  '950': '#1f1f21',
+  '975': '#18191a',
   '1000': '#000000',
 };
 
@@ -50,17 +41,17 @@ export const neutral: Ramp = {
  * brand surfaces. Deep and unsaturated enough to sit under long working sessions.
  */
 export const cobalt: Ramp = {
-  '50': '#eef3ff',
-  '100': '#dde7ff',
-  '200': '#c2d3ff',
-  '300': '#9bb6ff',
-  '400': '#7191fb',
-  '500': '#4f6df1',
-  '600': '#3a4fdd',
-  '700': '#2f3cb8',
-  '800': '#2b3593',
-  '900': '#283274',
-  '950': '#1a1f47',
+  '50': '#e9f2ff',
+  '100': '#cce0ff',
+  '200': '#b3d4ff',
+  '300': '#85b8ff',
+  '400': '#579dff',
+  '500': '#388bff',
+  '600': '#1868db',
+  '700': '#1558bc',
+  '800': '#144794',
+  '900': '#12396f',
+  '950': '#1c3557',
 };
 
 /**
@@ -236,8 +227,8 @@ export const space: Record<string, string> = {
  * ------------------------------------------------------------------ */
 
 export const fontFamily: Record<string, string> = {
-  sans: "'Inter Variable', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-  mono: "'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace",
+  sans: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+  mono: "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace",
 };
 
 export const fontWeight: Record<string, string> = {
@@ -287,16 +278,16 @@ export const typeScale: Record<string, TypeStyle> = {
     description: 'Large editorial heading, empty-state hero.',
   },
   'heading-xl': {
-    fontSize: 'clamp(1.5rem, 1.28rem + 1.1vw, 2rem)',
-    lineHeight: '1.2',
+    fontSize: '2rem',
+    lineHeight: '1.25',
     fontWeight: '700',
     letterSpacing: '-0.018em',
     description: 'Page title. One per page, mapped to <h1>.',
   },
   'heading-lg': {
-    fontSize: 'clamp(1.25rem, 1.14rem + 0.55vw, 1.5rem)',
-    lineHeight: '1.25',
-    fontWeight: '650',
+    fontSize: '1.5rem',
+    lineHeight: '1.333333',
+    fontWeight: '700',
     letterSpacing: '-0.014em',
     description: 'Major section heading.',
   },
@@ -330,37 +321,37 @@ export const typeScale: Record<string, TypeStyle> = {
   },
   'body-md': {
     fontSize: '1rem',
-    lineHeight: '1.6',
+    lineHeight: '1.5',
     fontWeight: '400',
     letterSpacing: '0',
     description: 'Default body text. The baseline for the whole system.',
   },
   'body-sm': {
     fontSize: '0.875rem',
-    lineHeight: '1.5',
+    lineHeight: '1.428571',
     fontWeight: '400',
-    letterSpacing: '0.002em',
+    letterSpacing: '0',
     description: 'Dense UI text, table cells, secondary description.',
   },
   'body-xs': {
-    fontSize: '0.8125rem',
-    lineHeight: '1.4',
+    fontSize: '0.75rem',
+    lineHeight: '1.333333',
     fontWeight: '400',
-    letterSpacing: '0.005em',
+    letterSpacing: '0',
     description: 'Metadata, timestamps, help text. Never for sustained reading.',
   },
   'label-md': {
     fontSize: '0.875rem',
-    lineHeight: '1.3',
+    lineHeight: '1.428571',
     fontWeight: '500',
-    letterSpacing: '0.002em',
+    letterSpacing: '0',
     description: 'Form labels, button text, tab labels.',
   },
   'label-sm': {
-    fontSize: '0.8125rem',
-    lineHeight: '1.25',
+    fontSize: '0.875rem',
+    lineHeight: '1.428571',
     fontWeight: '500',
-    letterSpacing: '0.005em',
+    letterSpacing: '0',
     description: 'Badge text, compact control labels.',
   },
   overline: {
@@ -374,7 +365,7 @@ export const typeScale: Record<string, TypeStyle> = {
   },
   'code-md': {
     fontSize: '0.875rem',
-    lineHeight: '1.6',
+    lineHeight: '1.428571',
     fontWeight: '400',
     letterSpacing: '0',
     fontFamily: 'mono',
@@ -484,8 +475,8 @@ export const elevation: Record<string, ElevationLevel> = {
 export const duration: Record<string, string> = {
   instant: '0ms',
   fast: '120ms',
-  normal: '200ms',
-  slow: '320ms',
+  normal: '160ms',
+  slow: '220ms',
   slower: '480ms',
   deliberate: '640ms',
 };
@@ -601,7 +592,7 @@ export const containerWidth: Record<string, string> = {
   xs: '30rem',
   sm: '40rem',
   md: '48rem',
-  prose: '68ch',
+  prose: '47.5rem',
   lg: '64rem',
   xl: '80rem',
   '2xl': '90rem',
@@ -629,9 +620,9 @@ export interface Density {
 export const densities: Record<string, Density> = {
   comfortable: {
     controlHeightSm: '2rem',
-    controlHeightMd: '2.5rem',
-    controlHeightLg: '3rem',
-    controlPaddingInline: '1rem',
+    controlHeightMd: '2.25rem',
+    controlHeightLg: '2.5rem',
+    controlPaddingInline: '0.75rem',
     controlPaddingBlock: '0.5rem',
     rowPaddingBlock: '0.75rem',
     cellPaddingInline: '1rem',
@@ -642,8 +633,8 @@ export const densities: Record<string, Density> = {
   },
   compact: {
     controlHeightSm: '1.75rem',
-    controlHeightMd: '2.25rem',
-    controlHeightLg: '2.75rem',
+    controlHeightMd: '2rem',
+    controlHeightLg: '2.25rem',
     controlPaddingInline: '0.75rem',
     controlPaddingBlock: '0.375rem',
     rowPaddingBlock: '0.5rem',
@@ -655,8 +646,8 @@ export const densities: Record<string, Density> = {
   },
   dense: {
     controlHeightSm: '1.5rem',
-    controlHeightMd: '2rem',
-    controlHeightLg: '2.5rem',
+    controlHeightMd: '1.75rem',
+    controlHeightLg: '2rem',
     controlPaddingInline: '0.5rem',
     controlPaddingBlock: '0.25rem',
     rowPaddingBlock: '0.25rem',
@@ -676,4 +667,17 @@ export const focusRing: Record<string, string> = {
   width: '2px',
   offset: '2px',
   style: 'solid',
+};
+
+/** Shared workspace geometry. Existing layout classes consume these additive tokens. */
+export const layout: Record<string, string> = {
+  'header-height': '3rem',
+  'content-header-height': '3.5rem',
+  'toolbar-height': '2.5rem',
+  'nav-width': '17rem',
+  'nav-min-width': '13rem',
+  'nav-max-width': '25rem',
+  'document-width': '47.5rem',
+  'detail-width': '22.5rem',
+  'touch-target': '2.75rem',
 };

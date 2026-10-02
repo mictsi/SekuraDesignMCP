@@ -250,9 +250,9 @@ export const formComponents: ComponentSpec[] = [
       { name: 'Monospace', className: 'sk-input--mono', description: 'Monospace with tabular figures.', use: 'Identifiers, hostnames, keys, hashes, IP addresses — anything where character-by-character comparison matters.' },
     ],
     sizes: [
-      { name: 'Small', className: 'sk-input--sm', height: '2rem', typeStyle: 'body-sm', description: 'Filter bars, inline table editing.' },
-      { name: 'Medium', className: '', height: '2.5rem', typeStyle: 'body-md', description: 'Default.' },
-      { name: 'Large', className: 'sk-input--lg', height: '3rem', typeStyle: 'body-md', description: 'Touch-first and single-question screens.' },
+      { name: 'Small', className: 'sk-input--sm', height: 'control-height-sm', typeStyle: 'body-sm', description: 'Filter bars, inline table editing.' },
+      { name: 'Medium', className: '', height: 'control-height-md', typeStyle: 'body-md', description: 'Default.' },
+      { name: 'Large', className: 'sk-input--lg', height: 'control-height-lg', typeStyle: 'body-md', description: 'Touch-first and single-question screens.' },
     ],
     states: [
       { name: 'Rest', description: 'Neutral border at 3:1.', trigger: 'default' },
@@ -633,9 +633,9 @@ export const formComponents: ComponentSpec[] = [
       { name: 'Quiet', className: 'sk-select--quiet', description: 'Borderless until hover.', use: 'Toolbars and filter bars where several controls sit in a row.' },
     ],
     sizes: [
-      { name: 'Small', className: 'sk-select--sm', height: '2rem', typeStyle: 'body-sm', description: 'Filter bars.' },
-      { name: 'Medium', className: '', height: '2.5rem', typeStyle: 'body-md', description: 'Default.' },
-      { name: 'Large', className: 'sk-select--lg', height: '3rem', typeStyle: 'body-md', description: 'Touch-first.' },
+      { name: 'Small', className: 'sk-select--sm', height: 'control-height-sm', typeStyle: 'body-sm', description: 'Filter bars.' },
+      { name: 'Medium', className: '', height: 'control-height-md', typeStyle: 'body-md', description: 'Default.' },
+      { name: 'Large', className: 'sk-select--lg', height: 'control-height-lg', typeStyle: 'body-md', description: 'Touch-first.' },
     ],
     states: [
       { name: 'Rest', description: 'Neutral border, chevron at text-secondary.', trigger: 'default' },
@@ -1407,8 +1407,8 @@ export const formComponents: ComponentSpec[] = [
       { name: 'Async', className: 'sk-combobox--async', description: 'Loads from the server as the user types, debounced.', use: 'Large or permission-scoped datasets.' },
     ],
     sizes: [
-      { name: 'Small', className: 'sk-combobox--sm', height: '2rem', typeStyle: 'body-sm', description: 'Filter bars.' },
-      { name: 'Medium', className: '', height: '2.5rem', typeStyle: 'body-md', description: 'Default.' },
+      { name: 'Small', className: 'sk-combobox--sm', height: 'control-height-sm', typeStyle: 'body-sm', description: 'Filter bars.' },
+      { name: 'Medium', className: '', height: 'control-height-md', typeStyle: 'body-md', description: 'Default.' },
     ],
     states: [
       { name: 'Collapsed', description: 'Input only.', trigger: 'default' },
@@ -1611,8 +1611,8 @@ export const formComponents: ComponentSpec[] = [
       { name: 'Global', className: 'sk-search--global', description: 'Header-mounted, opens the Command palette on focus.', use: 'Application-wide search.' },
     ],
     sizes: [
-      { name: 'Small', className: 'sk-search--sm', height: '2rem', typeStyle: 'body-sm', description: 'Table toolbars.' },
-      { name: 'Medium', className: '', height: '2.5rem', typeStyle: 'body-md', description: 'Default.' },
+      { name: 'Small', className: 'sk-search--sm', height: 'control-height-sm', typeStyle: 'body-sm', description: 'Table toolbars.' },
+      { name: 'Medium', className: '', height: 'control-height-md', typeStyle: 'body-md', description: 'Default.' },
     ],
     states: [
       { name: 'Empty', description: 'Placeholder shown, no clear button.', trigger: 'default' },
@@ -2282,7 +2282,7 @@ export const formComponents: ComponentSpec[] = [
       { name: 'Grouped', className: 'sk-number--grouped', description: 'Thousands separators while unfocused.', use: 'Large figures read more than edited. Off by default because grouping breaks copy-paste into a spreadsheet.' },
     ],
     sizes: [
-      { name: 'Small', className: 'sk-number--sm', height: '2rem', typeStyle: 'body-sm', description: 'Inside a table row or a toolbar.' },
+      { name: 'Small', className: 'sk-number--sm', height: 'control-height-sm', typeStyle: 'body-sm', description: 'Inside a table row or a toolbar.' },
       { name: 'Medium', className: '', height: '2.75rem', typeStyle: 'body-md', description: 'Default.' },
     ],
     states: [
@@ -2443,7 +2443,7 @@ export const formComponents: ComponentSpec[] = [
       { name: 'Strict', className: 'sk-tag-input--strict', description: 'Only values from the suggestion list.', use: 'People, projects, anything that must resolve to a real record.' },
     ],
     sizes: [
-      { name: 'Small', className: 'sk-tag-input--sm', height: '2rem', typeStyle: 'body-sm', description: 'Filter bars.' },
+      { name: 'Small', className: 'sk-tag-input--sm', height: 'control-height-sm', typeStyle: 'body-sm', description: 'Filter bars.' },
       { name: 'Medium', className: '', height: '2.75rem', typeStyle: 'body-md', description: 'Default.' },
     ],
     states: [
@@ -2645,7 +2645,7 @@ export const formComponents: ComponentSpec[] = [
       { name: 'Inline', className: 'sk-date-picker--inline', description: 'Calendar always visible, no dialog.', use: 'A booking screen where choosing the date is the whole task.' },
     ],
     sizes: [
-      { name: 'Small', className: 'sk-date-picker--sm', height: '2rem', typeStyle: 'body-sm', description: 'Filter bars.' },
+      { name: 'Small', className: 'sk-date-picker--sm', height: 'control-height-sm', typeStyle: 'body-sm', description: 'Filter bars.' },
       { name: 'Medium', className: '', height: '2.75rem', typeStyle: 'body-md', description: 'Default.' },
     ],
     states: [
@@ -2908,7 +2908,7 @@ export const formComponents: ComponentSpec[] = [
       { name: 'With presets', className: 'sk-date-range--presets', description: 'A preset list beside the grid.', use: 'Dashboards, where a preset answers most of the time.' },
     ],
     sizes: [
-      { name: 'Small', className: 'sk-date-range--sm', height: '2rem', typeStyle: 'body-sm', description: 'Filter bars.' },
+      { name: 'Small', className: 'sk-date-range--sm', height: 'control-height-sm', typeStyle: 'body-sm', description: 'Filter bars.' },
       { name: 'Medium', className: '', height: '2.75rem', typeStyle: 'body-md', description: 'Default.' },
     ],
     states: [

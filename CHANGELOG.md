@@ -7,6 +7,14 @@ The version in `package.json` is the single source of truth — the server, the
 documentation site, the behaviours bundle and the container tag all derive from
 it, and `npm run check:version` fails the build if a literal drifts back in.
 
+## 3.0.0-alpha.0 — 2026-10-02
+
+- Redesign the shared palette, typography, shell, controls and overlays around a compact neutral workspace and continuous document canvas.
+- Preserve the v2 integration names; add a compatibility contract check, optional v2 geometry bridge and phased migration plan.
+- Add document canvas, content header, activity list and save-state compositions, a document workspace example, and refresh every existing example.
+- Add persistent desktop navigation collapse and width preferences in the sample shell. Modal drawers now make their background inert.
+- Keep application-specific editors, publication, authorization and collaboration outside the design system.
+
 ## Unreleased — 2026-09-26
 
 - Scope the project list's density control to its table, connect table spacing to density tokens, protect row targets, and document the three modes with table examples.

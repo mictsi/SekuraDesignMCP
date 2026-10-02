@@ -28,7 +28,7 @@ export const actionComponents: ComponentSpec[] = [
     ],
     variants: [
       { name: 'Primary', className: 'sk-button--primary', description: 'Solid brand fill.', use: 'The single most important action on the surface.' },
-      { name: 'Secondary', className: 'sk-button--secondary', description: 'Outlined, transparent fill.', use: 'Actions a user may reasonably take but should not be nudged toward.' },
+      { name: 'Secondary', className: 'sk-button--secondary', description: 'Neutral fill with a visible boundary.', use: 'Actions a user may reasonably take but should not be nudged toward.' },
       { name: 'Ghost', className: 'sk-button--ghost', description: 'No fill and no border until hovered.', use: 'Tertiary actions, toolbar actions, and actions repeated on every row of a list.' },
       { name: 'Danger', className: 'sk-button--danger', description: 'Solid crimson fill.', use: 'Irreversible destruction. Reserve it; a page full of red buttons stops meaning "careful".' },
       { name: 'Danger ghost', className: 'sk-button--danger-ghost', description: 'Crimson label, no fill.', use: 'A destructive action inside a row or menu, where a solid red block would dominate.' },
@@ -379,9 +379,9 @@ export const actionComponents: ComponentSpec[] = [
       { name: 'Danger', className: 'sk-icon-button--danger', description: 'Crimson label, tinted on hover.', use: 'Row-level delete.' },
     ],
     sizes: [
-      { name: 'Small', className: 'sk-icon-button--sm', height: '2rem', typeStyle: 'icon 16px', description: 'Dense table rows. Hit area padded to 24px minimum.' },
-      { name: 'Medium', className: '', height: '2.5rem', typeStyle: 'icon 20px', description: 'Default.' },
-      { name: 'Large', className: 'sk-icon-button--lg', height: '3rem', typeStyle: 'icon 24px', description: 'Touch-first surfaces and floating actions.' },
+      { name: 'Small', className: 'sk-icon-button--sm', height: 'control-height-sm', typeStyle: 'icon 16px', description: 'Dense table rows. Hit area padded to 24px minimum.' },
+      { name: 'Medium', className: '', height: 'control-height-md', typeStyle: 'icon 20px', description: 'Default.' },
+      { name: 'Large', className: 'sk-icon-button--lg', height: 'control-height-lg', typeStyle: 'icon 24px', description: 'Touch-first surfaces and floating actions.' },
     ],
     states: [
       { name: 'Rest', description: 'Icon only, no fill.', trigger: 'default' },
@@ -554,8 +554,8 @@ export const actionComponents: ComponentSpec[] = [
       { name: 'Vertical', className: 'sk-button-group--vertical', description: 'Stacked.', use: 'Narrow layouts and side panels.' },
     ],
     sizes: [
-      { name: 'Small', className: 'sk-button-group--sm', height: '2rem', typeStyle: 'label-sm', description: 'Table toolbars.' },
-      { name: 'Medium', className: '', height: '2.5rem', typeStyle: 'label-md', description: 'Default.' },
+      { name: 'Small', className: 'sk-button-group--sm', height: 'control-height-sm', typeStyle: 'label-sm', description: 'Table toolbars.' },
+      { name: 'Medium', className: '', height: 'control-height-md', typeStyle: 'label-md', description: 'Default.' },
     ],
     states: [
       { name: 'Rest', description: 'All segments unselected, or all actions available.', trigger: 'default' },
@@ -726,8 +726,8 @@ export const actionComponents: ComponentSpec[] = [
       { name: 'Secondary', className: 'sk-split-button--secondary', description: 'Outlined.', use: 'Default. Toolbars and secondary regions.' },
     ],
     sizes: [
-      { name: 'Small', className: 'sk-split-button--sm', height: '2rem', typeStyle: 'label-sm', description: 'Toolbars.' },
-      { name: 'Medium', className: '', height: '2.5rem', typeStyle: 'label-md', description: 'Default.' },
+      { name: 'Small', className: 'sk-split-button--sm', height: 'control-height-sm', typeStyle: 'label-sm', description: 'Toolbars.' },
+      { name: 'Medium', className: '', height: 'control-height-md', typeStyle: 'label-md', description: 'Default.' },
     ],
     states: [
       { name: 'Rest', description: 'Menu closed.', trigger: 'default' },
@@ -1240,7 +1240,7 @@ export const actionComponents: ComponentSpec[] = [
       { name: 'Icon only', className: 'sk-segmented--icon', description: 'Icons with hidden labels.', use: 'View switches where the icons are unambiguous — list versus grid.' },
     ],
     sizes: [
-      { name: 'Small', className: 'sk-segmented--sm', height: '2rem', typeStyle: 'body-sm', description: 'Toolbars and filter bars.' },
+      { name: 'Small', className: 'sk-segmented--sm', height: 'control-height-sm', typeStyle: 'body-sm', description: 'Toolbars and filter bars.' },
       { name: 'Medium', className: '', height: '2.75rem', typeStyle: 'body-md', description: 'Default.' },
     ],
     states: [

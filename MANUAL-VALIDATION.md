@@ -15,6 +15,19 @@ Build the site, then run `npm run demo:server`. Use `/form-lab.html`, `/example-
 | Physical touch | iOS Safari and Android Chrome: tap labels, select owners, submit, cancel, open/dismiss overlays; rotate device and show virtual keyboard. | Targets can be activated reliably; adjacent actions do not intercept taps; focused fields and actions stay reachable. |
 | Figma library | Import the generated plugin into a scratch file; inspect all six sets, switch theme/density/state, resize instances, edit labels and play prototype toggles. | Editable layers, expected auto-layout, correct variant names and state transitions; compare appearance against the matching web workbench before publishing. |
 
+## Version 3 migration acceptance
+
+Use `/example-workspace.html` and `/migration.html` alongside the existing flows.
+Compare an application with and without `data-sk-geometry="v2"`. Check all three
+densities, custom brand tokens and long translated navigation labels. On mobile,
+open Details, follow a document heading, reopen and dismiss it, then confirm that
+focus and background interaction recover. Resize the open panel across its desktop
+breakpoint. Verify that a saved local note is announced as local and that blocked
+storage preserves the draft. Check navigation width and collapse after reload.
+
+Automated acceptance also captures light, dark, mobile and modal screenshots in
+`.run/review/`. Treat them as review evidence, not human acceptance records.
+
 ## Result template
 
 - Tester / date:

@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, 3.0.0-alpha]
   pull_request:
   workflow_dispatch:
 
@@ -90,7 +90,7 @@ jobs:
         run: npm run smoke
 
       - name: Build behaviour package
-        run: npm run build:behaviours
+        run: npm run build:behaviours && npm run test:compatibility
 
       - uses: actions/setup-dotnet@v4
         with:
@@ -129,7 +129,7 @@ jobs:
         run: npm run build:design-kit && npm run build:react && npm run test:browsers
 
       - name: Design and example regressions
-        run: npm run test:design
+        run: npm run test:design && npm run test:redesign
 
       - name: RTL regression
         # Logical properties are claimed to make RTL work with no extra CSS.
