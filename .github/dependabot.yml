@@ -28,6 +28,9 @@ updates:
       # The types must describe the runtime we actually ship on, so this major
       # moves when the Dockerfile's Node major moves, and not before. Minor and
       # patch updates within the line are still proposed.
+      # Angular 21 is the newest LTS line; 22 remains in Active support.
+      - dependency-name: '@angular/*'
+        update-types: [version-update:semver-major]
       - dependency-name: '@types/node'
         update-types: [version-update:semver-major]
     labels: [dependencies]

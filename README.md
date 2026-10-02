@@ -31,11 +31,11 @@ controllers, and application-owned actions. The [workbench](./sample/workbench.h
 compares every control size and density and demonstrates pending, failure, retry,
 cancellation and real undo. Example data stays local; simulated remote actions are labelled.
 
-The ten beta implementations now include multi-select and async search, a reusable
+All 71 components are marked stable. The completed implementations include multi-select and async search, a reusable
 command palette, exact/range sliders, tri-state lazy trees, cancellable upload
 retries, and complete workspace/timeline states. `npm run test:completion` checks
-these contracts in Chromium, Firefox and WebKit. Their beta labels remain until
-human screen-reader and real-use acceptance, as required by DESIGN.md.
+these contracts in Chromium, Firefox and WebKit. Human screen-reader and
+application acceptance remain documented separately in MANUAL-VALIDATION.md.
 
 Generated framework code is an **editable reference recipe**, preserving the native
 markup, unique IDs and controller cleanup. Except for the dedicated React Button,
@@ -247,10 +247,12 @@ to start, but these help:
 | Tool | Returns |
 |---|---|
 | `get_overview` | **Start here.** The map of everything, with the call needed to fetch each part. |
-| `search` | Full-text search across components, foundations, patterns, layouts and tokens. |
+| `search` | Full-text search across components, foundations, patterns, layouts, tokens, behavior APIs and migration changes. |
 | `get_foundation` | The reasoning: colour, dark mode, responsive layout, accessibility, typography, motion, i18n, theming… |
 | `list_components` | The catalogue, filterable by category and maturity. |
 | `get_component` | Full spec: anatomy, variants, sizes, states, props, tokens, dark-mode behaviour, complete accessibility contract, do/don't. |
+| `get_behavior` | Runtime declarations, events, initialization, cleanup and application ownership. |
+| `get_migration_guide` | Full v2-to-v3 plan, behavioral changes, compatibility baseline and geometry bridge. |
 | `get_component_code` | Paste-ready code in `html`, `css`, `react`, `vue`, `svelte`, `angular`, `blazor` or `web-component`. |
 | `get_layout` | A complete page blueprint with markup and CSS. |
 | `get_pattern` | A recurring UX problem, its solution, and the anti-patterns. |
@@ -263,11 +265,14 @@ to start, but these help:
 | `validate_markup` | Lints HTML/CSS for the failures that actually ship. |
 | `get_setup` | HTML scaffold, pre-paint theme script, reset, utilities, prose, theme control. |
 | `get_stylesheet` | The entire stylesheet as one file. |
+| `get_asset_urls` | Published CSS, behavior and documentation artifact URLs. |
+| `validate_integration` | Validate dependencies, initialization, markup references and declared action handlers. |
 
 ### Resources
 
 `sekura://tokens/css` · `sekura://tokens/dtcg` · `sekura://foundations/principles` ·
-`sekura://foundations/dark-mode`
+`sekura://foundations/dark-mode` · `sekura://components` · `sekura://behaviors` ·
+`sekura://migration/v2-to-v3`
 
 ### Prompts
 
@@ -465,7 +470,7 @@ files: `sekura.css` (everything), `tokens.css`, `tokens.dtcg.json`,
 ```
 src/
 ├── index.ts              entry, transport selection
-├── server.ts             MCP server: 17 tools, 4 resources, 3 prompts
+├── server.ts             MCP server: design, runtime and migration tools, resources and prompts
 ├── http.ts               streamable HTTP transport, health, plain-HTTP token endpoints
 ├── site/                 documentation site generator
 │   ├── shell.ts          page shell, navigation, reusable doc blocks
@@ -512,7 +517,7 @@ Node **22 (Jod)** and **24 (Krypton)** — the two Node LTS lines currently in
 support. The container builds on 24; CI runs every gate on both, so
 `engines: >=22` is a verified claim rather than an aspiration.
 
-Node 25 did not become LTS, and Node 26 is still Current in September 2026.
+Node 25 did not become LTS, and Node 26 is still Current on 2 October 2026.
 `npm run check:deps` enforces the currently supported LTS window. The window
 must be reviewed as Node's release policy changes with version 27.
 
@@ -773,3 +778,15 @@ Example MCP integration validation:
 ```
 
 Run `npm run test:integration` for structured MCP contracts and `npm run test:request` for HTTP error/abort/timeout handling. Actual screen-reader, OS contrast, physical touch and Figma acceptance procedures are recorded in [MANUAL-VALIDATION.md](MANUAL-VALIDATION.md); they have not been performed by a human tester.
+
+### Runtime and migration discovery through MCP
+
+- `get_component({ id })` returns the complete specification as text and structured data. `sekura://components` contains all 71 stable components.
+- `get_component_code({ id, framework })` includes CSS dependencies, primary controller, all runtime factories, automatic selectors, manual-only APIs, events and application responsibilities.
+- `get_behavior({ id })` accepts a component ID or any public behavior export name. It returns generated TypeScript declarations with supporting types, initialization and cleanup instructions. Omit `id` for the complete API catalogue; `sekura://behaviors` exposes the same catalogue as a resource.
+- `get_migration_guide({ componentId })` returns the complete canonical migration plan, relevant behavioral changes, the v2 compatibility baseline and optional geometry bridge CSS. Omit the filter for every change. The resource is `sekura://migration/v2-to-v3`.
+- `search` supports `behavior` and `migration` kinds as well as the existing design records.
+
+The build embeds declarations and migration content in `dist/data/mcp-reference.json`, so stdio and HTTP installations work without source files or the original working directory. Rebuild after changing behavior APIs or migration documentation. `npm run test:mcp` checks all component specifications, every recipe format, public APIs and resources through an MCP client.
+
+Dependency policy: use the newest supported LTS line when a project offers one (Node 24, Angular 21), otherwise its latest stable release. Angular packages validate generated recipes and are not runtime dependencies of Sekura. The overall release remains `3.0.0-alpha.0`; component maturity does not mean the manual acceptance record is complete.

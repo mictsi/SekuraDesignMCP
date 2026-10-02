@@ -1,7 +1,7 @@
 {
   "name": "sekura-design-mcp",
   "version": "3.0.0-alpha.0",
-  "description": "Sekura Design System — MCP server exposing the complete design, UX, accessibility and dark-mode specification as machine-readable tools.",
+  "description": "Sekura Design System \u2014 MCP server exposing the complete design, UX, accessibility and dark-mode specification as machine-readable tools.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -11,7 +11,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.behaviours.json && node dist/scripts/build-mcp-reference.js",
     "start": "node dist/index.js",
     "start:http": "SEKURA_MCP_TRANSPORT=http node dist/index.js",
     "dev": "tsc -p tsconfig.json --watch",
@@ -20,7 +20,7 @@
     "emit:css": "node dist/scripts/emit-css.js",
     "smoke": "node dist/scripts/smoke.js",
     "test:errors": "node dist/scripts/test-errors.js",
-    "verify": "npm run build && npm run check:version && npm run check:deps && npm run check:env && npm run test:color && npm run test:urls && npm run audit:contrast && npm run lint:css && npm run smoke && npm run test:errors && npm run test:integration && npm run test:request && npm run build:behaviours && npm run test:compatibility && npm run test:codegen && npm run test:blazor && npm run test:behaviours && npm run emit:css && npm run site:build && npm run verify:sample && npm run site:publish && npm run test:rtl && npm run test:announce && npm run build:design-kit && npm run build:react && npm run test:browsers && npm run test:design && npm run test:redesign && npm run test:completion && npm run test:a11y",
+    "verify": "npm run build && npm run check:version && npm run check:deps && npm run check:env && npm run test:color && npm run test:urls && npm run audit:contrast && npm run lint:css && npm run smoke && npm run test:errors && npm run test:integration && npm run test:mcp && npm run test:request && npm run build:behaviours && npm run test:compatibility && npm run test:codegen && npm run test:blazor && npm run test:behaviours && npm run emit:css && npm run site:build && npm run verify:sample && npm run site:publish && npm run test:rtl && npm run test:announce && npm run build:design-kit && npm run build:react && npm run test:browsers && npm run test:design && npm run test:redesign && npm run test:completion && npm run test:a11y",
     "verify:sample": "node dist/scripts/verify-sample.js",
     "site:build": "node dist/scripts/build-site.js",
     "site:publish": "npm run site:build && node dist/scripts/publish-site.js",
@@ -45,7 +45,8 @@
     "test:request": "node src/scripts/test-request.mjs",
     "test:compatibility": "node src/scripts/test-compatibility.mjs",
     "test:redesign": "node src/scripts/test-redesign.mjs",
-    "test:completion": "node src/scripts/test-component-completion.mjs"
+    "test:completion": "node src/scripts/test-component-completion.mjs",
+    "test:mcp": "node dist/scripts/test-mcp.js"
   },
   "keywords": [
     "mcp",
@@ -58,17 +59,17 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.30.1",
+    "@modelcontextprotocol/sdk": "^1.32.0",
     "express": "^5.2.1",
     "parse5": "^8.0.1",
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@angular/compiler": "^22.2.0",
-    "@angular/core": "^22.2.0",
-    "@figma/plugin-typings": "^1.139.0",
+    "@angular/compiler": "^21.2.25",
+    "@angular/core": "^21.2.25",
+    "@figma/plugin-typings": "^1.140.0",
     "@types/express": "^5.0.6",
-    "@types/node": "^24.19.0",
+    "@types/node": "^24.19.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vue/compiler-sfc": "^3.5.43",

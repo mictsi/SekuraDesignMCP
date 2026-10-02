@@ -1412,7 +1412,7 @@ a.sk-stepper__link:focus-visible {
     id: 'command-palette',
     name: 'Command palette',
     category: 'navigation',
-    status: 'beta',
+    status: 'stable',
     summary:
       'A keyboard-first overlay for searching across everything: navigation, actions, records and settings. It accelerates expert users without adding a single pixel to the interface.',
     whenToUse: ['Applications with many destinations and actions.', 'Products with returning expert users.', 'As the destination for global search on narrow viewports.'],

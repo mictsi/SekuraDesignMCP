@@ -1,10 +1,10 @@
 # syntax=docker/dockerfile:1
 
 # ---------- Build ----------
-# Node 24 "Krypton" is the active LTS line. Only even-numbered majors are ever
-# promoted to LTS, so an automated bump to an odd major (25, 27) must be
-# rejected — `npm run check:deps` fails the build if one lands.
-FROM node:24-alpine AS build
+# Node 24 "Krypton" is the newest LTS line as of 2 October 2026.
+# Review the official release schedule before changing major versions;
+# `npm run check:deps` enforces the supported window.
+FROM node:24.21.0-alpine AS build
 
 WORKDIR /app
 
@@ -29,7 +29,7 @@ RUN node dist/scripts/audit-contrast.js
 RUN node dist/scripts/lint-css.js
 
 # Exercise every tool through a real MCP client before shipping the image.
-RUN node dist/scripts/smoke.js
+RUN node dist/scripts/smoke.js && node dist/scripts/test-mcp.js
 
 # Emit the standalone CSS artefacts so they can be served over plain HTTP.
 RUN node dist/scripts/emit-css.js
@@ -43,7 +43,7 @@ RUN npm prune --omit=dev
 
 
 # ---------- Runtime ----------
-FROM node:24-alpine AS runtime
+FROM node:24.21.0-alpine AS runtime
 
 # dumb-init gives us correct signal forwarding, so SIGTERM reaches Node and the
 # graceful shutdown handler actually runs.

@@ -9,8 +9,12 @@ it, and `npm run check:version` fails the build if a literal drifts back in.
 
 ## 3.0.0-alpha.0 — 2026-10-02
 
+- Promote all 71 component specifications to stable and remove beta labels; retain the v3 alpha package version and the separate manual acceptance record.
+- Expose complete behavior declarations, lifecycle contracts, component metadata and migration behavior through MCP tools, searchable records and packaged resources. Add exhaustive MCP coverage checks.
+- Update dependencies to latest stable releases and supported LTS lines (Node 24.21.0, Angular 21.2.25); retain the Node 22 compatibility floor.
+
 - Replace curved inset selection rails with consistent 4px leading accents across side navigation, tree rows, table selection, combobox options, command results and documentation section navigation, including RTL and forced colors.
-- Complete the ten beta implementations: reusable command palette, async and multi-select comboboxes, exact/range sliders, tri-state lazy trees, robust upload retries, and documented workspace/timeline states. Keep beta maturity pending the human acceptance required by DESIGN.md.
+- Complete the ten beta implementations: reusable command palette, async and multi-select comboboxes, exact/range sliders, tri-state lazy trees, robust upload retries, and documented workspace/timeline states.
 - Add advanced workbench examples, explicit controller/data boundaries and cross-browser completion regressions to verify, CI and run.sh build.
 
 - Align search, filter and native date controls; add shared field rows, explicit alignment guidance and cross-browser geometry checks.

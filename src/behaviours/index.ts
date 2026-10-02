@@ -28,7 +28,7 @@
  * 3. **Adapters** — thin per-framework wrappers in `adapters/`, each a few lines
  *    because the hard work is already done.
  *
- * Nothing here renders markup or injects CSS. Controllers set attributes
+ * Controllers never inject CSS. Some own helper DOM (options, tokens, status or toast content); others set attributes
  * (`aria-expanded`, `data-open`, `hidden`) and the stylesheet does the rest, so
  * you keep full control of your own DOM.
  */

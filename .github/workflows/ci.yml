@@ -82,7 +82,7 @@ jobs:
         # Every failing tool call must be marked isError with a semantic code,
         # a standard recovery hint and the closest valid values. A friendly
         # sentence in a success envelope is what makes a model hallucinate.
-        run: npm run test:errors && npm run test:integration && npm run test:request
+        run: npm run test:errors && npm run test:integration && npm run test:mcp && npm run test:request
 
       - name: MCP smoke test
         # Exercises every tool, component, framework and export format through a

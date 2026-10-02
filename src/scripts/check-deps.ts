@@ -10,7 +10,7 @@
  *
  *  2. **Supported Node LTS lines only.** The explicit window below is reviewed
  *     when Node changes release phase. Node 25 never entered LTS; Node 26 is
- *     still Current in September 2026. The release policy changes with Node 27,
+ *     still Current in 2 October 2026. The release policy changes with Node 27,
  *     so odd/even arithmetic is not a timeless substitute for the window.
  *
  * It also checks that every place the project names a Node version agrees —
@@ -26,13 +26,13 @@ import { join, resolve } from 'node:path';
 const ROOT = process.cwd();
 
 /**
- * The supported Node LTS majors for September 2026.
+ * The supported Node LTS majors for 2 October 2026.
  *
  * The window needs a deliberate review in either direction:
  *
  *  - **Floor.** Node 20 (Iron) left maintenance in 2026, so a build still
  *    sitting on it is running unsupported.
- *  - **Ceiling.** Node 26 is Current in September 2026, and
+ *  - **Ceiling.** Node 26 is Current in 2 October 2026, and
  *    `@types/node@26` is already on npm. A floor-only check would wave it
  *    through before the project supports that runtime.
  *
@@ -193,6 +193,12 @@ for (const ref of nodeRefs) {
       fix: `use Node ${SUPPORTED_LTS.join(' or ')}, or review the current release schedule before expanding support`,
     });
   }
+}
+
+/* Angular has a separate LTS maintenance line. Review against angular.dev/reference/releases. */
+for (const name of ['@angular/core', '@angular/compiler']) {
+  const range = pkg.devDependencies?.[name];
+  if (range && Number(/(\d+)/.exec(range)?.[1]) !== 21) findings.push({ where: `package.json → ${name}`, text: 'Angular must track the selected LTS 21 line', fix: 'Use the latest stable 21.x patch, or review the upstream LTS schedule.' });
 }
 
 /* The runtime the image builds on must be one the workflows actually test. */

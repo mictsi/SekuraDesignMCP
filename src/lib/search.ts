@@ -12,7 +12,10 @@ import { layouts } from '../data/layouts.js';
 import { patterns } from '../data/patterns.js';
 import { semanticTokens } from '../data/tokens.js';
 
-export type ResultKind = 'component' | 'foundation' | 'pattern' | 'layout' | 'token';
+import { mcpReference } from './mcp-reference.js';
+import { migrationChanges } from '../data/migration.js';
+
+export type ResultKind = 'component' | 'foundation' | 'pattern' | 'layout' | 'token' | 'behavior' | 'migration';
 
 export interface SearchResult {
   kind: ResultKind;
@@ -38,6 +41,16 @@ interface Doc {
 
 function buildCorpus(): Doc[] {
   const docs: Doc[] = [];
+  for (const api of mcpReference().api.filter(api => api.exported)) docs.push({
+    kind: 'behavior', id: api.name, title: api.name, summary: api.description || api.signature,
+    retrieveWith: `get_behavior({ id: "${api.name}" })`,
+    fields: [[api.name, 10], [api.description, 5], [api.signature, 2]],
+  });
+  for (const change of migrationChanges) docs.push({
+    kind: 'migration', id: change.id, title: change.id, summary: change.behavior,
+    retrieveWith: 'get_migration_guide({})',
+    fields: [[change.id, 10], ['migration upgrade v2 v3', 4], [JSON.stringify(change), 3]],
+  });
 
   for (const c of components) {
     docs.push({
@@ -50,6 +63,8 @@ function buildCorpus(): Doc[] {
         [c.id, 10],
         [c.name, 10],
         [c.summary, 5],
+        [JSON.stringify(c.implementation), 3],
+        [JSON.stringify(c.props), 2],
         [c.category, 4],
         [c.whenToUse.join(' '), 3],
         [c.whenNotToUse.join(' '), 2],

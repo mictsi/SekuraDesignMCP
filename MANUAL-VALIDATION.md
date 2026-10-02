@@ -43,11 +43,11 @@ Automated acceptance also captures light, dark, mobile and modal screenshots in
 
 Production conformance and a published team design library remain unclaimed until these checks are recorded.
 
-## Beta promotion acceptance
+## Component acceptance
 
-The ten beta implementations have automated completion coverage in
-`test:completion`; promotion still requires screen-reader and real-use checks
-under DESIGN.md. Record browser, OS, assistive technology, reviewer and result.
+All components are marked stable. The advanced implementations have automated
+coverage in `test:completion`; human screen-reader and real-use checks remain
+outstanding. Record browser, OS, assistive technology, reviewer and result.
 
 - Combobox: announce active options while focus stays in the input; verify token
   removal, readonly, failed async search, empty results and recovery.

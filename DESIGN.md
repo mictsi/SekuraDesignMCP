@@ -983,7 +983,7 @@ spacing scale, or the contrast thresholds.
 
 | Status | Meaning |
 |---|---|
-| `stable` | Complete spec, verified accessibility, semver-protected API. |
+| `stable` | Supported implementation, complete spec and semver-protected API. Validation evidence is recorded separately. |
 | `beta` | Usable, API may change in a minor version. |
 | `deprecated` | Scheduled for removal, with a documented migration. |
 

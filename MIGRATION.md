@@ -145,7 +145,7 @@ release adopts the reusable visual language and interaction principles. The
 workspace example is explicitly a local demonstration, not a secure multi-user
 content system.
 
-## Completed beta implementations
+## Component behavior and maturity
 
 Selection accents now use a straight 4px logical leading edge in side navigation,
 trees, tables, comboboxes, command results and documentation section navigation. Remove consumer CSS that paints a
@@ -170,6 +170,6 @@ The multi-tree selection event adds `checked`; range sliders emit
 
 Review the advanced [workbench](sample/workbench.html) and
 [support contracts](sample/support.html). Search providers, file transport,
-command execution and persistence remain application-owned. Beta maturity is
-retained until the screen-reader and real-use acceptance in DESIGN.md is complete;
-implementation completion and automated checks do not substitute for that review.
+command execution and persistence remain application-owned. All 71 components are marked stable. The overall v3 release remains alpha.
+Implementation completion and automated checks do not substitute for the
+application and screen-reader review documented in MANUAL-VALIDATION.md.

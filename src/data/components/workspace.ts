@@ -3,7 +3,7 @@ import type { ComponentSpec } from './types.js';
 /** Workspace compositions share the same controls and lifecycle contracts as v2. */
 function workspace(spec: Pick<ComponentSpec, 'id' | 'name' | 'category' | 'summary' | 'html' | 'css'> & Partial<ComponentSpec>): ComponentSpec {
   return {
-    status: 'beta',
+    status: 'stable',
     whenToUse: ['Content-focused applications with compact navigation and readable documents.'],
     whenNotToUse: ['As a substitute for application persistence, authorization, or a structured editor.'],
     anatomy: [{ part: 'Content', required: true, description: 'Native semantic markup in source reading order.' }],

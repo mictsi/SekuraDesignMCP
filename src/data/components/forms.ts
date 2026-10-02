@@ -1402,7 +1402,7 @@ export const formComponents: ComponentSpec[] = [
     id: 'combobox',
     name: 'Combobox',
     category: 'form',
-    status: 'beta',
+    status: 'stable',
     summary:
       'A text input joined to a filtered list of suggestions. Use it when the list is too long to scroll but the values are still constrained.',
     whenToUse: [
@@ -1799,7 +1799,7 @@ export const formComponents: ComponentSpec[] = [
     id: 'slider',
     name: 'Slider',
     category: 'form',
-    status: 'beta',
+    status: 'stable',
     summary:
       'Selects a value from a continuous or stepped range where the approximate position matters more than the exact number. Always paired with a numeric readout, because a slider alone cannot be set precisely.',
     whenToUse: [
@@ -2004,7 +2004,7 @@ export const formComponents: ComponentSpec[] = [
     id: 'file-upload',
     name: 'File upload',
     category: 'form',
-    status: 'beta',
+    status: 'stable',
     summary:
       'Accepts one or more files by click or drag. The drop zone is a convenience; the button is the real control, because drag and drop is not keyboard-operable.',
     whenToUse: ['Importing task exports, certificates, CSVs.', 'Attaching evidence to a change request.'],

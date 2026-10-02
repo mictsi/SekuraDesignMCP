@@ -27,7 +27,7 @@ mkdirSync(OUT, { recursive: true });
 
 const banner = `/*! Sekura Design System — behaviours v${VERSION} | MIT
  * Framework-agnostic keyboard and ARIA implementations.
- * Attaches to DOM you already render; never injects markup or CSS.
+ * Attaches to host DOM; some controllers own helper content. Never injects CSS.
  */`;
 
 interface Target {

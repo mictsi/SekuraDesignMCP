@@ -1,5 +1,6 @@
 import { parseFragment, serialize, type DefaultTreeAdapterMap } from 'parse5';
 import type { ComponentSpec } from './types.js';
+import { runtimeContract, type RuntimeContract } from '../behavior-contracts.js';
 import { VERSION } from '../../lib/version.js';
 import { componentEvents, componentMarkers, type EventContract } from './events.js';
 
@@ -26,6 +27,7 @@ export const controllers: Record<string, string> = {
 };
 
 export interface ImplementationSpec {
+  runtime: RuntimeContract;
   rootClass: string;
   cssDependencies: string[];
   svgSymbols: string[];
@@ -81,6 +83,7 @@ export function implementation(spec: ComponentSpec, catalogue: ComponentSpec[]):
   const used = new Set([...spec.html.matchAll(/class="([^"]+)"/g)].flatMap(m => m[1]!.split(/\s+/)));
   const dependencies = catalogue.filter(c => c.id !== spec.id && [...c.css.matchAll(/\.(sk-[\w-]+)/g)].some(m => used.has(m[1]!))).map(c => c.id);
   return {
+    runtime: runtimeContract(spec.id),
     rootClass: rootClass(spec), cssDependencies: dependencies,
     svgSymbols: [...new Set([...spec.html.matchAll(/href="#(sk-[^"]+)"/g)].map(match => match[1]!))],
     controller: controllers[spec.id] ?? null,

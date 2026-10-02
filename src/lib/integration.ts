@@ -8,6 +8,7 @@ import { VERSION } from './version.js';
 
 const eventSchema = z.object({ name: z.string(), detail: z.record(z.string(), z.string()), source: z.enum(['native', 'controller']), applicationRequired: z.boolean() });
 export const implementationSchema = z.object({
+  runtime: z.object({ controllers: z.array(z.string()), autoSelectors: z.array(z.string()), manualOnly: z.array(z.string()), notes: z.array(z.string()) }),
   rootClass: z.string(), cssDependencies: z.array(z.string()), svgSymbols: z.array(z.string()),
   controller: z.string().nullable(), behavior: z.enum(['native', 'controller', 'application']),
   frameworkOutput: z.literal('reference-recipe'), applicationResponsibilities: z.array(z.string()),

@@ -1293,7 +1293,7 @@ export const dataDisplayComponents: ComponentSpec[] = [
     id: 'timeline',
     name: 'Timeline',
     category: 'data-display',
-    status: 'beta',
+    status: 'stable',
     summary: 'A chronological sequence of events with actor, time and outcome. Built for audit trails and change histories.',
     whenToUse: ['Audit logs and change history.', 'Operation progress with several sub-steps.', 'Activity feeds on a detail page.'],
     whenNotToUse: ['Data users need to sort or filter across columns — use a Table.', 'Fewer than three events.'],
@@ -1446,7 +1446,7 @@ export const dataDisplayComponents: ComponentSpec[] = [
     id: 'tree-view',
     name: 'Tree view',
     category: 'data-display',
-    status: 'beta',
+    status: 'stable',
     summary:
       'A hierarchical, expandable list. Powerful and easy to get wrong — the ARIA tree pattern has a demanding keyboard contract that must be implemented completely or not at all.',
     whenToUse: ['Genuine hierarchies: portfolios and their projects, permission scopes, file trees.', 'Structures users navigate by expanding rather than by searching.'],

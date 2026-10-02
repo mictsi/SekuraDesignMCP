@@ -275,6 +275,7 @@ cmd_build() {
   node dist/scripts/lint-css.js \
     | sed -n -E '/^All |issue\(s\)|^  \[/s/^/    /p'
   node dist/scripts/smoke.js | sed -n -E '/passed|failed/s/^/    /p'
+  node dist/scripts/test-mcp.js
   node dist/scripts/test-integration.js | sed -n -E '/passed|failed/s/^/    /p'
   node src/scripts/test-request.mjs | sed -n -E '/passed|failed/s/^/    /p'
 

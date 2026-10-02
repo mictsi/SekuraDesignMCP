@@ -46,6 +46,7 @@ import { emptyResult, invalidArgument, unknownValue } from './lib/errors.js';
 import type { PublishedUrls } from './lib/urls.js';
 import { summariseFindings, validateMarkup } from './lib/validate.js';
 
+import { behaviorReference, behaviorSchema, migrationReference, migrationSchema, mcpReference } from './lib/mcp-reference.js';
 import { VERSION } from './lib/version.js';
 import { componentRecipe, recipeSchema, integrationInput, integrationResultSchema, validateIntegration } from './lib/integration.js';
 
@@ -291,6 +292,8 @@ export function createServer(options: ServerOptions = {}): McpServer {
 Start with \`get_overview\` for the map. Then:
 - \`get_foundation\` — the reasoning (colour, dark mode, responsive layout, accessibility, …)
 - \`get_component\` / \`get_component_code\` — ${components.length} components with reference recipes in ${FRAMEWORKS.length} formats
+- \`get_behavior\` — complete runtime signatures, supporting types, events and lifecycle ownership
+- \`get_migration_guide\` — complete v2-to-v3 plan, behavior changes and compatibility bridge
 - \`get_layout\` — full page blueprints
 - \`get_pattern\` — recurring UX problems and their answers
 - \`export_tokens\` — CSS, Tailwind, W3C DTCG, Swift, Android
@@ -380,6 +383,7 @@ ${EXPORT_FORMATS.map((f) => `- \`${f}\` — ${formatDescriptions[f]}`).join('\n'
 - \`suggest_token\` — describe an intent, get the right token
 
 ## Getting started
+Call \`get_behavior({ id })\` for runtime signatures, events and cleanup. For upgrades call \`get_migration_guide({ componentId })\` for the full plan and behavioral changes.
 Read each component’s implementation contract before promising behavior. Verify generated code and action outcomes, not only markup.
 
 Call \`get_setup\` for the HTML scaffold, the pre-paint theme script and the
@@ -393,11 +397,11 @@ dark mode — it lists the nine things that break silently.`);
     {
       title: 'Search the design system',
       description:
-        'Full-text search across components, foundations, patterns, layouts and tokens. Use when you know what you need but not where it lives.',
+        'Full-text search across components, foundations, patterns, layouts, tokens, runtime APIs and migration changes. Use when you know what you need but not where it lives.',
       inputSchema: {
         query: z.string().min(2).describe('What you are looking for, e.g. "focus ring", "dark mode borders", "bulk selection".'),
         kinds: z
-          .array(z.enum(['component', 'foundation', 'pattern', 'layout', 'token']))
+          .array(z.enum(['component', 'foundation', 'pattern', 'layout', 'token', 'behavior', 'migration']))
           .optional()
           .describe('Restrict to certain kinds of result.'),
         limit: z.number().int().min(1).max(40).optional().describe('Maximum results (default 12).'),
@@ -424,6 +428,27 @@ dark mode — it lists the nine things that break silently.`);
       return text(`# ${results.length} result(s) for "${query}"\n\n${body}`);
     }
   );
+
+  server.registerTool('get_behavior', {
+    title: 'Get runtime behavior and lifecycle contracts',
+    description: 'Complete public behavior API, including exact TypeScript declarations and supporting types. Filter by component id or exported API name; omit id for the full catalogue. Includes automatic selectors, manual initialization, cleanup, events and application responsibilities.',
+    inputSchema: { id: z.string().min(1).optional() }, outputSchema: behaviorSchema,
+    annotations: { readOnlyHint: true, openWorldHint: false },
+  }, async ({ id }) => {
+    const result = behaviorReference(id);
+    return result ? { ...text(JSON.stringify(result, null, 2)), structuredContent: result }
+      : { ...unknownValue('behavior', id!, [...components.map(c => c.id), ...mcpReference().api.filter(a => a.exported).map(a => a.name)], 'get_behavior') };
+  });
+  server.registerTool('get_migration_guide', {
+    title: 'Get migration plan and behavior changes',
+    description: 'Full canonical v2-to-v3 migration plan, rollout/rollback guidance, behavior changes, compatibility baseline and optional legacy geometry CSS. componentId filters behavior changes while preserving global migration requirements.',
+    inputSchema: { componentId: z.string().min(1).optional() }, outputSchema: migrationSchema,
+    annotations: { readOnlyHint: true, openWorldHint: false },
+  }, async ({ componentId }) => {
+    const result = migrationReference(componentId);
+    return result ? { ...text(JSON.stringify(result, null, 2)), structuredContent: result }
+      : { ...unknownValue('component', componentId!, components.map(c => c.id), 'list_components') };
+  });
 
   /* ---------------- Foundations ---------------- */
 
@@ -492,13 +517,14 @@ Full spec: \`get_component({ id })\`. Code: \`get_component_code({ id, framework
       inputSchema: {
         id: z.string().describe('Component id, e.g. "button", "table", "combobox".'),
       },
+      outputSchema: z.object({ schemaVersion: z.literal(1), version: z.string(), component: z.looseObject({ id: z.string(), status: z.string() }) }),
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
     async ({ id }) => {
       const body = formatComponent(id);
       return body === null
-        ? unknownValue('component', id, components.map((x) => x.id), 'list_components')
-        : text(body);
+        ? { ...unknownValue('component', id, components.map((x) => x.id), 'list_components') }
+        : { ...text(body), structuredContent: { schemaVersion: 1, version: VERSION, component: getComponent(id)! } };
     }
   );
 
@@ -1151,6 +1177,12 @@ which artefacts are actually present in this deployment.`);
   );
 
   /* ---------------- Resources ---------------- */
+  for (const [name, uri, description, read] of [
+    ['behaviors', 'sekura://behaviors', 'All public runtime APIs, supporting types and lifecycle contracts.', () => JSON.stringify(behaviorReference(), null, 2)],
+    ['migration', 'sekura://migration/v2-to-v3', 'Full migration plan, behavior changes, compatibility baseline and bridge CSS.', () => JSON.stringify(migrationReference(), null, 2)],
+    ['components', 'sekura://components', 'Complete component specifications and implementation contracts.', () => JSON.stringify({ schemaVersion: 1, version: VERSION, components }, null, 2)],
+  ] as const) server.registerResource(name, uri, { description, mimeType: 'application/json' }, async url => ({ contents: [{ uri: url.href, mimeType: 'application/json', text: read() }] }));
+
 
   server.registerResource(
     'tokens-css',
@@ -1233,7 +1265,7 @@ Work in this order:
 2. ${layout ? `\`get_layout({ id: "${layout}" })\`` : 'Pick a layout recipe with `get_layout` — list them via `get_overview`.'}
 3. \`get_component\` for each component you will use, then \`get_component_code\` for the markup and CSS.
 4. \`get_foundation({ id: "responsive-layout" })\` before writing any layout CSS.
-5. \`get_foundation({ id: "workspace-design" })\` for the v3 visual direction and migration boundaries. Preserve existing integration names.
+5. \`get_foundation({ id: "workspace-design" })\` for the v3 visual direction and migration boundaries. Preserve existing integration names. Call \`get_migration_guide\` when upgrading, and \`get_behavior({ id })\` for each interactive component before wiring actions.
 6. \`validate_integration\` with the selected components, markup, stylesheets, initialization and handled events; then compile, mount and exercise application outcomes.
 
 Hard requirements:

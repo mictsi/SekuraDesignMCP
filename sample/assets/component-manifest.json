@@ -10,6 +10,16 @@
     {
       "id": "button",
       "cssFile": "components/button.css",
+      "runtime": {
+        "controllers": [
+          "guardAction"
+        ],
+        "autoSelectors": [
+          ".sk-button"
+        ],
+        "notes": [],
+        "manualOnly": []
+      },
       "rootClass": "sk-button",
       "cssDependencies": [
         "button-group",
@@ -41,6 +51,16 @@
     {
       "id": "icon-button",
       "cssFile": "components/icon-button.css",
+      "runtime": {
+        "controllers": [
+          "guardAction"
+        ],
+        "autoSelectors": [
+          ".sk-icon-button"
+        ],
+        "notes": [],
+        "manualOnly": []
+      },
       "rootClass": "sk-icon-button",
       "cssDependencies": [],
       "svgSymbols": [
@@ -70,6 +90,18 @@
     {
       "id": "button-group",
       "cssFile": "components/button-group.css",
+      "runtime": {
+        "controllers": [
+          "createSegmented"
+        ],
+        "autoSelectors": [
+          "[data-sk-segmented]:not([data-sk-theme-control])"
+        ],
+        "notes": [
+          "Only segmented/radiogroup variants need this controller. Ordinary button groups use native buttons."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-button-group",
       "cssDependencies": [
         "button",
@@ -100,6 +132,18 @@
     {
       "id": "split-button",
       "cssFile": "components/split-button.css",
+      "runtime": {
+        "controllers": [
+          "guardAction",
+          "createMenu"
+        ],
+        "autoSelectors": [
+          ".sk-button",
+          "[data-sk-menu-trigger]"
+        ],
+        "notes": [],
+        "manualOnly": []
+      },
       "rootClass": "sk-split-button",
       "cssDependencies": [
         "menu"
@@ -137,6 +181,14 @@
     {
       "id": "link",
       "cssFile": "components/link.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-link",
       "cssDependencies": [
         "alert"
@@ -160,6 +212,16 @@
     {
       "id": "toolbar",
       "cssFile": "components/toolbar.css",
+      "runtime": {
+        "controllers": [
+          "createToolbar"
+        ],
+        "autoSelectors": [
+          "[data-sk-toolbar]"
+        ],
+        "notes": [],
+        "manualOnly": []
+      },
       "rootClass": "sk-toolbar",
       "cssDependencies": [
         "icon-button"
@@ -185,6 +247,16 @@
     {
       "id": "segmented-control",
       "cssFile": "components/segmented-control.css",
+      "runtime": {
+        "controllers": [
+          "createSegmented"
+        ],
+        "autoSelectors": [
+          "[data-sk-segmented]:not([data-sk-theme-control])"
+        ],
+        "notes": [],
+        "manualOnly": []
+      },
       "rootClass": "sk-segmented",
       "cssDependencies": [],
       "svgSymbols": [],
@@ -212,6 +284,14 @@
     {
       "id": "form-field",
       "cssFile": "components/form-field.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-field",
       "cssDependencies": [
         "text-field",
@@ -237,6 +317,14 @@
     {
       "id": "text-field",
       "cssFile": "components/text-field.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-input",
       "cssDependencies": [
         "form-field",
@@ -269,6 +357,14 @@
     {
       "id": "textarea",
       "cssFile": "components/textarea.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-textarea",
       "cssDependencies": [
         "form-field"
@@ -296,6 +392,14 @@
     {
       "id": "select",
       "cssFile": "components/select.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-select",
       "cssDependencies": [
         "form-field"
@@ -323,6 +427,14 @@
     {
       "id": "checkbox",
       "cssFile": "components/checkbox.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-checkbox",
       "cssDependencies": [
         "fieldset"
@@ -350,6 +462,14 @@
     {
       "id": "radio-group",
       "cssFile": "components/radio-group.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-radio-group",
       "cssDependencies": [
         "form-field",
@@ -378,6 +498,18 @@
     {
       "id": "switch",
       "cssFile": "components/switch.css",
+      "runtime": {
+        "controllers": [
+          "createAsyncSwitch"
+        ],
+        "autoSelectors": [],
+        "notes": [
+          "Native checkbox/switch form state works without a controller. Persisted changes require an explicit onToggle callback."
+        ],
+        "manualOnly": [
+          "createAsyncSwitch"
+        ]
+      },
       "rootClass": "sk-switch",
       "cssDependencies": [],
       "svgSymbols": [],
@@ -404,6 +536,21 @@
     {
       "id": "combobox",
       "cssFile": "components/combobox.css",
+      "runtime": {
+        "controllers": [
+          "createCombobox"
+        ],
+        "autoSelectors": [
+          "[data-sk-combobox]"
+        ],
+        "notes": [
+          "loadOptions(query, signal) returns ComboboxItem[]. Superseded requests are aborted; late results are ignored. onSearch remains the legacy DOM callback.",
+          "multiple, allowCustom and values opt into tokens and custom values. onChange and sk:combobox:change expose selected IDs.",
+          "Single inputs keep the selected value by default. displayLabel is opt-in; do not read labels as IDs.",
+          "The controller owns its popup wrapper, token buttons and status message. Omit data-sk-combobox when initializing manually."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-combobox",
       "cssDependencies": [
         "form-field",
@@ -462,6 +609,14 @@
     {
       "id": "search-field",
       "cssFile": "components/search-field.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-search",
       "cssDependencies": [],
       "svgSymbols": [
@@ -483,6 +638,22 @@
     {
       "id": "slider",
       "cssFile": "components/slider.css",
+      "runtime": {
+        "controllers": [
+          "createSlider",
+          "createRangeSlider"
+        ],
+        "autoSelectors": [
+          ".sk-slider__input",
+          ".sk-slider--range:not([data-sk-custom-slider])"
+        ],
+        "notes": [
+          "Range roots contain exactly two separately named native range inputs. Bounds cannot cross.",
+          "Link exact number inputs through data-sk-slider-value=\"range-id\". Set data-sk-custom-slider on manually initialized slider roots.",
+          "createSlider emits sk:slider:change. createRangeSlider also emits sk:slider:range-change with the pair. Native form reset restores defaults."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-slider",
       "cssDependencies": [
         "form-field",
@@ -524,6 +695,20 @@
     {
       "id": "file-upload",
       "cssFile": "components/file-upload.css",
+      "runtime": {
+        "controllers": [
+          "createUpload"
+        ],
+        "autoSelectors": [
+          ".sk-upload:not([data-sk-custom-upload])"
+        ],
+        "notes": [
+          "Without upload(file, signal, progress), the controller selects files only. maxBytes defaults to 10 MiB; data-sk-max-bytes is the declarative equivalent.",
+          "Supply transport with data-sk-custom-upload and createUpload. Failed files can retry; removal and replacement abort their transport. Late callbacks cannot update settled or destroyed attempts.",
+          "The application owns server validation and persistence. A successful local selection is not an upload."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-upload",
       "cssDependencies": [
         "button",
@@ -560,6 +745,14 @@
     {
       "id": "fieldset",
       "cssFile": "components/fieldset.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-fieldset",
       "cssDependencies": [
         "form-field"
@@ -580,6 +773,16 @@
     {
       "id": "number-input",
       "cssFile": "components/number-input.css",
+      "runtime": {
+        "controllers": [
+          "createNumberInput"
+        ],
+        "autoSelectors": [
+          "[data-sk-number]"
+        ],
+        "notes": [],
+        "manualOnly": []
+      },
       "rootClass": "sk-number",
       "cssDependencies": [
         "form-field",
@@ -615,6 +818,16 @@
     {
       "id": "tag-input",
       "cssFile": "components/tag-input.css",
+      "runtime": {
+        "controllers": [
+          "createTagInput"
+        ],
+        "autoSelectors": [
+          "[data-sk-tag-input]"
+        ],
+        "notes": [],
+        "manualOnly": []
+      },
       "rootClass": "sk-tag-input",
       "cssDependencies": [
         "form-field"
@@ -644,6 +857,21 @@
     {
       "id": "date-picker",
       "cssFile": "components/date-picker.css",
+      "runtime": {
+        "controllers": [
+          "createDatePicker",
+          "createCalendar"
+        ],
+        "autoSelectors": [
+          "[data-sk-datepicker]"
+        ],
+        "notes": [
+          "Standalone calendars require explicit initialization."
+        ],
+        "manualOnly": [
+          "createCalendar"
+        ]
+      },
       "rootClass": "sk-date-picker",
       "cssDependencies": [
         "form-field",
@@ -688,6 +916,16 @@
     {
       "id": "date-range-picker",
       "cssFile": "components/date-range-picker.css",
+      "runtime": {
+        "controllers": [
+          "createDateRange"
+        ],
+        "autoSelectors": [
+          "[data-sk-daterange]"
+        ],
+        "notes": [],
+        "manualOnly": []
+      },
       "rootClass": "sk-date-range",
       "cssDependencies": [
         "form-field",
@@ -721,6 +959,14 @@
     {
       "id": "skip-link",
       "cssFile": "components/skip-link.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-skip-link",
       "cssDependencies": [
         "top-bar"
@@ -741,6 +987,14 @@
     {
       "id": "top-bar",
       "cssFile": "components/top-bar.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-top-bar",
       "cssDependencies": [
         "icon-button",
@@ -769,6 +1023,14 @@
     {
       "id": "side-nav",
       "cssFile": "components/side-nav.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-side-nav",
       "cssDependencies": [],
       "svgSymbols": [
@@ -791,6 +1053,14 @@
     {
       "id": "breadcrumbs",
       "cssFile": "components/breadcrumbs.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-breadcrumbs",
       "cssDependencies": [
         "link",
@@ -812,6 +1082,16 @@
     {
       "id": "tabs",
       "cssFile": "components/tabs.css",
+      "runtime": {
+        "controllers": [
+          "createTabs"
+        ],
+        "autoSelectors": [
+          "[data-sk-tabs]"
+        ],
+        "notes": [],
+        "manualOnly": []
+      },
       "rootClass": "sk-tabs",
       "cssDependencies": [],
       "svgSymbols": [],
@@ -839,6 +1119,14 @@
     {
       "id": "pagination",
       "cssFile": "components/pagination.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-pagination",
       "cssDependencies": [],
       "svgSymbols": [
@@ -861,6 +1149,14 @@
     {
       "id": "stepper",
       "cssFile": "components/stepper.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-stepper",
       "cssDependencies": [],
       "svgSymbols": [
@@ -881,6 +1177,16 @@
     {
       "id": "menu",
       "cssFile": "components/menu.css",
+      "runtime": {
+        "controllers": [
+          "createMenu"
+        ],
+        "autoSelectors": [
+          "[data-sk-menu-trigger]"
+        ],
+        "notes": [],
+        "manualOnly": []
+      },
       "rootClass": "sk-menu",
       "cssDependencies": [
         "icon-button"
@@ -933,6 +1239,20 @@
     {
       "id": "command-palette",
       "cssFile": "components/command-palette.css",
+      "runtime": {
+        "controllers": [
+          "createCommandPalette"
+        ],
+        "autoSelectors": [
+          "[data-sk-command-palette]"
+        ],
+        "notes": [
+          "sources receive query and AbortSignal and return CommandItem[]. The controller handles cancellation, modal focus, groups, errors and session recents.",
+          "The host executes commands in onSelect or sk:command-palette:select. Prefix scoping and permission filtering belong to the provider.",
+          "data-sk-palette-open targets the palette ID. Automatic initialization enables no global shortcut unless data-sk-palette-shortcut is set; manual default is Mod+K."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-command-palette",
       "cssDependencies": [
         "button",
@@ -979,6 +1299,14 @@
     {
       "id": "alert",
       "cssFile": "components/alert.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-alert",
       "cssDependencies": [
         "button",
@@ -1008,6 +1336,18 @@
     {
       "id": "toast",
       "cssFile": "components/toast.css",
+      "runtime": {
+        "controllers": [
+          "createToaster"
+        ],
+        "autoSelectors": [],
+        "notes": [
+          "Create the toaster on the named live region and call show(). The application owns action outcomes."
+        ],
+        "manualOnly": [
+          "createToaster"
+        ]
+      },
       "rootClass": "sk-toast",
       "cssDependencies": [
         "button",
@@ -1034,6 +1374,14 @@
     {
       "id": "inline-message",
       "cssFile": "components/inline-message.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-inline-message",
       "cssDependencies": [
         "button",
@@ -1058,6 +1406,14 @@
     {
       "id": "progress",
       "cssFile": "components/progress.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-progress",
       "cssDependencies": [],
       "svgSymbols": [],
@@ -1076,6 +1432,14 @@
     {
       "id": "spinner",
       "cssFile": "components/spinner.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-spinner",
       "cssDependencies": [],
       "svgSymbols": [],
@@ -1094,6 +1458,14 @@
     {
       "id": "skeleton",
       "cssFile": "components/skeleton.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-skeleton",
       "cssDependencies": [],
       "svgSymbols": [],
@@ -1112,6 +1484,14 @@
     {
       "id": "empty-state",
       "cssFile": "components/empty-state.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-empty-state",
       "cssDependencies": [
         "button",
@@ -1136,6 +1516,14 @@
     {
       "id": "status-indicator",
       "cssFile": "components/status-indicator.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-status",
       "cssDependencies": [],
       "svgSymbols": [],
@@ -1154,6 +1542,14 @@
     {
       "id": "meter",
       "cssFile": "components/meter.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-meter",
       "cssDependencies": [],
       "svgSymbols": [],
@@ -1172,6 +1568,14 @@
     {
       "id": "loading-screen",
       "cssFile": "components/loading-screen.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-loading",
       "cssDependencies": [
         "button",
@@ -1195,6 +1599,14 @@
     {
       "id": "error-page",
       "cssFile": "components/error-page.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-error-page",
       "cssDependencies": [
         "button",
@@ -1222,6 +1634,14 @@
     {
       "id": "error-boundary",
       "cssFile": "components/error-boundary.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-error-boundary",
       "cssDependencies": [
         "button",
@@ -1248,6 +1668,18 @@
     {
       "id": "table",
       "cssFile": "components/table.css",
+      "runtime": {
+        "controllers": [
+          "createSelection"
+        ],
+        "autoSelectors": [
+          "[data-sk-selection]"
+        ],
+        "notes": [
+          "Selection belongs to the current page. Filtering, sorting, pagination and persisted selection remain application-owned."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-table",
       "cssDependencies": [
         "icon-button",
@@ -1284,6 +1716,14 @@
     {
       "id": "card",
       "cssFile": "components/card.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-card",
       "cssDependencies": [
         "status-indicator",
@@ -1305,6 +1745,14 @@
     {
       "id": "stat-tile",
       "cssFile": "components/stat-tile.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-stat",
       "cssDependencies": [],
       "svgSymbols": [
@@ -1325,6 +1773,14 @@
     {
       "id": "badge",
       "cssFile": "components/badge.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-badge",
       "cssDependencies": [],
       "svgSymbols": [],
@@ -1343,6 +1799,14 @@
     {
       "id": "avatar",
       "cssFile": "components/avatar.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-avatar",
       "cssDependencies": [],
       "svgSymbols": [],
@@ -1361,6 +1825,14 @@
     {
       "id": "description-list",
       "cssFile": "components/description-list.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-dl",
       "cssDependencies": [
         "code-block"
@@ -1381,6 +1853,14 @@
     {
       "id": "code-block",
       "cssFile": "components/code-block.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-code-block",
       "cssDependencies": [
         "button",
@@ -1405,6 +1885,14 @@
     {
       "id": "kbd",
       "cssFile": "components/kbd.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-kbd",
       "cssDependencies": [],
       "svgSymbols": [],
@@ -1423,6 +1911,14 @@
     {
       "id": "timeline",
       "cssFile": "components/timeline.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Use ordered lists and absolute timestamps. Native details handles expansion; event type and outcome must remain in text."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-timeline",
       "cssDependencies": [],
       "svgSymbols": [],
@@ -1441,6 +1937,20 @@
     {
       "id": "tree-view",
       "cssFile": "components/tree-view.css",
+      "runtime": {
+        "controllers": [
+          "createTree"
+        ],
+        "autoSelectors": [
+          ".sk-tree[role=tree]:not([data-sk-custom-tree])"
+        ],
+        "notes": [
+          "multiSelect or .sk-tree--multi enables aria-checked with tri-state parents. Disabled descendants are excluded from toggling.",
+          "loadChildren(item, signal) returns rendered HTMLElement treeitems for data-sk-loadable parents. Collapse/unmount aborts pending work. Expand again to retry.",
+          "Set data-sk-custom-tree when supplying a provider manually. refresh() reconciles dynamic children and roving focus."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-tree",
       "cssDependencies": [],
       "svgSymbols": [
@@ -1482,6 +1992,16 @@
     {
       "id": "disclosure",
       "cssFile": "components/disclosure.css",
+      "runtime": {
+        "controllers": [
+          "createDisclosure"
+        ],
+        "autoSelectors": [
+          "[data-sk-disclosure]"
+        ],
+        "notes": [],
+        "manualOnly": []
+      },
       "rootClass": "sk-disclosure",
       "cssDependencies": [],
       "svgSymbols": [
@@ -1515,6 +2035,16 @@
     {
       "id": "accordion",
       "cssFile": "components/accordion.css",
+      "runtime": {
+        "controllers": [
+          "createAccordion"
+        ],
+        "autoSelectors": [
+          "[data-sk-accordion]"
+        ],
+        "notes": [],
+        "manualOnly": []
+      },
       "rootClass": "sk-accordion",
       "cssDependencies": [],
       "svgSymbols": [
@@ -1548,6 +2078,16 @@
     {
       "id": "dialog",
       "cssFile": "components/dialog.css",
+      "runtime": {
+        "controllers": [
+          "createDialog"
+        ],
+        "autoSelectors": [
+          "[data-sk-dialog]"
+        ],
+        "notes": [],
+        "manualOnly": []
+      },
       "rootClass": "sk-dialog",
       "cssDependencies": [
         "button",
@@ -1593,6 +2133,18 @@
     {
       "id": "drawer",
       "cssFile": "components/drawer.css",
+      "runtime": {
+        "controllers": [
+          "createDrawer"
+        ],
+        "autoSelectors": [
+          "[data-sk-drawer]"
+        ],
+        "notes": [
+          "Modal drawers make the background inert; docked drawers preserve normal page interaction. Destroy restores owned state."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-drawer",
       "cssDependencies": [
         "button",
@@ -1634,6 +2186,16 @@
     {
       "id": "popover",
       "cssFile": "components/popover.css",
+      "runtime": {
+        "controllers": [
+          "createPopover"
+        ],
+        "autoSelectors": [
+          "[data-sk-popover-trigger]"
+        ],
+        "notes": [],
+        "manualOnly": []
+      },
       "rootClass": "sk-popover",
       "cssDependencies": [
         "button",
@@ -1673,6 +2235,17 @@
     {
       "id": "tooltip",
       "cssFile": "components/tooltip.css",
+      "runtime": {
+        "controllers": [
+          "createTooltip"
+        ],
+        "autoSelectors": [
+          "[data-sk-tooltip-target]",
+          "[data-sk-tooltip]"
+        ],
+        "notes": [],
+        "manualOnly": []
+      },
       "rootClass": "sk-tooltip",
       "cssDependencies": [
         "icon-button"
@@ -1695,6 +2268,14 @@
     {
       "id": "app-shell",
       "cssFile": "components/app-shell.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-app-shell",
       "cssDependencies": [
         "skip-link",
@@ -1719,6 +2300,14 @@
     {
       "id": "page-header",
       "cssFile": "components/page-header.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-page-header",
       "cssDependencies": [
         "button",
@@ -1745,6 +2334,14 @@
     {
       "id": "stack",
       "cssFile": "components/stack.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-stack",
       "cssDependencies": [
         "button",
@@ -1770,6 +2367,14 @@
     {
       "id": "cluster",
       "cssFile": "components/cluster.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-cluster",
       "cssDependencies": [
         "button",
@@ -1793,6 +2398,14 @@
     {
       "id": "sidebar-layout",
       "cssFile": "components/sidebar-layout.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-sidebar-layout",
       "cssDependencies": [
         "table",
@@ -1814,6 +2427,14 @@
     {
       "id": "grid",
       "cssFile": "components/grid.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-grid",
       "cssDependencies": [
         "form-field",
@@ -1835,6 +2456,14 @@
     {
       "id": "divider",
       "cssFile": "components/divider.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-divider",
       "cssDependencies": [
         "cluster"
@@ -1855,6 +2484,14 @@
     {
       "id": "document-canvas",
       "cssFile": "components/document-canvas.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native article composition; wide mode changes width, not storage or editing behavior."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-document",
       "cssDependencies": [
         "link"
@@ -1875,6 +2512,14 @@
     {
       "id": "content-header",
       "cssFile": "components/content-header.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Native context/actions composition; sticky offset and scroll padding must account for fixed application bars."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-content-header",
       "cssDependencies": [
         "button",
@@ -1900,6 +2545,14 @@
     {
       "id": "save-state",
       "cssFile": "components/save-state.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Set data-state and visible text together. The application owns pending, saving, local, saved, error and conflict transitions."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-save-state",
       "cssDependencies": [],
       "svgSymbols": [],
@@ -1918,6 +2571,14 @@
     {
       "id": "activity-list",
       "cssFile": "components/activity-list.css",
+      "runtime": {
+        "controllers": [],
+        "autoSelectors": [],
+        "notes": [
+          "Render native list items. Place loading/error announcements outside the list and preserve existing content during retries."
+        ],
+        "manualOnly": []
+      },
       "rootClass": "sk-activity-list",
       "cssDependencies": [
         "link",
