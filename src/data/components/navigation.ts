@@ -351,6 +351,8 @@ export const navigationComponents: ComponentSpec[] = [
       'Mark the current page with both aria-current and a visible non-colour marker.',
       'Persist the collapsed preference per user.',
       'Keep child destinations indented under their parent; use sk-side-nav__branch-row, sk-side-nav__toggle and sk-side-nav__children.',
+      'Use the same hierarchy as the docs sidebar: the chevron indicates expansion, the 1px neutral leading guide groups visible children, and only the exact current destination has the separate 4px leading accent.',
+      'Own route matching, current-item scrolling, responsive drawer initialization and width/collapse preferences in the application shell. enhance() wires submenu disclosures, not those shell behaviors. See the runtime contract for createDrawer setup.',
       'Separate application-owned open items with sk-side-nav__open-items and a visible heading; use document icons so they do not look like another menu group.',
     ],
     donts: [

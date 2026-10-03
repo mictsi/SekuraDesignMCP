@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "version": "3.0.1",
+  "version": "3.0.2",
   "base": [
     "tokens.css",
     "base.css"
@@ -1027,16 +1027,23 @@
       "cssFile": "components/side-nav.css",
       "runtime": {
         "controllers": [
-          "createDisclosure"
+          "createDisclosure",
+          "createDrawer"
         ],
         "autoSelectors": [
           "[data-sk-disclosure]"
         ],
         "notes": [
+          "The docs sidebar uses these same classes and createDisclosure: a rotating chevron, a 1px logical leading guide on expanded children, and a separate 4px leading rail only on the exact current link.",
           "Links navigate. Separate named toggle buttons expand one indented child list; enhance() wires optional branches. Keep the exact current link aria-current=page and open its ancestor in application route state.",
-          "Static group headings are not interactive. Open documents belong in a labeled, divided sk-side-nav__open-items region. The host owns open-item state and close/navigation outcomes."
+          "For router updates, call the owned disclosure.open() method or rerender the branch with matching aria-expanded and hidden state; changing aria-expanded alone does not update an existing controller.",
+          "Static group headings are not interactive. Open documents belong in a labeled, divided sk-side-nav__open-items region. The host owns open-item state and close/navigation outcomes.",
+          "The docs shell additionally owns route matching, scrolling the current link into view, width/collapse preferences and its navigation trigger. These are not installed by enhance() on a plain sk-side-nav.",
+          "For the responsive shell, initialize createDrawer(nav, { modal: \"(max-width: 63.999rem)\" }) once and wire its trigger; show it for the expanded desktop rail and let Escape restore focus on mobile. Do not also auto-initialize data-sk-drawer on that same nav."
         ],
-        "manualOnly": []
+        "manualOnly": [
+          "createDrawer"
+        ]
       },
       "rootClass": "sk-side-nav",
       "cssDependencies": [],

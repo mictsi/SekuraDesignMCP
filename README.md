@@ -167,7 +167,7 @@ table:
 
 [mcp_servers.sekura-design]
 command = "docker"
-args = ["run", "-i", "--rm", "-e", "SEKURA_MCP_TRANSPORT=stdio", "sekura-design-mcp:3.0.1"]
+args = ["run", "-i", "--rm", "-e", "SEKURA_MCP_TRANSPORT=stdio", "sekura-design-mcp:3.0.2"]
 
 # The first call builds a 5,900-line overview, so allow a little headroom.
 startup_timeout_sec = 30
@@ -186,7 +186,7 @@ Recent Codex versions can add it for you:
 
 ```bash
 codex mcp add sekura-design -- docker run -i --rm \
-  -e SEKURA_MCP_TRANSPORT=stdio sekura-design-mcp:3.0.1
+  -e SEKURA_MCP_TRANSPORT=stdio sekura-design-mcp:3.0.2
 
 codex mcp list          # confirm it registered
 ```
@@ -221,7 +221,7 @@ to start, but these help:
     "sekura-design": {
       "command": "docker",
       "args": ["run", "-i", "--rm", "-e", "SEKURA_MCP_TRANSPORT=stdio",
-               "sekura-design-mcp:3.0.1"]
+               "sekura-design-mcp:3.0.2"]
     }
   }
 }
@@ -417,7 +417,7 @@ Stable releases also publish a multi-arch image to GHCR, tagged `1.2.3`, `1.2`,
 `latest` or the stable documentation site. After publishing the release:
 
 ```bash
-docker run -d -p 8080:8080 ghcr.io/mictsi/sekuradesignmcp:3.0.1
+docker run -d -p 8080:8080 ghcr.io/mictsi/sekuradesignmcp:3.0.2
 ```
 
 Stable releases deploy the documentation site to GitHub Pages.
@@ -607,7 +607,7 @@ location /design-system/ {
 }
 ```
 ```bash
-docker run -d -p 8080:8080 -e SEKURA_BASE_PATH=/design-system sekura-design-mcp:3.0.1
+docker run -d -p 8080:8080 -e SEKURA_BASE_PATH=/design-system sekura-design-mcp:3.0.2
 ```
 
 **If the proxy strips the prefix**, the app still listens at the root but has no
@@ -623,7 +623,7 @@ location /design-system/ {
 ```bash
 docker run -d -p 8080:8080 \
   -e SEKURA_EXTERNAL_URL=https://example.com/design-system \
-  sekura-design-mcp:3.0.1
+  sekura-design-mcp:3.0.2
 ```
 
 **With Traefik or ingress-nginx, neither is needed.** `X-Forwarded-Prefix` is
@@ -789,4 +789,4 @@ Run `npm run test:integration` for structured MCP contracts and `npm run test:re
 
 The build embeds declarations and migration content in `dist/data/mcp-reference.json`, so stdio and HTTP installations work without source files or the original working directory. Rebuild after changing behavior APIs or migration documentation. `npm run test:mcp` checks all component specifications, every recipe format, public APIs and resources through an MCP client.
 
-Dependency policy: use the newest supported LTS line when a project offers one (Node 24, Angular 21), otherwise its latest stable release. Angular packages validate generated recipes and are not runtime dependencies of Sekura. The package version is `3.0.1`; component maturity does not mean the manual acceptance record is complete.
+Dependency policy: use the newest supported LTS line when a project offers one (Node 24, Angular 21), otherwise its latest stable release. Angular packages validate generated recipes and are not runtime dependencies of Sekura. The package version is `3.0.2`; component maturity does not mean the manual acceptance record is complete.

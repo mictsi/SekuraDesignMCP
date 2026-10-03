@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { chromium, firefox, webkit } from 'playwright-core';
 import { createDemoServer } from './demo-server.mjs';
 import { mkdirSync } from 'node:fs';
+import { getComponent } from '../../dist/data/components/index.js';
+import { generateCode } from '../../dist/lib/codegen.js';
 const server = createDemoServer();
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const base = `http://127.0.0.1:${server.address().port}`;
@@ -175,6 +177,61 @@ try {
         assert.equal(await nav.locator('[aria-current="page"]').getAttribute('href'), 'component-checkbox.html');
         assert.equal(await nav.getByRole('button', { name: 'Components pages', exact: true }).getAttribute('aria-expanded'), 'true');
         await page.screenshot({ animations: 'disabled', path: `.run/review/${name}-sidebar-hierarchy.png` });
+      });
+      await test('standalone sidebar recipe matches docs chevrons, guide lines and active rails', async () => {
+        const standalone = await browser.newPage({ viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce' });
+        try {
+          // Use the public recipe and bundle with no docs styles or app.js wiring.
+          await standalone.route('**/sidebar-parity.html', route => route.fulfill({ contentType: 'text/html', body: `<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/assets/sekura.css"></head><body><script src="/assets/icons.js"></script>${generateCode(getComponent('side-nav'), 'html')}<script src="/assets/sekura.iife.min.js"></script><script>window.fixture = Sekura.enhance(document.body); window.events = []; for (const type of ['sk:disclosure:open', 'sk:disclosure:close']) document.addEventListener(type, event => events.push(event.type));</script></body></html>` }));
+          await standalone.goto(base + '/sidebar-parity.html');
+          await page.goto(base + '/component-button.html');
+          const inspect = nav => {
+            const children = nav.querySelector('.sk-side-nav__children');
+            const toggle = nav.querySelector('.sk-side-nav__toggle');
+            const current = nav.querySelector('[aria-current="page"]');
+            const guide = getComputedStyle(children), arrow = getComputedStyle(toggle.querySelector('svg'));
+            const rail = getComputedStyle(current, '::before');
+            return { guideWidth: guide.borderInlineStartWidth, guideColor: guide.borderInlineStartColor,
+              indent: guide.marginInlineStart, padding: guide.paddingInlineStart, display: guide.display,
+              arrowRotation: arrow.rotate, arrowColor: arrow.color, expanded: toggle.getAttribute('aria-expanded'),
+              railWidth: rail.width, railStart: rail.insetInlineStart, railColor: rail.backgroundColor,
+              currentColor: getComputedStyle(current).color, currentCount: nav.querySelectorAll('[aria-current="page"]').length,
+              ancestorCurrent: nav.querySelector('[data-active-ancestor]').getAttribute('aria-current') };
+          };
+          for (const theme of ['light', 'dark', 'hc-light', 'hc-dark']) for (const dir of ['ltr', 'rtl']) {
+            for (const target of [page, standalone]) {
+              await target.evaluate(({ theme, dir }) => { document.documentElement.dataset.skTheme = theme; document.documentElement.dir = dir; }, { theme, dir });
+              await target.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+            }
+            for (const expanded of [true, false]) {
+              for (const target of [page, standalone]) await target.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+              const expected = await page.locator('#primary-nav').evaluate(inspect);
+              const actual = await standalone.locator('#primary-nav').evaluate(inspect);
+              assert.deepEqual(actual, expected, `${theme}/${dir}/${expanded}`);
+              assert.equal(actual.expanded, String(expanded));
+              assert.equal(actual.guideWidth, '1px'); assert.equal(actual.railWidth, '4px');
+              assert.equal(actual.railStart, '0px'); assert.equal(actual.currentCount, 1); assert.equal(actual.ancestorCurrent, null);
+              assert.equal(actual.display, expanded ? 'flex' : 'none');
+              assert.equal(actual.arrowRotation, expanded ? '0deg' : dir === 'rtl' ? '90deg' : '-90deg');
+              for (const target of [page, standalone]) {
+                const toggle = target.locator('#primary-nav .sk-side-nav__toggle');
+                await toggle.focus(); await target.keyboard.press(expanded ? 'Space' : 'Enter');
+                if (expanded) {
+                  await target.keyboard.press('Tab');
+                  assert.equal(await target.evaluate(() => !!document.activeElement.closest('.sk-side-nav__children')), false);
+                }
+              }
+            }
+          }
+          for (const target of [page, standalone]) await target.emulateMedia({ forcedColors: 'active' });
+          for (const target of [page, standalone]) await target.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+          assert.deepEqual(await standalone.locator('#primary-nav').evaluate(inspect), await page.locator('#primary-nav').evaluate(inspect), 'forced colors');
+          await page.emulateMedia({ forcedColors: 'none' });
+          assert.equal(await standalone.evaluate(() => events.length), 16);
+          await standalone.evaluate(() => fixture.destroy());
+          const toggle = standalone.locator('.sk-side-nav__toggle');
+          await toggle.click(); assert.equal(await toggle.getAttribute('aria-expanded'), 'true', 'destroy removes disclosure handlers');
+        } finally { await standalone.close(); }
       });
       await test('schedule inputs align despite long labels, hints and validation', async () => {
         await page.goto(base + '/example-form.html');

@@ -7,6 +7,11 @@ The version in `package.json` is the single source of truth — the server, the
 documentation site, the behaviours bundle and the container tag all derive from
 it, and `npm run check:version` fails the build if a literal drifts back in.
 
+## 3.0.2 — 2026-10-03
+
+- Verify standalone sidebar recipes against the docs menu across themes, RTL, keyboard expansion, guide lines and current-page indicators.
+- Expose responsive drawer setup and route-state responsibilities through the sidebar MCP contract and migration guidance.
+
 ## 3.0.1 — 2026-10-03
 
 - Distinguish nested navigation, expanded branches, current pages and open items; add working component navigation and remove redundant Sekura Workspace text.

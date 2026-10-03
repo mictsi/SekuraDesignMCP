@@ -1,6 +1,6 @@
 {
   "name": "sekura-design-mcp",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Sekura Design System \u2014 MCP server exposing the complete design, UX, accessibility and dark-mode specification as machine-readable tools.",
   "type": "module",
   "main": "dist/index.js",
