@@ -1263,7 +1263,7 @@ export function layoutPage(): Page {
   });
 
   p.add(rules('responsive-layout'));
-  p.section('Align controls, not field wrappers', `<p class="docs-para">Use the same size and density for peer controls. Labeled fields share label, control and support tracks; hints and errors grow below the inputs. Action-only cells use <code class="sk-code">sk-field-row__actions</code>. Keep filter chips and view controls in their own row. Never use offsets or negative margins to patch alignment.</p>` + demo(`<div class="sk-field-row">
+  p.section('Align controls, not field wrappers', `<p class="docs-para">Use the same size and density for peer controls. Labeled fields share label, control and support tracks; hints and errors grow below the inputs. Keep actions inside the same row: <code class="sk-code">sk-field-row__actions</code> contains one <code class="sk-code">sk-field-row__action-group</code> for peer buttons. Keep filter chips and view controls in their own row. Never use offsets or negative margins to patch alignment.</p>` + demo(`<div class="sk-field-row">
   <div class="sk-field">
     <label class="sk-field__label" for="align-project">Project name</label>
     <input class="sk-input sk-field__control" id="align-project" value="Website redesign" aria-describedby="align-project-hint" />
@@ -1273,6 +1273,12 @@ export function layoutPage(): Page {
     <label class="sk-field__label" for="align-date">Due date</label>
     <input class="sk-input sk-field__control" id="align-date" type="date" aria-describedby="align-date-hint" />
     <div class="sk-field__support"><p class="sk-field__hint" id="align-date-hint">Optional.</p></div>
+  </div>
+  <div class="sk-field-row__actions">
+    <div class="sk-field-row__action-group">
+      <button class="sk-button sk-button--primary" type="button">Apply filters</button>
+      <button class="sk-button sk-button--ghost" type="button">Reset</button>
+    </div>
   </div>
 </div>`) + `<p class="docs-para">Check matching border positions and heights within 1 CSS pixel at normal text size, then test long labels, errors, every density, mobile, RTL and enlarged text. Compare compound wrappers, not their inner inputs.</p>`);
 

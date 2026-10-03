@@ -456,7 +456,10 @@ For related fields use `sk-field-row`, with each `sk-field` containing a visible
 label, `sk-field__control` and `sk-field__support` in that order. Put hints and errors
 inside the support region and keep their `aria-describedby` associations. Shared
 label tracks accommodate wrapping without shifting inputs. Put unlabeled actions
-in `sk-field-row__actions`; do not add empty labels. Keep chips and view controls
+in `sk-field-row__actions` inside that same row; put multiple actions in one
+`sk-field-row__action-group`. The group aligns buttons and centres text links,
+then wraps when there is insufficient space. Do not put actions after the row,
+bottom-align complete field wrappers, or add empty labels. Keep chips and view controls
 in a separate wrapping row. Use a centre-aligned Cluster only for unlabeled peers.
 
 Check each density, long labels, multiline hints, validation, 320px, 200% text,

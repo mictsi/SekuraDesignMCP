@@ -7,6 +7,10 @@ The version in `package.json` is the single source of truth — the server, the
 documentation site, the behaviours bundle and the container tag all derive from
 it, and `npm run check:version` fails the build if a literal drifts back in.
 
+## Unreleased
+
+- Align grouped filter buttons with input controls, preserve hint and label tracks, and demonstrate responsive action groups in the project example and MCP recipes.
+
 ## 3.0.0 — 2026-10-02
 
 - Promote the package to 3.0.0 and regenerate versioned artifacts.

@@ -35,8 +35,9 @@
           <form class="sk-search sk-search--sm sk-field__control" role="search" onsubmit="return false">
             <svg class="sk-search__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-search"></use></svg>
             <input class="sk-search__input" id="project-q" type="search" autocomplete="off"
-                   placeholder="Projects and owners" aria-controls="project-table" data-sk-filter-input="#project-table" />
+                   placeholder="Projects and owners" aria-describedby="project-q-hint" aria-controls="project-table" data-sk-filter-input="#project-table" />
           </form>
+          <div class="sk-field__support"><p class="sk-field__hint" id="project-q-hint">Search projects and owners; leave blank to show all projects.</p></div>
         </div>
         <div class="sk-field">
           <label class="sk-field__label" for="due-from">Due from</label>
@@ -47,12 +48,15 @@
           <input class="sk-input sk-input--sm sk-field__control" id="due-to" type="date" autocomplete="off" />
         </div>
         <div class="sk-field-row__actions">
-          <button type="button" class="sk-button sk-button--secondary sk-button--sm"
-                  data-sk-popover-target="project-filters" aria-expanded="false" aria-controls="project-filters">
-            <svg class="sk-button__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-filter"></use></svg>
-            <span class="sk-button__label">Filters</span>
-            <span class="sk-badge sk-badge--brand sk-badge--sm" data-sk-filter-count>0</span>
-          </button>
+          <div class="sk-field-row__action-group">
+            <button type="button" class="sk-button sk-button--secondary sk-button--sm"
+                    data-sk-popover-target="project-filters" aria-expanded="false" aria-controls="project-filters">
+              <svg class="sk-button__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-filter"></use></svg>
+              <span class="sk-button__label">Filters</span>
+              <span class="sk-badge sk-badge--brand sk-badge--sm" data-sk-filter-count>0</span>
+            </button>
+            <button type="button" class="sk-button sk-button--ghost sk-button--sm" data-sk-filter-clear>Reset</button>
+          </div>
         </div>
       </div>
       <div class="sk-cluster sk-cluster--gap-8">

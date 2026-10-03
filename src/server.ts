@@ -1271,7 +1271,7 @@ Work in this order:
 Hard requirements:
 - Semantic tokens only. No hex values, no primitive tokens, no arbitrary spacing.
 - Flex-first: horizontal groups wrap, text-bearing flex children get \`min-inline-size: 0\`, widths are \`flex-basis\` not \`width\`.
-- Align peer control borders with matching size/density. For labeled rows use sk-field-row: label, sk-field__control, sk-field__support. Put hints/errors below controls and action-only cells in sk-field-row__actions. Keep chips and view controls separate. No positional alignment patches.
+- Align peer control borders with matching size/density. For labeled rows use sk-field-row: label, sk-field__control, sk-field__support. Put hints/errors below controls and action-only cells in sk-field-row__actions inside that same row, with multiple actions in one sk-field-row__action-group. Keep chips and view controls separate. No positional alignment patches.
 - Verify aligned top edges and heights within 1 CSS pixel, including long labels, errors, every density, mobile, RTL and enlarged text.
 - Must work in light and dark. Check the dark-mode note on every component you use.
 - Every interactive element keyboard operable with a visible focus indicator.

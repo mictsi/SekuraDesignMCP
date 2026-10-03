@@ -84,6 +84,7 @@ export const formComponents: ComponentSpec[] = [
       'Preserve the user’s input when server validation fails.',
       'In a standalone field, format guidance may precede the control. In a shared row, use sk-field-row with label, sk-field__control and sk-field__support in that order; put hints and errors in the support region.',
       'Align the visible control boxes, not the outer label-and-hint wrappers. Use the same size and density for peer controls.',
+      'Keep action buttons inside the same sk-field-row as the inputs: use sk-field-row__actions containing one sk-field-row__action-group for Apply/Reset or other peers. Hints belong in sk-field__support. The group wraps only when its available width is exhausted.',
     ],
     donts: [
       'Do not use placeholder text as the only label.',
@@ -111,7 +112,26 @@ export const formComponents: ComponentSpec[] = [
     <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-warning" /></svg>
     Remove the uppercase letters. Hostnames must be lowercase.
   </p>
-</div>`,
+</div>
+
+<!-- Related fields and actions share label/control/support tracks. -->
+<form class="sk-field-row" method="get">
+  <div class="sk-field">
+    <label class="sk-field__label" for="filter-project">Project key</label>
+    <input class="sk-input sk-field__control" id="filter-project" name="project" aria-describedby="filter-project-hint" />
+    <div class="sk-field__support"><p class="sk-field__hint" id="filter-project-hint">Leave blank to show all projects.</p></div>
+  </div>
+  <div class="sk-field">
+    <label class="sk-field__label" for="filter-through">Through date</label>
+    <input class="sk-input sk-field__control" id="filter-through" name="through" type="date" />
+  </div>
+  <div class="sk-field-row__actions">
+    <div class="sk-field-row__action-group">
+      <button class="sk-button sk-button--primary" type="submit">Apply filters</button>
+      <button class="sk-button sk-button--ghost" type="reset">Reset</button>
+    </div>
+  </div>
+</form>`,
     css: `/* Flex column: the field never sets a width, so it fills whatever flex or grid
    cell it is placed in and stays responsive without media queries. */
 .sk-field {
@@ -132,6 +152,10 @@ export const formComponents: ComponentSpec[] = [
 .sk-field-row > .sk-field > .sk-field__label { grid-row: 1; align-self: end; }
 .sk-field-row > .sk-field > .sk-field__control, .sk-field-row__actions > * { grid-row: 2; align-self: start; min-inline-size: 0; }
 .sk-field-row__actions > * { justify-self: start; }
+/* One control-track cell owns the whole action group. Flex aligns button boxes
+   and centres text links, while wrapping safely within the available column. */
+.sk-field-row__actions > .sk-field-row__action-group { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sk-space-8); justify-self: stretch; }
+.sk-field-row__action-group > button { flex: 0 1 auto; align-self: stretch; }
 .sk-field-row > .sk-field > .sk-field__support { grid-row: 3; }
 .sk-field__support { display: flex; flex-direction: column; gap: var(--sk-space-6); min-inline-size: 0; }
 

@@ -365,7 +365,9 @@ layouts contain no media query, and the ones that do are shell-level decisions
    Shared grid tracks align controls even when one label wraps. Supporting text
    grows below the inputs. Keep aria-describedby pointing to the real hint/error IDs.
 4. **Treat action-only cells explicitly.** Use sk-field-row__actions for a button
-   beside labeled inputs. It occupies the control track without a fake label.
+   inside the same sk-field-row as the labeled inputs. Nest multiple actions in
+   one sk-field-row__action-group; it keeps their boxes aligned, centres text links,
+   and wraps when space runs out. It occupies the control track without a fake label.
    Plain unlabeled control rows may use a centre-aligned Cluster. Do not centre a
    bare button against the whole height of a labeled field.
 5. **Keep secondary rows independent.** Applied-filter chips and view-density

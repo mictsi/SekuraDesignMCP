@@ -47,6 +47,40 @@ try {
         }
         await page.setViewportSize({ width: 1440, height: 1000 });
       });
+      await test('filter action groups align wrapped buttons and reset all filter constraints', async () => {
+        await page.goto(base + '/example-list.html');
+        const group = page.locator('[data-sk-project-filters] .sk-field-row__action-group');
+        await page.locator('#project-q-hint').evaluate(el => { el.textContent = 'Long translated project guidance. '.repeat(10); });
+        const boxes = await page.locator('[data-sk-project-filters] .sk-field__control, [data-sk-project-filters] button').evaluateAll(es => es.map(el => el.getBoundingClientRect().top));
+        assert.ok(Math.max(...boxes) - Math.min(...boxes) < 1, 'hints moved the action row');
+        await page.locator('#project-q').fill('Website');
+        await page.locator('#due-from').fill('2026-08-01');
+        await page.locator('#due-to').fill('2026-12-31');
+        await group.getByRole('button', { name: 'Reset', exact: true }).click();
+        for (const id of ['project-q', 'due-from', 'due-to']) assert.equal(await page.locator('#' + id).inputValue(), '');
+        assert.equal(await page.locator('#due-from').getAttribute('max'), '');
+        assert.equal(await page.locator('#due-to').getAttribute('min'), '');
+        assert.equal(await page.locator('#project-table tbody tr:visible').count(), 4);
+        await group.locator('button').first().evaluate(el => {
+          el.style.maxInlineSize = '7rem';
+          el.querySelector('.sk-button__label').textContent = 'Apply all project filters';
+        });
+        for (const direction of ['ltr', 'rtl']) {
+          await page.evaluate(dir => document.documentElement.dir = dir, direction);
+          const peers = await group.locator('button').evaluateAll(es => es.map(el => { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, left: r.left, right: r.right }; }));
+          assert.ok(Math.abs(peers[0].top - peers[1].top) < 1 && Math.abs(peers[0].bottom - peers[1].bottom) < 1, JSON.stringify(peers));
+          assert.ok(peers[0].right + 7 <= peers[1].left || peers[1].right + 7 <= peers[0].left, 'action buttons overlap');
+        }
+        await page.evaluate(() => document.documentElement.dir = 'ltr');
+        await page.screenshot({ animations: 'disabled', path: `.run/review/${name}-aligned-filter-actions.png` });
+        await page.setViewportSize({ width: 320, height: 800 });
+        await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+        for (const direction of ['ltr', 'rtl']) {
+          await page.evaluate(dir => document.documentElement.dir = dir, direction);
+          assert.equal(await page.locator('main').evaluate(el => el.scrollWidth <= el.clientWidth + 1), true, direction);
+          assert.equal(await group.evaluate(el => el.scrollWidth <= el.clientWidth + 1), true, direction + ' action overflow');
+        }
+      });
       await test('schedule inputs align despite long labels, hints and validation', async () => {
         await page.goto(base + '/example-form.html');
         const controls = page.locator('[data-sk-project-schedule] .sk-field__control');

@@ -65,12 +65,12 @@
       table.dispatchEvent(new Event('change', { bubbles: true }));
     }
     function syncFilters() { $$('input[type=checkbox]', filters).forEach(function (input) { input.checked = selectedTeams.includes(input.closest('label').textContent.trim()); }); }
-    function clear() { selectedTeams = []; search.value = ''; from.value = ''; to.value = ''; page = 0; syncFilters(); update(); }
+    function clear() { selectedTeams = []; search.value = ''; from.value = ''; to.value = ''; from.max = ''; to.min = ''; page = 0; syncFilters(); update(); }
     search.addEventListener('input', function () { page = 0; update(); });
     search.addEventListener('keydown', function (event) { if (event.key === 'Escape') { search.value = ''; page = 0; update(); } });
     [from, to].forEach(function (input) { input.addEventListener('change', function () { from.max = to.value; to.min = from.value; page = 0; update(); }); });
     $('[data-sk-filter-apply]').onclick = function () { selectedTeams = $$('input:checked', filters).map(function (input) { return input.closest('label').textContent.trim(); }); page = 0; update(); Sekura.announce('Project filters applied.'); };
-    $('[data-sk-filter-clear]').onclick = clear;
+    $$('[data-sk-filter-clear]').forEach(function (button) { button.onclick = clear; });
     $('[data-sk-page-prev]').onclick = function () { page--; update(); };
     $('[data-sk-page-next]').onclick = function () { page++; update(); };
     var emptyClear = $('[data-sk-filter-empty] button'); if (emptyClear) { emptyClear.removeAttribute('onclick'); emptyClear.onclick = clear; }

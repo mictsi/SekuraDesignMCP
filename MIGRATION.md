@@ -173,3 +173,14 @@ Review the advanced [workbench](sample/workbench.html) and
 command execution and persistence remain application-owned. All 71 components are marked stable. The package version is 3.0.0.
 Implementation completion and automated checks do not substitute for the
 application and screen-reader review documented in MANUAL-VALIDATION.md.
+
+## Align grouped filter actions
+
+Place actions inside the same `sk-field-row` as the labeled inputs. Inside
+`sk-field-row__actions`, wrap Apply/Reset peers in one
+`sk-field-row__action-group`. Keep hints and validation in `sk-field__support`.
+This aligns the control borders even when labels or hints wrap. Preserve a
+single action button as a direct child when upgrading existing markup; grouped
+actions use the new wrapper to align and wrap together. Avoid bottom-aligning
+entire fields or placing the actions after the row. Narrow layouts intentionally
+wrap to preserve readable labels and usable targets.

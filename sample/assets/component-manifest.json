@@ -294,10 +294,13 @@
       },
       "rootClass": "sk-field",
       "cssDependencies": [
+        "button",
+        "button-group",
         "text-field",
         "combobox",
         "number-input",
-        "date-picker"
+        "date-picker",
+        "dialog"
       ],
       "svgSymbols": [
         "sk-icon-warning"
