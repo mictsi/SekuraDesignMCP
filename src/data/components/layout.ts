@@ -183,12 +183,12 @@ export const layoutComponents: ComponentSpec[] = [
     category: 'layout',
     status: 'stable',
     summary:
-      'The top of a page: breadcrumbs, title, supporting metadata and page-level actions. Every page has exactly one.',
-    whenToUse: ['The top of every content page.'],
-    whenNotToUse: ['Inside a card or panel — use a section heading.'],
+      'A page or section heading with its description, metadata and actions. Use one page-level header; the section variant supports comparison panels.',
+    whenToUse: ['The top of every content page.', 'Section headings with descriptions and actions; use the section variant and an appropriate h2/h3.'],
+    whenNotToUse: ['For a toolbar with no heading — use Toolbar or Cluster. Use the section variant and h2/h3 inside panels.'],
     anatomy: [
       { part: 'Breadcrumbs', required: false, description: 'For nested pages.' },
-      { part: 'Title', required: true, description: 'The single <h1>.' },
+      { part: 'Title', required: true, description: 'The single page h1, or h2/h3 for the section variant.' },
       { part: 'Status', required: false, description: 'Badges and status indicators beside the title.' },
       { part: 'Description', required: false, description: 'One sentence of context.' },
       { part: 'Metadata', required: false, description: 'Key facts as an inline description list.' },
@@ -196,6 +196,7 @@ export const layoutComponents: ComponentSpec[] = [
       { part: 'Tabs', required: false, description: 'Contextual views, at the bottom edge.' },
     ],
     variants: [
+      { name: 'Section', className: 'sk-page-header--section', description: 'Section heading and description with actions or labeled controls.', use: 'Comparison panels and filter sections. Use h2/h3 as appropriate; place a sk-field-row in sk-page-header__controls and load form-field CSS.' },
       { name: 'Simple', className: 'sk-page-header', description: 'Title and actions.', use: 'List pages.' },
       { name: 'Detail', className: 'sk-page-header--detail', description: 'Breadcrumbs, title, status, metadata, actions and tabs.', use: 'Resource detail pages.' },
       { name: 'Sticky', className: 'sk-page-header--sticky', description: 'Condenses and sticks on scroll.', use: 'Long pages where the actions must stay reachable.' },
@@ -287,6 +288,9 @@ export const layoutComponents: ComponentSpec[] = [
   gap: var(--sk-space-6);
 }
 
+.sk-page-header__controls { flex: 1 1 48rem; min-inline-size: 0; max-inline-size: 100%; }
+.sk-page-header--section .sk-page-header__title { font-size: var(--sk-font-size-heading-sm); line-height: var(--sk-line-height-heading-sm); }
+
 .sk-page-header__title-row {
   display: flex;
   flex-wrap: wrap;
@@ -325,6 +329,9 @@ export const layoutComponents: ComponentSpec[] = [
   align-items: center;
   gap: var(--sk-space-8);
 }
+
+.sk-page-header__actions > * { max-inline-size: 100%; min-inline-size: 0; }
+.sk-page-header__actions > button { align-self: stretch; }
 
 .sk-page-header--sticky {
   position: sticky;

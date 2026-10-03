@@ -8,7 +8,7 @@ No application records, routes, permissions, or stored documents need migration.
 ## Branches and rollback baseline
 
 - `feature/2.1.0` preserves the previous `main` at `dc4d498`.
-- `3.0.0` contains the redesign; the package version is `3.0.0`.
+- `3.0.0` contains the redesign; the current maintenance package version is `3.0.1`.
 - `main` includes the redesign merged from `3.0.0`.
 - `compatibility/v2-contract.json` records the public names from that baseline.
   `npm run test:compatibility` rejects removals. This is an API-name check, not a
@@ -21,7 +21,7 @@ No application records, routes, permissions, or stored documents need migration.
 | Identity | Violet-leaning cobalt and blue-grey surfaces | Clear blue actions, neutral canvas and chrome | Remove literal color overrides; use semantic tokens |
 | Dark mode | Grey-blue surface and text steps | Deep charcoal surfaces; bright neutral text | Use semantic text tokens; remove opacity from essential text |
 | Badges | Capsule shape | 4px rectangular corners, matching tags | Remove custom pill-radius overrides |
-| Field rows | Independently stacked fields | Shared label/control/support tracks | Adopt `sk-field-row` for related fields; keep hints and errors in `sk-field__support` |
+| Field rows | Independently stacked fields | Shared label/hint/control/feedback tracks | Adopt `sk-field-row` for related fields; put `sk-field__hint` before controls and errors in `sk-field__support` |
 | Typography | Inter and JetBrains Mono preferred | Platform sans and monospace, no font download | Check wrapping, translated labels, charts and PDFs |
 | Reading | Fluid page titles and a character-based measure | 32/40px titles, 16/24px body, 760px document column | Adopt `sk-document` where appropriate; heading semantics stay native |
 | Controls | Medium controls 40 / 36 / 32px by density | 36 / 32 / 28px, with 14px control text | Check composed toolbars and fixed row heights |
@@ -170,7 +170,7 @@ The multi-tree selection event adds `checked`; range sliders emit
 
 Review the advanced [workbench](sample/workbench.html) and
 [support contracts](sample/support.html). Search providers, file transport,
-command execution and persistence remain application-owned. All 71 components are marked stable. The package version is 3.0.0.
+command execution and persistence remain application-owned. All 71 components are marked stable. The current package version is 3.0.1.
 Implementation completion and automated checks do not substitute for the
 application and screen-reader review documented in MANUAL-VALIDATION.md.
 
@@ -178,9 +178,44 @@ application and screen-reader review documented in MANUAL-VALIDATION.md.
 
 Place actions inside the same `sk-field-row` as the labeled inputs. Inside
 `sk-field-row__actions`, wrap Apply/Reset peers in one
-`sk-field-row__action-group`. Keep hints and validation in `sk-field__support`.
+`sk-field-row__action-group`. Place explanatory `sk-field__hint` text directly after the label and before the
+control. Keep only validation/counters in `sk-field__support`.
 This aligns the control borders even when labels or hints wrap. Preserve a
 single action button as a direct child when upgrading existing markup; grouped
 actions use the new wrapper to align and wrap together. Avoid bottom-aligning
 entire fields or placing the actions after the row. Narrow layouts intentionally
 wrap to preserve readable labels and usable targets.
+
+## 3.0.1 alignment update
+
+Move explanatory hints out of post-control support wrappers and place them
+immediately after the label, before the control. DOM order and visual order must
+match. Existing class names remain supported; `sk-field-row` now shares four
+tracks. Validation stays after the control, so errors cannot move peer inputs.
+Native React fields use this order automatically. Rebuild generated recipes.
+
+Use `sk-page-header--section` with an h2/h3 for comparison panels. Group heading
+and description in `sk-page-header__titles`; put labeled controls and their
+buttons in `sk-page-header__controls sk-field-row`. Card headers use
+`sk-card__heading` and `sk-card__actions`. Unlabeled action groups are centred;
+heading/description groups align at the top. Wrap rather than squeezing controls.
+
+Datalist and combobox `sk-input` controls have a persistent, theme-aware dropdown
+indicator. Keep the native `list` or combobox ARIA/controller wiring; do not add a
+second hover-only arrow. Clicking an already-focused closed combobox reopens it.
+
+### Sidebar hierarchy in 3.0.1
+
+Parent links and expand buttons are separate actions. Adopt
+`sk-side-nav__branch-row`, `sk-side-nav__toggle`, and `sk-side-nav__children` for
+nested destinations, with `data-sk-disclosure`/`aria-controls` referencing the
+child list ID. Call `enhance` as usual, or own `createDisclosure` manually.
+Initialize the active route's parent with `aria-expanded="true"`; update that
+state with your router. The parent uses `data-active-ancestor`; only the exact
+child route uses `aria-current="page"`.
+
+Use a divided, labeled `sk-side-nav__open-items` section for application-owned
+open documents. Do not render them as children of the preceding menu item.
+Keep document section anchors in a separate "On this page" navigation. The
+redundant "Sekura Workspace" product text is removed from the generated starter
+and examples; use the application's own name where an identity is needed.

@@ -330,7 +330,7 @@ used it for an hour.`,
     rules: [
       'Compose with flex. Use grid only for genuine two-dimensional alignment.',
       'Align peer control borders, not the outer wrappers that include labels and hints. Use one size and density per control row.',
-      'For related labeled fields, use sk-field-row with label, sk-field__control and sk-field__support; place hints and errors in the support region.',
+      'For related labeled fields, use sk-field-row with label, sk-field__hint, sk-field__control and sk-field__support; put explanations above controls and errors below.',
       'Keep filter chips and view-density controls separate from the filter-input row. Never repair alignment with positional offsets.',
       'Horizontal groups set flex-wrap: wrap.',
       'Declare flex explicitly on children; do not rely on the 0 1 auto default.',
@@ -359,11 +359,11 @@ layouts contain no media query, and the ones that do are shell-level decisions
    control-height-sm token, including compound search and date controls. Use
    minimum sizes and token-derived padding; allow larger text and touch targets
    to expand the row. Never compensate with top offsets, transforms or negative margins.
-3. **Separate label, control and support.** For side-by-side labeled fields use
-   sk-field-row. Each sk-field contains a label, a sk-field__control element or
-   compound-control wrapper, then a sk-field__support containing hints and errors.
-   Shared grid tracks align controls even when one label wraps. Supporting text
-   grows below the inputs. Keep aria-describedby pointing to the real hint/error IDs.
+3. **Separate label, explanation, control and feedback.** Use that DOM order in
+   every text-entry field. A direct sk-field__hint follows the label, before the
+   sk-field__control element or compound wrapper. Reserve sk-field__support for
+   errors/counters after the control. A sk-field-row shares all four tracks so
+   long labels and hints cannot shift peer control borders. Preserve aria-describedby.
 4. **Treat action-only cells explicitly.** Use sk-field-row__actions for a button
    inside the same sk-field-row as the labeled inputs. Nest multiple actions in
    one sk-field-row__action-group; it keeps their boxes aligned, centres text links,
@@ -378,9 +378,42 @@ layouts contain no media query, and the ones that do are shell-level decisions
    hints, visible validation, 320px, 200% text, RTL and touch in Chromium, Firefox
    and WebKit. Compare compound wrappers, not their borderless inner inputs.
 
-A sk-field-row uses shared label/control/support tracks where subgrid is supported
+A sk-field-row uses shared label/hint/control/feedback tracks where subgrid is supported
 and falls back to a single column otherwise. It wraps at a 14rem minimum column
 width; it must never squeeze date text or hide labels to preserve a single row.
+
+
+## Navigation hierarchy
+
+Parent links navigate. A separate named chevron button controls each child list
+with aria-expanded and aria-controls; use sk-side-nav__branch-row,
+sk-side-nav__toggle and sk-side-nav__children. Indent one level and show a neutral
+guide. Open the active route's ancestor and mark only the exact destination
+aria-current=page. Expansion and selection are independent states.
+
+Keep open documents in a visibly divided sk-side-nav__open-items section headed
+Open items; the application owns their lifetime and any close actions. Document
+section anchors belong in a separately named On this page region. Ordinary
+navigation uses links and Tab, not ARIA menu/tree roles or arrow-key navigation.
+
+## Header and flex alignment contract
+
+- **Heading plus description:** keep them in one shrinking column with a small
+  token gap. Align its top edge with the action group, never its bottom edge.
+  Use sk-page-header__titles or sk-card__heading; use the section header variant
+  with h2/h3 for comparison panels. Do not put descriptions beside headings.
+- **Labeled controls in a header:** put a sk-field-row inside
+  sk-page-header__controls. Its actions occupy the control track. Never use
+  align-items:end on a mixed row of headings, labels, explanations and buttons.
+- **Unlabeled peers:** use a centre-aligned, wrapping Cluster/Toolbar. Action
+  groups use flex-wrap:wrap and gap; text links are centred, peer buttons stretch
+  to the tallest button on their own flex line.
+- **Reflow:** text groups use flex:1 1 with a content-aware basis; action groups
+  shrink and wrap. Set min-inline-size:0 and max-inline-size:100% as appropriate.
+  Keep DOM order. Wrap whole groups first, then their controls; never add fake
+  labels, fixed label heights, top offsets or absolute-positioned action rows.
+- **Dropdown affordance:** select, datalist and combobox choices have a visible
+  indicator at rest and on touch, including dark and forced-color themes.
 
 ## The four habits
 
@@ -848,7 +881,7 @@ common live-region bug.
 ## Forms
 
 - Visible, persistent labels. A placeholder is not a label.
-- Associate hints and errors through aria-describedby. In shared field rows, keep both in the support region below the aligned controls; standalone hints may precede the input.
+- Associate hints and errors through aria-describedby. Put explanations immediately after the label and before the input; keep validation feedback below. Maintain the same DOM and visual order.
 - \`aria-describedby\` listing hint then error, in that order — order determines
   reading order.
 - \`aria-invalid\` on failure, removed when fixed.

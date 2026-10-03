@@ -8,6 +8,7 @@
 
 import { renderMarkdown, escapeHtml, slugify } from '../lib/markdown.js';
 
+import { components } from '../data/components/index.js';
 import { VERSION } from '../lib/version.js';
 
 export const SITE_NAME = 'Sekura Design System';
@@ -22,6 +23,7 @@ export interface NavItem {
   label: string;
   /** Shown to the right of the label, e.g. a count. */
   meta?: string;
+  children?: NavItem[];
 }
 export interface NavGroup {
   label: string;
@@ -61,7 +63,7 @@ export const NAV: NavGroup[] = [
     label: 'Reference',
     items: [
       { file: 'tokens.html', label: 'All tokens' },
-      { file: 'components.html', label: 'Components' },
+      { file: 'components.html', label: 'Components', children: components.map(c => ({ file: `component-${c.id}.html`, label: c.name })).sort((a, b) => a.label.localeCompare(b.label)) },
       { file: 'support.html', label: 'Implementation support' },
       { file: 'patterns.html', label: 'Patterns' },
       { file: 'recipes.html', label: 'Layout recipes' },
@@ -107,9 +109,8 @@ export class Page {
   readonly eyebrow: string;
   readonly lead: string;
   /**
-   * Which nav entry to mark current. Detail pages that are not themselves in the
-   * navigation — the 55 component pages — point at their index instead, so the
-   * sidebar never shows nothing selected.
+   * Parent section for detail pages. The exact page alone receives aria-current;
+   * its parent is marked as an ancestor and its child list is opened.
    */
   navFile: string;
   private parts: string[] = [];
@@ -328,18 +329,24 @@ const THEME_SCRIPT = `<script>
 })();
 </script>`;
 
-function renderNav(current: string): string {
+function renderNav(current: string, section = current): string {
   return `<details class="docs-nav-preferences"><summary>Navigation width</summary><label for="nav-width">Width in pixels</label><input id="nav-width" type="range" min="208" max="400" step="16" value="272" data-sk-nav-width /><button class="sk-button sk-button--ghost sk-button--sm" type="button" data-sk-nav-reset>Reset width</button></details>` + NAV.map((group) => {
     const id = `nav-${slugify(group.label)}`;
     const items = group.items
       .map((item) => {
         const isCurrent = item.file === current;
-        return `      <li>
-        <a class="sk-side-nav__item" href="${item.file}"${isCurrent ? ' aria-current="page"' : ''}>
+        const activeChild = (!isCurrent && item.file === section) || (item.children?.some(child => child.file === current) ?? false);
+        const childId = `nav-${slugify(item.label)}-children`;
+        const expanded = isCurrent || activeChild;
+        const link = `<a class="sk-side-nav__item" href="${item.file}"${isCurrent ? ' aria-current="page"' : activeChild ? ' data-active-ancestor' : ''}>
           <span class="sk-side-nav__label">${escapeHtml(item.label)}</span>
           ${item.meta ? `<span class="sk-side-nav__count">${escapeHtml(item.meta)}</span>` : ''}
-        </a>
-      </li>`;
+        </a>`;
+        if (!item.children?.length) return `<li>${link}</li>`;
+        return `<li><div class="sk-side-nav__branch-row">${link}<button class="sk-side-nav__toggle" type="button" data-sk-disclosure="${childId}" aria-controls="${childId}" aria-expanded="${expanded}" aria-label="${escapeHtml(item.label)} pages">${icon('chevron-down', 16)}</button></div>
+          <ul class="sk-side-nav__children" id="${childId}" aria-label="${escapeHtml(item.label)} pages"${expanded ? '' : ' hidden'}>
+            ${item.children.map(child => `<li><a class="sk-side-nav__item" href="${child.file}"${child.file === current ? ' aria-current="page"' : ''}><span class="sk-side-nav__label">${escapeHtml(child.label)}</span></a></li>`).join('')}
+          </ul></li>`;
       })
       .join('\n');
     return `    <h2 class="sk-side-nav__group-label" id="${id}">${escapeHtml(group.label)}</h2>
@@ -484,7 +491,7 @@ ${topBar()}
 
 <div class="sk-app-shell__body">
   <nav class="sk-side-nav docs-nav" id="primary-nav" aria-label="Primary">
-${renderNav(page.navFile)}
+${renderNav(page.file, page.navFile)}
   </nav>
 
   <!-- tabindex="-1" so the skip link can actually move focus here. Without it

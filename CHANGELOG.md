@@ -7,7 +7,13 @@ The version in `package.json` is the single source of truth — the server, the
 documentation site, the behaviours bundle and the container tag all derive from
 it, and `npm run check:version` fails the build if a literal drifts back in.
 
-## Unreleased
+## 3.0.1 — 2026-10-03
+
+- Distinguish nested navigation, expanded branches, current pages and open items; add working component navigation and remove redundant Sekura Workspace text.
+
+- Keep datalist and combobox indicators visible at rest; reopen focused comboboxes on click.
+- Put explanations below labels and above controls; share four field tracks and retain errors below controls.
+- Define wrapping header text, action and form groups across CSS, React, examples and MCP guidance.
 
 - Align grouped filter buttons with input controls, preserve hint and label tracks, and demonstrate responsive action groups in the project example and MCP recipes.
 

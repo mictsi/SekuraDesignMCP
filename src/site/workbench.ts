@@ -1,5 +1,5 @@
 import { components } from '../data/components/index.js';
-import { Page, demo } from './shell.js';
+import { Page, demo, icon } from './shell.js';
 import { escapeHtml } from '../lib/markdown.js';
 
 export function supportPage(): Page {
@@ -17,11 +17,11 @@ export function supportPage(): Page {
 
 export function workbenchPage(): Page {
   const p = new Page({ file: 'workbench.html', title: 'Component workbench', eyebrow: 'Examples', lead: 'Compare control alignment and try complete action states before composing a page.' });
-  p.section('Appearance controls', `<div class="sk-cluster sk-cluster--gap-16">
-    <div class="sk-field"><label class="sk-field__label" for="bench-theme">Preview theme</label><select class="sk-select" id="bench-theme" data-sk-bench-theme><option>light</option><option>dark</option><option>hc-light</option><option>hc-dark</option></select></div>
-    <div class="sk-field"><label class="sk-field__label" for="bench-density">Preview density</label><select class="sk-select" id="bench-density" data-sk-bench-density><option>comfortable</option><option>compact</option><option>dense</option></select></div>
-    <div class="sk-field"><label class="sk-field__label" for="bench-state">Preview state</label><select class="sk-select" id="bench-state" data-sk-bench-state><option value="rest">Rest</option><option value="disabled">Disabled</option><option value="busy">Busy</option><option value="invalid">Invalid</option><option value="readonly">Read only</option></select></div>
-    <label class="sk-checkbox"><input type="checkbox" class="sk-checkbox__input" data-sk-bench-long /><span class="sk-checkbox__box" aria-hidden="true"></span><span>Long labels</span></label>
+  p.section('Appearance controls', `<div class="sk-field-row">
+    <div class="sk-field"><label class="sk-field__label" for="bench-theme">Preview theme</label><select class="sk-select sk-field__control" id="bench-theme" data-sk-bench-theme><option>light</option><option>dark</option><option>hc-light</option><option>hc-dark</option></select></div>
+    <div class="sk-field"><label class="sk-field__label" for="bench-density">Preview density</label><select class="sk-select sk-field__control" id="bench-density" data-sk-bench-density><option>comfortable</option><option>compact</option><option>dense</option></select></div>
+    <div class="sk-field"><label class="sk-field__label" for="bench-state">Preview state</label><select class="sk-select sk-field__control" id="bench-state" data-sk-bench-state><option value="rest">Rest</option><option value="disabled">Disabled</option><option value="busy">Busy</option><option value="invalid">Invalid</option><option value="readonly">Read only</option></select></div>
+    <div class="sk-field-row__actions"><label class="sk-checkbox"><input type="checkbox" class="sk-checkbox__input" data-sk-bench-long /><span class="sk-checkbox__box" aria-hidden="true"></span><span>Long labels</span></label></div>
   </div>`);
   p.section('Control sizing', `<div class="sk-stack sk-stack--gap-24 docs-workbench" data-sk-bench-preview data-sk-theme="light" data-sk-density="comfortable">${['sm', 'md', 'lg'].map(size => {
     const suffix = size === 'md' ? '' : ` sk-input--${size}`;
@@ -32,6 +32,39 @@ export function workbenchPage(): Page {
       <div class="sk-number sk-input-group${size === 'md' ? '' : ` sk-field--${size}`}" data-sk-bench-number><input class="sk-input" aria-label="${size} target length" data-sk-number min="1" max="260" value="45" /><span class="sk-number__steppers"><button type="button" class="sk-number__step" data-sk-step="-1" aria-hidden="true" tabindex="-1">−</button><button type="button" class="sk-number__step" data-sk-step="1" aria-hidden="true" tabindex="-1">+</button></span></div>
     </div><p class="sk-field__hint" data-sk-state-help>Use Tab to inspect focus. Controls share the same target height.</p></div>`;
   }).join('')}</div>`);
+  p.section('Menu and open documents', `<p>Menu destinations stay in place. Currently open documents appear in their own section below the divider. They are not children of the last menu item. Expand Projects or follow a link to try the example pages.</p>
+  <div class="sk-card" style="max-inline-size:var(--sk-layout-nav-width)"><div class="sk-card__body">
+    <nav aria-label="Workspace navigation example" data-sk-open-items-example>
+      <h3 class="sk-side-nav__group-label" id="bench-menu-heading">Menu</h3>
+      <ul class="sk-side-nav__list" aria-labelledby="bench-menu-heading">
+        <li><a class="sk-side-nav__item" href="example-dashboard.html">${icon('home')}<span class="sk-side-nav__label">Overview</span></a></li>
+        <li><div class="sk-side-nav__branch-row"><a class="sk-side-nav__item" href="example-list.html">${icon('globe')}<span class="sk-side-nav__label">Projects</span></a><button class="sk-side-nav__toggle" type="button" data-sk-disclosure="bench-project-pages" aria-controls="bench-project-pages" aria-expanded="true" aria-label="Project pages">${icon('chevron-down', 16)}</button></div>
+          <ul class="sk-side-nav__children" id="bench-project-pages" aria-label="Project pages"><li><a class="sk-side-nav__item" href="example-form.html"><span class="sk-side-nav__label">Create project</span></a></li><li><a class="sk-side-nav__item" href="example-detail.html"><span class="sk-side-nav__label">Project activity</span></a></li></ul>
+        </li>
+      </ul>
+      <section class="sk-side-nav__open-items" aria-labelledby="bench-open-heading">
+        <h3 class="sk-side-nav__group-label" id="bench-open-heading">Open items</h3>
+        <ul class="sk-side-nav__list" aria-labelledby="bench-open-heading">
+          ${[['example-workspace.html', 'Document workspace'], ['example-detail.html', 'Website redesign']].map(([href, title]) => `<li><a class="sk-side-nav__item" href="${href}"><svg aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 20 20"><path d="M5 2h7l4 4v12H5z M12 2v4h4 M8 10h5 M8 13h5" fill="none" stroke="currentColor" stroke-width="1.5" /></svg><span class="sk-side-nav__label">${title}</span></a></li>`).join('')}
+        </ul>
+      </section>
+    </nav>
+  </div></div><p>The application owns which documents are open. Opening or closing a menu branch never closes a document. When a document is active, mark its exact link with <code>aria-current="page"</code>; keep section links in a separate “On this page” navigation.</p>`);
+  p.section('Filter and comparison alignment', `<p>Explanations sit below labels, before controls. The permanent arrow identifies project suggestions without hovering. These forms use local example values only.</p>
+  <form class="sk-field-row" data-sk-alignment-filters>
+    <div class="sk-field"><label class="sk-field__label" for="bench-project-key">Project key (exact)</label><p class="sk-field__hint" id="bench-project-key-hint">Choose an exact key from the suggestions.</p><input class="sk-input sk-field__control" id="bench-project-key" name="project" list="bench-project-keys" aria-describedby="bench-project-key-hint" placeholder="All projects" /><datalist id="bench-project-keys"><option value="SekuraDesignMCP"></option><option value="SekuraAgentPlanner"></option></datalist></div>
+    <div class="sk-field"><label class="sk-field__label" for="bench-run-query">Search runs</label><input class="sk-input sk-field__control" id="bench-run-query" name="query" type="search" placeholder="Revision or target" /></div>
+    <div class="sk-field"><label class="sk-field__label" for="bench-run-from">From (UTC)</label><input class="sk-input sk-field__control" id="bench-run-from" name="from" type="date" /></div>
+    <div class="sk-field-row__actions"><div class="sk-field-row__action-group"><button class="sk-button sk-button--primary" type="submit">Apply filters</button><button class="sk-button sk-button--ghost" type="reset">Reset</button></div></div>
+  </form><p role="status" data-sk-alignment-filter-state>No filters applied.</p>
+  <section class="sk-page-header sk-page-header--section" aria-labelledby="bench-compare-title" data-sk-alignment-header><div class="sk-page-header__main">
+    <div class="sk-page-header__titles"><h3 class="sk-page-header__title" id="bench-compare-title">Compare two runs</h3><p class="sk-page-header__description">Choose the earlier and later run. The description stays with its heading while fields and buttons share a control row.</p></div>
+    <form class="sk-field-row sk-page-header__controls" data-sk-alignment-compare>
+      <div class="sk-field"><label class="sk-field__label" for="bench-baseline">Baseline (earlier)</label><input class="sk-input sk-field__control" id="bench-baseline" name="baseline" value="run-001" required /></div>
+      <div class="sk-field"><label class="sk-field__label" for="bench-candidate">Candidate (later)</label><input class="sk-input sk-field__control" id="bench-candidate" name="candidate" value="run-002" required /></div>
+      <div class="sk-field-row__actions"><div class="sk-field-row__action-group"><button class="sk-button sk-button--primary" type="submit">Compare runs</button><button class="sk-button sk-button--secondary" type="reset">Reset selection</button></div></div>
+    </form>
+  </div></section><p role="status" data-sk-alignment-compare-state>No comparison selected.</p>`);
   p.section('Save, fail, cancel and retry', `<div class="sk-card"><div class="sk-card__body sk-stack sk-stack--gap-16" data-sk-action-example>
     <p>This operation uses a local simulator. Successful saves increase the version; Undo restores it.</p>
     <label class="sk-checkbox"><input class="sk-checkbox__input" type="checkbox" data-sk-fail-next /><span class="sk-checkbox__box" aria-hidden="true"></span><span>Fail the next request</span></label>
@@ -43,7 +76,8 @@ export function workbenchPage(): Page {
   p.section('Compact file selection', `<div class="sk-upload sk-upload--compact"><input class="sk-upload__input sk-visually-hidden" type="file" id="bench-compact-file" accept=".csv" aria-describedby="bench-compact-help" /><div class="sk-upload__zone"><label class="sk-button sk-button--secondary" for="bench-compact-file">Choose CSV file</label><p class="sk-upload__constraints" id="bench-compact-help">CSV, up to 10 MB. Selection only; no upload transport is configured.</p></div><ul class="sk-upload__list" aria-label="Selected CSV file"></ul></div>`);
   p.section('Multi-select and async search', `<div class="sk-stack sk-stack--gap-16" id="bench-advanced">
     <p>Local search simulation. Choose multiple tags or add your own. For async search, type <strong>error</strong> to exercise recovery; typing another query retries.</p>
-    <div class="sk-field"><label class="sk-field__label" for="bench-tags">Project tags</label><div class="sk-combobox sk-combobox--multi"><div class="sk-combobox__field"><input class="sk-input" id="bench-tags" aria-describedby="bench-tags-help" /></div><ul class="sk-combobox__list" id="bench-tags-list" aria-label="Available project tags"><li class="sk-combobox__option" role="option" data-value="design">Design</li><li class="sk-combobox__option" role="option" data-value="engineering">Engineering</li><li class="sk-combobox__option" role="option" aria-disabled="true">Restricted</li></ul></div><p class="sk-field__hint" id="bench-tags-help">Enter selects a suggestion or adds your text. Backspace in an empty field removes the last tag.</p><p role="status" id="bench-tags-state">No tags selected.</p></div>
+    <div class="sk-field"><label class="sk-field__label" for="bench-tags">Project tags</label>
+    <p class="sk-field__hint" id="bench-tags-help">Enter selects a suggestion or adds your text. Backspace in an empty field removes the last tag.</p><div class="sk-combobox sk-combobox--multi"><div class="sk-combobox__field"><input class="sk-input" id="bench-tags" aria-describedby="bench-tags-help" /></div><ul class="sk-combobox__list" id="bench-tags-list" aria-label="Available project tags"><li class="sk-combobox__option" role="option" data-value="design">Design</li><li class="sk-combobox__option" role="option" data-value="engineering">Engineering</li><li class="sk-combobox__option" role="option" aria-disabled="true">Restricted</li></ul></div><p role="status" id="bench-tags-state">No tags selected.</p></div>
     <div class="sk-field"><label class="sk-field__label" for="bench-async">Find a contributor</label><div class="sk-combobox sk-combobox--async"><input class="sk-input" id="bench-async" /><ul class="sk-combobox__list" id="bench-async-list" aria-label="Contributors"></ul></div><p role="status" id="bench-async-state">No contributor selected.</p></div>
   </div>`);
   p.section('Range with exact entry', `<form id="bench-range-form"><fieldset class="sk-fieldset"><legend class="sk-field__label">Estimated hours</legend><div class="sk-slider sk-slider--range" id="bench-range">

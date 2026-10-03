@@ -1013,7 +1013,7 @@ Wire this into CI: \`npm run audit:contrast\` exits non-zero on any failure.`);
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <!-- Never set user-scalable=no or maximum-scale — it fails WCAG 1.4.4 outright. -->
-  <title>Projects · Sekura Workspace</title>
+  <title>Projects</title>
 
   <!-- 1. Theme script FIRST, inline and synchronous, before any stylesheet. -->
   ${themeScript.split('\n').slice(2).join('\n  ')}
@@ -1271,7 +1271,7 @@ Work in this order:
 Hard requirements:
 - Semantic tokens only. No hex values, no primitive tokens, no arbitrary spacing.
 - Flex-first: horizontal groups wrap, text-bearing flex children get \`min-inline-size: 0\`, widths are \`flex-basis\` not \`width\`.
-- Align peer control borders with matching size/density. For labeled rows use sk-field-row: label, sk-field__control, sk-field__support. Put hints/errors below controls and action-only cells in sk-field-row__actions inside that same row, with multiple actions in one sk-field-row__action-group. Keep chips and view controls separate. No positional alignment patches.
+- Align peer control borders with matching size/density. For labeled rows use sk-field-row: label, sk-field__hint, sk-field__control, sk-field__support. Put explanatory hints below labels and ABOVE controls; put errors/counters below controls and action-only cells in sk-field-row__actions inside that same row, with multiple actions in one sk-field-row__action-group. Keep chips and view controls separate. Top-align header title/description columns with action groups; header forms use sk-page-header__controls sk-field-row. Centre only unlabeled peers. Keep dropdown indicators visible at rest. No positional alignment patches.
 - Verify aligned top edges and heights within 1 CSS pixel, including long labels, errors, every density, mobile, RTL and enlarged text.
 - Must work in light and dark. Check the dark-mode note on every component you use.
 - Every interactive element keyboard operable with a visible focus indicator.

@@ -210,14 +210,14 @@
   .docs-twocol h3 { margin: 0 0 var(--sk-space-8); font-size: var(--sk-font-size-heading-sm); font-weight: var(--sk-font-weight-semibold); }
 
   /* Headings inside generated markdown and section bodies. */
-  .docs-article h3 {
+  .docs-article h3:not([class*="sk-"]) {
     margin: var(--sk-space-16) 0 0;
     font-size: var(--sk-font-size-heading-md);
     line-height: var(--sk-line-height-heading-md);
     font-weight: var(--sk-font-weight-semibold);
     scroll-margin-block-start: 5rem;
   }
-  .docs-article h4 {
+  .docs-article h4:not([class*="sk-"]) {
     margin: var(--sk-space-12) 0 0;
     font-size: var(--sk-font-size-heading-sm);
     font-weight: var(--sk-font-weight-semibold);

@@ -452,15 +452,24 @@ Peer controls use the same size modifier and density; their top edges and height
 should match within 1 CSS pixel at normal text size. Use token-derived padding,
 never positional offsets, negative margins or transforms to conceal a mismatch.
 
-For related fields use `sk-field-row`, with each `sk-field` containing a visible
-label, `sk-field__control` and `sk-field__support` in that order. Put hints and errors
-inside the support region and keep their `aria-describedby` associations. Shared
-label tracks accommodate wrapping without shifting inputs. Put unlabeled actions
-in `sk-field-row__actions` inside that same row; put multiple actions in one
-`sk-field-row__action-group`. The group aligns buttons and centres text links,
-then wraps when there is insufficient space. Do not put actions after the row,
-bottom-align complete field wrappers, or add empty labels. Keep chips and view controls
-in a separate wrapping row. Use a centre-aligned Cluster only for unlabeled peers.
+For related fields use `sk-field-row` with four shared tracks, in DOM order:
+visible label, optional `sk-field__hint`, `sk-field__control`, then
+`sk-field__support`. Explanatory text goes directly under the label, above the
+control. Reserve support for errors/counters below the control. Preserve
+`aria-describedby`. Put actions in `sk-field-row__actions` inside that same row,
+with peers in one `sk-field-row__action-group`. Never bottom-align field wrappers.
+
+Header text is a column: heading then description. Top-align that text group
+with actions using a wrapping flex row. Use `sk-page-header__titles` or
+`sk-card__heading`. Header forms use `sk-page-header__controls sk-field-row`;
+buttons align with their input track. Use `sk-page-header--section` and h2/h3
+for panel headings. Unlabeled toolbar peers use centre alignment. Shrinking text
+and control groups need `min-inline-size: 0`; groups and actions wrap in DOM
+order. Never patch alignment with fake labels, fixed heights or offsets.
+
+Dropdown indicators remain visible without hover, including on touch screens.
+Native datalist and custom combobox inputs use `sk-input` and retain native
+keyboard/focus semantics. An indicator is presentation, not an extra tab stop.
 
 Check each density, long labels, multiline hints, validation, 320px, 200% text,
 RTL and touch in Chromium, Firefox and WebKit. Compare the outer search, date or
@@ -1062,3 +1071,23 @@ does not get built.
 - [ ] Errors say how to fix.
 - [ ] Absolute timestamps.
 - [ ] No real infrastructure data in examples or screenshots.
+
+### Navigation hierarchy and open items
+
+- Destination links navigate; separate named chevron buttons expand child lists.
+  Use `sk-side-nav__branch-row`, `sk-side-nav__toggle` with `data-sk-disclosure`,
+  and `sk-side-nav__children`. Children have one level of indentation and a
+  neutral guide, so their parent relationship is visible without color alone.
+- Mark only the exact route `aria-current="page"`. On initial render and route
+  changes, open the active child's parent; `data-active-ancestor` emphasizes that
+  parent without falsely marking it as the current page. Expansion and selection
+  are separate states. Plain group headings remain noninteractive.
+- Open documents/pages go in a separately headed `sk-side-nav__open-items`
+  section after a divider. Use document icons; do not imply they are children of
+  the last menu entry. If closable, use a separate named close button, and let the
+  application choose the next active document and restore focus.
+- Section anchors belong in a separately named "On this page" region. They
+  describe the current document; they are neither child routes nor open documents.
+- Keep Tab/Shift+Tab navigation native. Enter follows links; Enter/Space toggles
+  disclosure buttons. Hidden children leave the tab order. No ARIA menu/tree
+  roles for ordinary website navigation.

@@ -91,10 +91,13 @@
             <legend class="sk-fieldset__legend">Schedule</legend>
             <div class="sk-fieldset__body">
 
-              <!-- Shared label/control/support tracks align related schedule fields. -->
+              <!-- Shared label/hint/control/feedback tracks align related schedule fields. -->
               <div class="sk-field-row" data-sk-project-schedule>
                 <div class="sk-field">
                   <label class="sk-field__label" for="start-date">Start date</label>
+                  <p class="sk-field__hint" id="start-date-hint">
+                    Format YYYY-MM-DD, or pick from the calendar. Today if you leave it blank.
+                  </p>
                   <!-- Text input AND calendar, never one without the other.
                        Typing a date is faster than fourteen arrow presses, and
                        it is the only route for voice or switch input. -->
@@ -109,15 +112,14 @@
                     </button>
                     <div class="sk-date-picker__panel" data-sk-datepicker-panel aria-label="Choose a start date" hidden></div>
                   </div>
-                  <div class="sk-field__support">
-                    <p class="sk-field__hint" id="start-date-hint">
-                      Format YYYY-MM-DD, or pick from the calendar. Today if you leave it blank.
-                    </p>
-                  </div>
+                  <div class="sk-field__support"></div>
                 </div>
 
                 <div class="sk-field">
                   <label class="sk-field__label" for="target-days">Target length</label>
+                  <p class="sk-field__hint" id="target-days-hint">
+                    Working days from the start date. Between 1 and 260.
+                  </p>
                   <div class="sk-number sk-input-group sk-field__control">
                     <!-- type="text" with inputmode="numeric": type="number"
                          changes value on scroll, discards invalid input before
@@ -141,11 +143,7 @@
                       </button>
                     </span>
                   </div>
-                  <div class="sk-field__support">
-                    <p class="sk-field__hint" id="target-days-hint">
-                      Working days from the start date. Between 1 and 260.
-                    </p>
-                  </div>
+                  <div class="sk-field__support"></div>
                 </div>
               </div>
 

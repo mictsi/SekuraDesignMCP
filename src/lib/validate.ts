@@ -1,7 +1,7 @@
 /**
  * Markup linting against the Sekura specification.
  *
- * This is a pragmatic regex-and-heuristic linter, not a DOM-accurate one. It is
+ * This combines markup parsing with pragmatic pattern checks. It is
  * tuned to catch the failures that actually ship: icon buttons with no accessible
  * name, inputs with no label, colour used as the only signal, hard-coded hex values
  * that will break in dark mode, and flex containers that will overflow.
@@ -10,6 +10,7 @@
  * accessibility — it means none of the checked patterns matched.
  */
 
+import { parseFragment, type DefaultTreeAdapterMap } from 'parse5';
 import { components, getComponent } from '../data/components/index.js';
 import { semanticTokens } from '../data/tokens.js';
 
@@ -49,6 +50,28 @@ function hasAccessibleName(tag: string, inner: string): boolean {
 export function validateMarkup(html: string, componentId?: string): Finding[] {
   const findings: Finding[] = [];
   const add = (f: Finding) => findings.push(f);
+
+  // Verify source order, not only CSS positions: descriptions precede text-entry
+  // controls while validation follows. Checkbox/radio labels contain their inputs.
+  const fieldLayouts: Array<{ control?: number; hints: Array<{ offset: number; html: string }> }> = [];
+  const visitField = (node: DefaultTreeAdapterMap['node'], field?: typeof fieldLayouts[number]): void => {
+    if ('tagName' in node) {
+      const attr = (name: string) => node.attrs.find(a => a.name === name)?.value;
+      const classes = attr('class')?.split(/\s+/) ?? [];
+      if (classes.includes('sk-field')) { field = { hints: [] }; fieldLayouts.push(field); }
+      const location = node.sourceCodeLocation;
+      if (field && location) {
+        if (['input', 'select', 'textarea'].includes(node.tagName) && !['checkbox', 'radio', 'hidden'].includes(attr('type') ?? '')) field.control ??= location.startOffset;
+        if (classes.includes('sk-field__hint')) field.hints.push({ offset: location.startOffset, html: html.slice(location.startOffset, location.endOffset) });
+      }
+    }
+    if ('childNodes' in node) node.childNodes.forEach(child => visitField(child, field));
+  };
+  visitField(parseFragment(html, { sourceCodeLocationInfo: true }));
+  for (const field of fieldLayouts) for (const hint of field.hints) if (field.control !== undefined && hint.offset > field.control) add({
+    severity: 'warning', rule: 'field-hint-order', message: 'Explanatory text follows its control instead of its label.', snippet: snip(hint.html),
+    fix: 'Move sk-field__hint directly after the label, before sk-field__control. Reserve sk-field__support for errors/counters after the control; preserve aria-describedby.',
+  });
 
   /* ---------------- Accessible names ---------------- */
 

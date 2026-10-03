@@ -10,6 +10,7 @@ export const runtimeContracts: Record<string, RuntimeContract> = {
   button: entry(['guardAction'], ['.sk-button']),
   'icon-button': entry(['guardAction'], ['.sk-icon-button']),
   'split-button': entry(['guardAction', 'createMenu'], ['.sk-button', '[data-sk-menu-trigger]']),
+  'side-nav': entry(['createDisclosure'], ['[data-sk-disclosure]'], ['Links navigate. Separate named toggle buttons expand one indented child list; enhance() wires optional branches. Keep the exact current link aria-current=page and open its ancestor in application route state.', 'Static group headings are not interactive. Open documents belong in a labeled, divided sk-side-nav__open-items region. The host owns open-item state and close/navigation outcomes.']),
   menu: entry(['createMenu'], ['[data-sk-menu-trigger]']),
   combobox: entry(['createCombobox'], ['[data-sk-combobox]'], [
     'loadOptions(query, signal) returns ComboboxItem[]. Superseded requests are aborted; late results are ignored. onSearch remains the legacy DOM callback.',

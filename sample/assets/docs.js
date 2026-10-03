@@ -165,6 +165,16 @@
    * ================================================================== */
 
   function init() {
+    // Keep the exact destination visible when its expanded branch is long.
+    // Scroll only the navigation; never move the document or steal focus.
+    var nav = $('#primary-nav');
+    var current = nav && $('[aria-current="page"]', nav);
+    if (current) requestAnimationFrame(function () {
+      var bounds = nav.getBoundingClientRect();
+      var item = current.getBoundingClientRect();
+      if (item.bottom > bounds.bottom) nav.scrollTop += item.bottom - bounds.bottom + 8;
+      else if (item.top < bounds.top) nav.scrollTop -= bounds.top - item.top + 8;
+    });
     initScrollSpy();
     initCodeCopy();
     initTokenFilter();

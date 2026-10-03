@@ -382,6 +382,7 @@ export const dataDisplayComponents: ComponentSpec[] = [
     dos: [
       'Use the stretched-link technique for interactive cards.',
       'Give every card a heading.',
+      'Keep the title and its explanation in sk-card__heading. Put buttons in sk-card__actions; text groups align at the top, and actions wrap without bottom-aligning against descriptions.',
       'Keep a card border in dark mode.',
     ],
     donts: [
@@ -393,14 +394,14 @@ export const dataDisplayComponents: ComponentSpec[] = [
   <li>
     <article class="sk-card sk-card--interactive">
       <div class="sk-card__header">
-        <h3 class="sk-card__title">
-          <!-- Stretched link: the whole card is a target, the accessible name is just this text. -->
-          <a class="sk-card__link" href="/projects/website-redesign">Website redesign</a>
-        </h3>
+        <div class="sk-card__heading">
+          <h3 class="sk-card__title">
+            <!-- Stretched link: the whole card is a target, the accessible name is just this text. -->
+            <a class="sk-card__link" href="/projects/website-redesign">Website redesign</a>
+          </h3>
+          <p class="sk-card__description">128 records. Last changed 2 hours ago.</p>
+        </div>
         <span class="sk-badge sk-badge--neutral">Production</span>
-      </div>
-      <div class="sk-card__body">
-        <p class="sk-card__description">128 records. Last changed 2 hours ago.</p>
       </div>
       <div class="sk-card__footer">
         <span class="sk-status sk-status--success">
@@ -437,6 +438,11 @@ export const dataDisplayComponents: ComponentSpec[] = [
   padding: var(--sk-space-16);
   padding-block-end: var(--sk-space-8);
 }
+
+.sk-card__heading { flex: 1 1 16rem; display: flex; flex-direction: column; gap: var(--sk-space-6); min-inline-size: 0; }
+.sk-card__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sk-space-8); min-inline-size: 0; max-inline-size: 100%; }
+.sk-card__actions > button { align-self: stretch; }
+.sk-card__header > * { min-inline-size: 0; max-inline-size: 100%; }
 
 .sk-card__title {
   flex: 1 1 auto;

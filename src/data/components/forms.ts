@@ -17,7 +17,7 @@ export const formComponents: ComponentSpec[] = [
     anatomy: [
       { part: 'Label', required: true, description: 'A real <label for>. Always visible; if the design says otherwise, the design is wrong more often than it is right.' },
       { part: 'Requirement marker', required: false, description: 'The word "Optional" on optional fields. Sekura marks the minority case, and never uses a bare asterisk.' },
-      { part: 'Hint', required: false, description: 'Format guidance linked with aria-describedby. In shared rows it belongs in sk-field__support below the control; standalone fields may place it above.' },
+      { part: 'Hint', required: false, description: 'Format guidance linked with aria-describedby. Place immediately after the label and before the control, in DOM and visual order. Reserve sk-field__support for validation feedback below the control.' },
       { part: 'Control', required: true, description: 'The input itself.' },
       { part: 'Error', required: false, description: 'Placed below the control, with an icon and text. Announced politely on blur, assertively on submit.' },
       { part: 'Character counter', required: false, description: 'Below the control, opposite the error. Announced only at thresholds, not on every keystroke.' },
@@ -41,7 +41,7 @@ export const formComponents: ComponentSpec[] = [
     ],
     props: [
       { name: 'label', type: 'string', required: true, description: 'Visible label text.' },
-      { name: 'hint', type: 'string', description: 'Format guidance associated with the control; place in the support region for shared rows.' },
+      { name: 'hint', type: 'string', description: 'Format guidance associated with the control; place immediately after the label, before the control.' },
       { name: 'error', type: 'string', description: 'Validation message. Presence switches the field to invalid.' },
       { name: 'optional', type: 'boolean', default: 'false', description: 'Marks the field "Optional". Required fields are unmarked.' },
       { name: 'layout', type: "'stacked' | 'inline' | 'horizontal'", default: "'stacked'", description: 'Label placement.' },
@@ -82,9 +82,9 @@ export const formComponents: ComponentSpec[] = [
       'Keep the label visible. A placeholder is not a label; it vanishes exactly when a user needs to check what they are filling in.',
       'Validate on blur for format, on submit for everything, and never on every keystroke.',
       'Preserve the user’s input when server validation fails.',
-      'In a standalone field, format guidance may precede the control. In a shared row, use sk-field-row with label, sk-field__control and sk-field__support in that order; put hints and errors in the support region.',
+      'Use label, optional sk-field__hint, sk-field__control, then sk-field__support in that DOM order. Hints explain the label before entry; errors and counters belong after the control. Shared rows align all four tracks.',
       'Align the visible control boxes, not the outer label-and-hint wrappers. Use the same size and density for peer controls.',
-      'Keep action buttons inside the same sk-field-row as the inputs: use sk-field-row__actions containing one sk-field-row__action-group for Apply/Reset or other peers. Hints belong in sk-field__support. The group wraps only when its available width is exhausted.',
+      'Keep action buttons inside the same sk-field-row as the inputs: use sk-field-row__actions containing one sk-field-row__action-group for Apply/Reset or other peers. Hints belong directly below labels, before controls. The group wraps only when its available width is exhausted.',
     ],
     donts: [
       'Do not use placeholder text as the only label.',
@@ -114,12 +114,13 @@ export const formComponents: ComponentSpec[] = [
   </p>
 </div>
 
-<!-- Related fields and actions share label/control/support tracks. -->
+<!-- Related fields and actions share label/hint/control/feedback tracks. -->
 <form class="sk-field-row" method="get">
   <div class="sk-field">
     <label class="sk-field__label" for="filter-project">Project key</label>
+    <p class="sk-field__hint" id="filter-project-hint">Leave blank to show all projects.</p>
     <input class="sk-input sk-field__control" id="filter-project" name="project" aria-describedby="filter-project-hint" />
-    <div class="sk-field__support"><p class="sk-field__hint" id="filter-project-hint">Leave blank to show all projects.</p></div>
+    <div class="sk-field__support"></div>
   </div>
   <div class="sk-field">
     <label class="sk-field__label" for="filter-through">Through date</label>
@@ -141,22 +142,24 @@ export const formComponents: ComponentSpec[] = [
   min-inline-size: 0;
 }
 
-/* Shared label/control/support tracks keep wrapped labels and hints from
+/* Shared label/hint/control/feedback tracks keep wrapped labels and hints from
    shifting peer controls. Without subgrid support, retain a safe single column. */
 .sk-field-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sk-space-6) var(--sk-space-16); min-inline-size: 0; }
-.sk-field-row > .sk-field, .sk-field-row__actions { display: grid; grid-template-rows: auto auto 1fr; grid-row: span 3; gap: var(--sk-space-6); min-inline-size: 0; }
+.sk-field-row > .sk-field, .sk-field-row__actions { display: grid; grid-template-rows: auto auto auto 1fr; grid-row: span 4; gap: var(--sk-space-6); min-inline-size: 0; }
 @supports (grid-template-rows: subgrid) {
   .sk-field-row { grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr)); }
   .sk-field-row > .sk-field, .sk-field-row__actions { grid-template-rows: subgrid; }
 }
-.sk-field-row > .sk-field > .sk-field__label { grid-row: 1; align-self: end; }
-.sk-field-row > .sk-field > .sk-field__control, .sk-field-row__actions > * { grid-row: 2; align-self: start; min-inline-size: 0; }
+.sk-field-row > .sk-field > .sk-field__label { grid-row: 1; align-self: start; }
+.sk-field-row > .sk-field > .sk-field__control, .sk-field-row__actions > * { grid-row: 3; align-self: start; min-inline-size: 0; }
+.sk-field-row > .sk-field > .sk-field__hint { grid-row: 2; align-self: start; }
+.sk-field-row > .sk-field > :is(.sk-field__error, .sk-field__footer) { grid-row: 4; }
 .sk-field-row__actions > * { justify-self: start; }
 /* One control-track cell owns the whole action group. Flex aligns button boxes
    and centres text links, while wrapping safely within the available column. */
 .sk-field-row__actions > .sk-field-row__action-group { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sk-space-8); justify-self: stretch; }
 .sk-field-row__action-group > button { flex: 0 1 auto; align-self: stretch; }
-.sk-field-row > .sk-field > .sk-field__support { grid-row: 3; }
+.sk-field-row > .sk-field > .sk-field__support { grid-row: 4; }
 .sk-field__support { display: flex; flex-direction: column; gap: var(--sk-space-6); min-inline-size: 0; }
 
 .sk-field__label {
@@ -503,6 +506,25 @@ export const formComponents: ComponentSpec[] = [
 .sk-input-group__action:hover { background-color: var(--sk-color-surface-hover); color: var(--sk-color-text-primary); }
 .sk-input-group__action > svg { fill: currentColor; }
 
+/* Native datalist indicators may appear only on hover. Paint a permanent,
+   theme-aware affordance for datalists and editable comboboxes. Keep the native
+   indicator hit area, so its browser-provided action remains available. */
+.sk-input[list], .sk-input[role="combobox"]:not([data-sk-tag-input]) {
+  padding-inline-end: var(--sk-space-32);
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-size: 0.3rem 0.3rem;
+  background-position: right calc(var(--sk-space-12) + 0.3rem) center, right var(--sk-space-12) center;
+  background-repeat: no-repeat;
+}
+.sk-input[list]:dir(rtl), .sk-input[role="combobox"]:not([data-sk-tag-input]):dir(rtl) {
+  background-position: left var(--sk-space-12) center, left calc(var(--sk-space-12) + 0.3rem) center;
+}
+.sk-input[list]::-webkit-calendar-picker-indicator { opacity: 0; }
+@media (forced-colors: active) {
+  .sk-input[list], .sk-input[role="combobox"]:not([data-sk-tag-input]) { forced-color-adjust: none; color: FieldText; background-color: Field; border-color: ButtonBorder; }
+  .sk-input[list]:disabled, .sk-input[role="combobox"]:disabled { color: GrayText; border-color: GrayText; }
+}
+
 @media (forced-colors: active) {
   .sk-input { border-color: ButtonBorder; }
   .sk-input:focus-visible { outline-color: Highlight; }
@@ -670,7 +692,7 @@ export const formComponents: ComponentSpec[] = [
     ],
     anatomy: [
       { part: 'Select', required: true, description: 'Native <select>.' },
-      { part: 'Chevron', required: true, description: 'Drawn as a background image, since the native arrow cannot be styled. Marked aria-hidden by virtue of being CSS.' },
+      { part: 'Chevron', required: true, description: 'A permanent CSS chevron using currentColor. It remains visible before hover and is decorative.' },
       { part: 'Placeholder option', required: false, description: 'A disabled, selected, hidden first option when there is genuinely no default.' },
       { part: 'Option groups', required: false, description: '<optgroup> for long lists.' },
     ],
@@ -698,7 +720,7 @@ export const formComponents: ComponentSpec[] = [
     ],
     tokensUsed: ['color-field-bg', 'color-field-border', 'color-text-primary', 'color-text-placeholder', 'color-focus-ring', 'radius-md'],
     darkMode:
-      'The chevron is an inline SVG data URI, so its colour cannot be inherited — it is re-declared per theme with an explicit stroke. This is the single most common dark-mode bug in select components: a dark chevron baked into a background image that becomes invisible on a dark field. The native option list is rendered by the operating system, so `color-scheme: dark` must be set on the element for the dropdown itself to render dark; without it the popup stays white and flashes.',
+      'The permanent chevron inherits currentColor for neutral, readable contrast in every theme. Native option lists follow color-scheme; forced colors restore the native arrow.',
     accessibility: {
       role: 'Native <select>.',
       keyboard: [
@@ -776,20 +798,18 @@ export const formComponents: ComponentSpec[] = [
   cursor: pointer;
   /* Makes the OS-rendered option list follow the theme instead of flashing white. */
   color-scheme: light;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23676f82' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
   background-repeat: no-repeat;
-  background-position: right var(--sk-space-12) center;
-  background-size: 1rem;
+  background-position: right calc(var(--sk-space-12) + 0.3rem) center, right var(--sk-space-12) center;
+  background-size: 0.3rem 0.3rem;
 }
 
-[dir="rtl"] .sk-select { background-position: left var(--sk-space-12) center; }
+.sk-select:dir(rtl) { background-position: left var(--sk-space-12) center, left calc(var(--sk-space-12) + 0.3rem) center; }
 
-/* The chevron is baked into a data URI and cannot inherit currentColor, so each
-   dark theme re-declares it. Skipping this is the classic invisible-chevron bug. */
+/* Native option surfaces follow the theme; the chevron inherits currentColor. */
 [data-sk-theme="dark"] .sk-select,
 [data-sk-theme="hc-dark"] .sk-select {
   color-scheme: dark;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%238590a3' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
 }
 
 .sk-select:hover:not(:disabled) { border-color: var(--sk-color-field-border-hover); }
@@ -812,7 +832,7 @@ export const formComponents: ComponentSpec[] = [
 
 .sk-select--sm { --sk-control-size: var(--sk-control-height-sm); min-block-size: var(--sk-control-height-sm); font-size: var(--sk-font-size-body-sm); padding-inline: var(--sk-space-8) var(--sk-space-28); }
 .sk-select--lg { --sk-control-size: var(--sk-control-height-lg); min-block-size: var(--sk-control-height-lg); }
-/* The chevron is a background-image data URI, which HCM discards outright,
+/* The CSS chevron is a background image, which HCM discards outright,
    leaving a select with no affordance that it opens anything. */
 @media (forced-colors: active) {
   .sk-select { border-color: CanvasText; appearance: auto; background-image: none; }
@@ -1504,6 +1524,7 @@ export const formComponents: ComponentSpec[] = [
     ],
     dos: [
       'Keep DOM focus in the input and use aria-activedescendant.',
+      'Keep the dropdown indicator visible at rest, on touch, and in forced colors. Use the shared sk-input styling for combobox and native datalist inputs; never reveal availability only on hover.',
       'Debounce async search and cancel superseded requests.',
       'Highlight the matched substring in each option, but do not rely on that alone to convey the match.',
     ],
@@ -1613,7 +1634,7 @@ export const formComponents: ComponentSpec[] = [
   outline-offset: var(--sk-focus-ring-offset);
 }
 /* The input takes at least 6rem but shares the row with tokens, wrapping as needed. */
-.sk-combobox--multi .sk-input { flex: 1 1 6rem; min-inline-size: 0; border: none; background: transparent; }
+.sk-combobox--multi .sk-input { flex: 1 1 6rem; min-inline-size: 0; border: none; background-color: transparent; }
 .sk-combobox--multi .sk-input:focus-visible { outline: none; }
 
 .sk-combobox__tokens { display: contents; }
@@ -3053,15 +3074,15 @@ export const formComponents: ComponentSpec[] = [
     html: `<fieldset class="sk-fieldset">
   <legend class="sk-fieldset__legend">Reporting period</legend>
   <div class="sk-date-range" data-sk-daterange>
-    <div class="sk-cluster sk-cluster--gap-12 sk-cluster--align-start">
+    <div class="sk-field-row">
       <div class="sk-field">
         <label class="sk-field__label" for="range-start">From</label>
-        <input class="sk-input" id="range-start" type="text" inputmode="numeric"
+        <input class="sk-input sk-field__control" id="range-start" type="text" inputmode="numeric"
                value="2026-08-01" autocomplete="off" spellcheck="false" />
       </div>
       <div class="sk-field">
         <label class="sk-field__label" for="range-end">To</label>
-        <input class="sk-input" id="range-end" type="text" inputmode="numeric"
+        <input class="sk-input sk-field__control" id="range-end" type="text" inputmode="numeric"
                value="2026-08-31" autocomplete="off" spellcheck="false" />
       </div>
     </div>

@@ -156,6 +156,8 @@ export const overlayComponents: ComponentSpec[] = [
 
 .sk-dialog__header {
   display: flex;
+  flex-wrap: wrap;
+  min-inline-size: 0;
   align-items: flex-start;
   gap: var(--sk-space-12);
   flex: 0 0 auto;
@@ -358,6 +360,8 @@ export const overlayComponents: ComponentSpec[] = [
 
 .sk-drawer__header {
   display: flex;
+  flex-wrap: wrap;
+  min-inline-size: 0;
   align-items: flex-start;
   gap: var(--sk-space-12);
   flex: 0 0 auto;

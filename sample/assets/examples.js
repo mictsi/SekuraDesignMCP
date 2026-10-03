@@ -176,6 +176,15 @@
   function workbench() {
     var preview = $('[data-sk-bench-preview]');
     if (!preview) return;
+    var filterForm = $('[data-sk-alignment-filters]'), compareForm = $('[data-sk-alignment-compare]');
+    if (filterForm) {
+      filterForm.addEventListener('submit', function (event) { event.preventDefault(); var data = new FormData(filterForm); $('[data-sk-alignment-filter-state]').textContent = 'Local filters applied: ' + (data.get('project') || 'all projects') + ', ' + (data.get('query') || 'all runs') + (data.get('from') ? ', from ' + data.get('from') : '') + '.'; });
+      filterForm.addEventListener('reset', function () { $('[data-sk-alignment-filter-state]').textContent = 'No filters applied.'; });
+    }
+    if (compareForm) {
+      compareForm.addEventListener('submit', function (event) { event.preventDefault(); var data = new FormData(compareForm); $('[data-sk-alignment-compare-state]').textContent = 'Local comparison selected: ' + data.get('baseline') + ' → ' + data.get('candidate') + '.'; });
+      compareForm.addEventListener('reset', function () { $('[data-sk-alignment-compare-state]').textContent = 'No comparison selected.'; });
+    }
     // These providers are explicit local simulations. Controllers own the UI lifecycle.
     var owned = [];
     function delayed(signal, produce) {

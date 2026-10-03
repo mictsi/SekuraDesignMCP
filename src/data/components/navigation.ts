@@ -291,7 +291,8 @@ export const navigationComponents: ComponentSpec[] = [
       { part: 'Groups', required: false, description: 'Labelled sections. Group labels are headings, not clickable.' },
       { part: 'Items', required: true, description: 'Links with an icon and a visible text label.' },
       { part: 'Current marker', required: true, description: 'aria-current="page" plus a 4px leading bar. Two signals, not one.' },
-      { part: 'Nested items', required: false, description: 'One level of nesting only, inside a disclosure.' },
+      { part: 'Nested items', required: false, description: 'One indented child list with a subtle guide. Parent links navigate; a separate named chevron button toggles children. Expand the active child’s parent on route changes.' },
+      { part: 'Open items', required: false, description: 'A separately labeled section after a divider, not more submenu children. The application owns the set of open documents and any close actions.' },
       { part: 'Collapse toggle', required: false, description: 'Shrinks the rail to icons. Persisted per user.' },
     ],
     variants: [
@@ -322,14 +323,17 @@ export const navigationComponents: ComponentSpec[] = [
       role: '<nav aria-label="Primary"> containing a <ul>.',
       keyboard: [
         { keys: 'Tab', action: 'Moves through items. Each is a normal tab stop; do not impose a roving tabindex on a list of links.' },
-        { keys: 'Enter', action: 'Navigate.' },
+        { keys: 'Enter', action: 'Follow a destination link; on a disclosure button, expand or collapse its child list.' },
+        { keys: 'Space', action: 'Expand or collapse a focused disclosure button. Never navigate from the toggle.' },
         { keys: 'Escape', action: 'Closes the drawer and returns focus to the trigger.' },
       ],
       aria: [
         'aria-label on the nav, because a page usually has several nav landmarks.',
         'aria-current="page" on exactly one item.',
         'Group headings are real headings or aria-labelledby on a nested list — not styled divs.',
-        'Disclosure toggles use aria-expanded and aria-controls.',
+        'Disclosure toggles are real buttons with aria-expanded and aria-controls, separate from destination links. Their accessible name includes the parent label.',
+        'Open the active route’s ancestor on initial render and route changes. Mark only the exact destination aria-current=page; ancestor emphasis is separate from the current-page marker.',
+        'Page sections use a separately named On this page navigation with aria-current=location, not aria-current=page. Open documents live in an Open items section.',
         'In drawer mode: role="dialog", aria-modal="true", focus trapped, focus restored on close.',
         'Collapsed mode requires tooltips *and* visually hidden labels; a tooltip is not an accessible name.',
       ],
@@ -346,6 +350,8 @@ export const navigationComponents: ComponentSpec[] = [
       'Filter destinations server-side by permission.',
       'Mark the current page with both aria-current and a visible non-colour marker.',
       'Persist the collapsed preference per user.',
+      'Keep child destinations indented under their parent; use sk-side-nav__branch-row, sk-side-nav__toggle and sk-side-nav__children.',
+      'Separate application-owned open items with sk-side-nav__open-items and a visible heading; use document icons so they do not look like another menu group.',
     ],
     donts: [
       'Do not render links the user cannot follow.',
@@ -362,11 +368,20 @@ export const navigationComponents: ComponentSpec[] = [
       </a>
     </li>
     <li>
-      <a class="sk-side-nav__item" href="/projects" aria-current="page">
-        <svg aria-hidden="true" focusable="false" width="20" height="20"><use href="#sk-icon-globe" /></svg>
-        <span class="sk-side-nav__label">Projects</span>
-        <span class="sk-side-nav__count">128</span>
-      </a>
+      <div class="sk-side-nav__branch-row">
+        <a class="sk-side-nav__item" href="/projects" data-active-ancestor>
+          <svg aria-hidden="true" focusable="false" width="20" height="20"><use href="#sk-icon-globe" /></svg>
+          <span class="sk-side-nav__label">Projects</span>
+          <span class="sk-side-nav__count">128</span>
+        </a>
+        <button class="sk-side-nav__toggle" type="button" data-sk-disclosure="nav-project-children" aria-expanded="true" aria-controls="nav-project-children" aria-label="Project pages">
+          <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-chevron-down" /></svg>
+        </button>
+      </div>
+      <ul class="sk-side-nav__children" id="nav-project-children" aria-label="Project pages">
+        <li><a class="sk-side-nav__item" href="/projects/active" aria-current="page"><span class="sk-side-nav__label">Active projects</span></a></li>
+        <li><a class="sk-side-nav__item" href="/projects/archived"><span class="sk-side-nav__label">Archived projects</span></a></li>
+      </ul>
     </li>
   </ul>
 
@@ -379,6 +394,16 @@ export const navigationComponents: ComponentSpec[] = [
       </a>
     </li>
   </ul>
+
+  <section class="sk-side-nav__open-items" aria-labelledby="nav-open-items">
+    <h2 class="sk-side-nav__group-label" id="nav-open-items">Open items</h2>
+    <ul class="sk-side-nav__list" aria-labelledby="nav-open-items">
+      <li><a class="sk-side-nav__item" href="/projects/website-redesign">
+        <svg aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 20 20"><path d="M5 2h7l4 4v12H5z M12 2v4h4 M8 10h5 M8 13h5" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>
+        <span class="sk-side-nav__label">Website redesign</span>
+      </a></li>
+    </ul>
+  </section>
 </nav>`,
     css: `.sk-side-nav {
   display: flex;
@@ -395,6 +420,23 @@ export const navigationComponents: ComponentSpec[] = [
 }
 
 .sk-side-nav__list { display: flex; flex-direction: column; gap: var(--sk-space-2); margin: 0; padding: 0; list-style: none; }
+
+.sk-side-nav__branch-row { display: flex; align-items: flex-start; min-inline-size: 0; gap: var(--sk-space-2); }
+.sk-side-nav__branch-row > .sk-side-nav__item { flex: 1 1 auto; }
+.sk-side-nav__toggle { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; inline-size: 2rem; min-block-size: 2rem; padding: 0; border: 0; border-radius: var(--sk-radius-sm); background: transparent; color: var(--sk-color-text-primary); cursor: pointer; }
+.sk-side-nav__toggle:hover { background: var(--sk-color-surface-hover); }
+.sk-side-nav__toggle:focus-visible { outline: var(--sk-focus-ring-width) solid var(--sk-color-focus-ring); outline-offset: var(--sk-focus-ring-offset); }
+.sk-side-nav__toggle > svg { fill: currentColor; rotate: -90deg; }
+.sk-side-nav__toggle:dir(rtl) > svg { rotate: 90deg; }
+.sk-side-nav__toggle[aria-expanded="true"] > svg { rotate: 0deg; }
+.sk-side-nav__children { display: flex; flex-direction: column; gap: var(--sk-space-2); margin-block: var(--sk-space-4); margin-inline: var(--sk-space-16) 0; padding-block: 0; padding-inline: var(--sk-space-12) 0; list-style: none; border-inline-start: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle); }
+.sk-side-nav__children[hidden] { display: none; }
+.sk-side-nav__children .sk-side-nav__label { white-space: normal; overflow-wrap: anywhere; }
+.sk-side-nav__item[data-active-ancestor] { color: var(--sk-color-text-primary); font-weight: var(--sk-font-weight-semibold); }
+.sk-side-nav__open-items { margin-block-start: var(--sk-space-16); padding-block-start: var(--sk-space-8); border-block-start: var(--sk-border-width-hairline) solid var(--sk-color-border-default); }
+.sk-side-nav--collapsed .sk-side-nav__children, .sk-side-nav--collapsed .sk-side-nav__toggle, .sk-side-nav--collapsed .sk-side-nav__open-items { display: none; }
+@media (pointer: coarse) { .sk-side-nav__toggle { min-inline-size: 2.75rem; min-block-size: 2.75rem; } }
+@media (forced-colors: active) { .sk-side-nav__children, .sk-side-nav__open-items { border-color: CanvasText; } .sk-side-nav__toggle { color: ButtonText; } }
 
 .sk-side-nav__group-label {
   margin-block: var(--sk-space-16) var(--sk-space-4);

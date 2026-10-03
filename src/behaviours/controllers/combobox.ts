@@ -156,6 +156,7 @@ export function createCombobox(input: HTMLInputElement, listbox: HTMLElement, op
   const offPointer = on(listbox, 'pointerdown', (event: PointerEvent) => { if ((event.target as Element).closest('[role="option"]')) event.preventDefault(); });
   const offOver = on(listbox, 'pointermove', (event: PointerEvent) => { const index = optionsOf().indexOf((event.target as Element).closest<HTMLElement>('[role="option"]')!); if (index >= 0 && index !== activeIndex) setActive(index); });
   const offFocus = on(input, 'focus', () => { openList(); if (options.loadOptions) void search(); else refresh(); });
+  const offReopen = on(input, 'click', () => { if (open || input.disabled || input.readOnly) return; openList(); if (options.loadOptions) void search(); else refresh(); });
   const offBlur = on(input, 'blur', (event: FocusEvent) => { if (!listbox.contains(event.relatedTarget as Node) && !tokens?.contains(event.relatedTarget as Node)) closeList(); });
   const observer = new MutationObserver(() => { renderTokens(); if (input.disabled || input.readOnly) closeList(); });
   observer.observe(input, { attributes: true, attributeFilter: ['disabled', 'readonly'] });
@@ -164,5 +165,5 @@ export function createCombobox(input: HTMLInputElement, listbox: HTMLElement, op
   for (const opt of all()) if (selected.has(valueOf(opt))) selected.set(valueOf(opt), labelOf(opt));
   renderTokens();
   return { get open() { return open; }, get values() { return [...selected.keys()]; }, openList, closeList, refresh,
-    destroy: combine(() => { destroyed = true; closeList(); observer.disconnect(); resize.disconnect(); tokens?.remove(); popup.before(listbox); popup.remove(); }, offInput, offKey, offClick, offPointer, offOver, offFocus, offBlur, offReset) };
+    destroy: combine(() => { destroyed = true; closeList(); observer.disconnect(); resize.disconnect(); tokens?.remove(); popup.before(listbox); popup.remove(); }, offInput, offKey, offClick, offPointer, offOver, offFocus, offReopen, offBlur, offReset) };
 }

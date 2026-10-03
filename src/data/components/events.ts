@@ -21,6 +21,7 @@ export const componentEvents: Record<string, EventContract[]> = {
   'tree-view': [event('sk:tree:select', { item: 'HTMLElement (DOM only)', value: 'string | undefined', checked: '"true" | "false" | "mixed" | undefined' }, true), event('sk:tree:expand', { item: 'HTMLElement (DOM only)', expanded: 'boolean' })],
   'file-upload': [change('sk:upload:change', 'files', 'File[] (DOM only)')],
   table: [change('sk:selection:change', 'count', 'number')],
+  'side-nav': [event('sk:disclosure:open'), event('sk:disclosure:close')],
   disclosure: [event('sk:disclosure:open'), event('sk:disclosure:close')],
   accordion: [event('sk:disclosure:open'), event('sk:disclosure:close')],
   dialog: [event('sk:dialog:open'), event('sk:dialog:close', { returnValue: 'string | undefined' })],

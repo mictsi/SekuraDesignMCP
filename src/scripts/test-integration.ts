@@ -2,8 +2,14 @@ import assert from 'node:assert/strict';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { createServer } from '../server.js';
+import { validateMarkup } from '../lib/validate.js';
 import { components } from '../data/components/index.js';
 import { componentRecipe, recipeSchema, validateIntegration } from '../lib/integration.js';
+
+const oldField = '<div class="sk-field"><label class="sk-field__label" for="test-field">Project</label><input id="test-field" class="sk-input sk-field__control" aria-describedby="test-hint"/><div class="sk-field__support"><p class="sk-field__hint" id="test-hint">An exact key.</p></div></div>';
+assert.ok(validateMarkup(oldField).some(f => f.rule === 'field-hint-order'));
+const orderedField = '<div class="sk-field"><label class="sk-field__label" for="test-field">Project</label><p class="sk-field__hint" id="test-hint">An exact key.</p><input id="test-field" class="sk-input sk-field__control" aria-describedby="test-hint"/><p class="sk-field__error">Try again.</p></div>';
+assert.ok(!validateMarkup(orderedField).some(f => f.rule === 'field-hint-order'));
 
 for (const component of components) recipeSchema.parse(componentRecipe(component, 'html'));
 const valid = { componentIds: ['button'], markup: '<button class="sk-button" type="button">Save</button>', stylesheets: ['assets/sekura.css'], initialization: 'auto' as const, handledEvents: ['button:click'] };

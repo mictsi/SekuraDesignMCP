@@ -81,6 +81,101 @@ try {
           assert.equal(await group.evaluate(el => el.scrollWidth <= el.clientWidth + 1), true, direction + ' action overflow');
         }
       });
+      await test('explanations precede controls and section headers align comparison actions', async () => {
+        await page.setViewportSize({ width: 2200, height: 1100 });
+        await page.goto(base + '/workbench.html');
+        const filter = page.locator('[data-sk-alignment-filters]');
+        const compare = page.locator('[data-sk-alignment-compare]');
+        for (const density of ['comfortable', 'compact', 'dense']) {
+          await page.evaluate(value => document.documentElement.dataset.skDensity = value, density);
+          for (const form of [filter, compare]) {
+            const boxes = await form.locator('.sk-field__control, button').evaluateAll(es => es.map(el => { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom }; }));
+            assert.ok(Math.max(...boxes.map(b => b.top)) - Math.min(...boxes.map(b => b.top)) < 1, JSON.stringify({ density, boxes }));
+          }
+        }
+        const ordering = await page.locator('#bench-project-key').evaluate(input => {
+          const label = input.parentElement.querySelector('label'), hint = document.getElementById('bench-project-key-hint');
+          return label.getBoundingClientRect().bottom <= hint.getBoundingClientRect().top && hint.getBoundingClientRect().bottom <= input.getBoundingClientRect().top && !!(hint.compareDocumentPosition(input) & Node.DOCUMENT_POSITION_FOLLOWING);
+        });
+        assert.equal(ordering, true, 'explanation must be under the label and above its control');
+        const headerTops = await page.locator('[data-sk-alignment-header] .sk-page-header__title, [data-sk-alignment-header] .sk-page-header__controls').evaluateAll(es => es.map(el => el.getBoundingClientRect().top));
+        assert.ok(Math.abs(headerTops[0] - headerTops[1]) < 1, JSON.stringify(headerTops));
+        await page.locator('#bench-project-key').fill('SekuraDesignMCP');
+        await filter.getByRole('button', { name: 'Apply filters' }).click();
+        assert.match(await page.locator('[data-sk-alignment-filter-state]').textContent(), /SekuraDesignMCP/);
+        await filter.getByRole('button', { name: 'Reset', exact: true }).click();
+        assert.equal(await page.locator('#bench-project-key').inputValue(), '');
+        await compare.getByRole('button', { name: 'Compare runs' }).click();
+        assert.match(await page.locator('[data-sk-alignment-compare-state]').textContent(), /run-001.*run-002/);
+        await compare.getByRole('button', { name: 'Reset selection' }).click();
+        await page.evaluate(() => document.documentElement.dataset.skTheme = 'dark');
+        await page.locator('[data-sk-alignment-header]').screenshot({ path: `.run/review/${name}-comparison-alignment.png` });
+        await page.setViewportSize({ width: 320, height: 800 });
+        await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+        for (const dir of ['ltr', 'rtl']) {
+          await page.evaluate(value => document.documentElement.dir = value, dir);
+          for (const root of [filter, compare, page.locator('[data-sk-alignment-header]')]) assert.equal(await root.evaluate(el => el.scrollWidth <= el.clientWidth + 1), true, dir + ' overflow');
+        }
+      });
+      await test('dropdown indicators stay visible without hover and focused comboboxes reopen', async () => {
+        await page.goto(base + '/workbench.html');
+        await page.mouse.move(0, 0);
+        for (const theme of ['light', 'dark', 'hc-light', 'hc-dark']) {
+          await page.evaluate(value => document.documentElement.dataset.skTheme = value, theme);
+          for (const selector of ['#bench-project-key', '#bench-theme', '#bench-async']) {
+            const control = page.locator(selector);
+            assert.ok((await control.evaluate(el => getComputedStyle(el).backgroundImage)).includes('linear-gradient'), theme + ' ' + selector);
+          }
+        }
+        await page.emulateMedia({ forcedColors: 'active' });
+        assert.ok((await page.locator('#bench-project-key').evaluate(el => getComputedStyle(el).backgroundImage)).includes('linear-gradient'));
+        assert.equal(await page.locator('#bench-theme').evaluate(el => getComputedStyle(el).backgroundImage), 'none', 'forced colors restores only the native select arrow');
+        await page.emulateMedia({ forcedColors: 'none' });
+        await page.goto(base + '/component-combobox.html');
+        const input = page.locator('input[data-sk-combobox]').first();
+        await input.focus(); assert.equal(await input.getAttribute('aria-expanded'), 'true');
+        await page.keyboard.press('Escape'); assert.equal(await input.getAttribute('aria-expanded'), 'false');
+        await input.click(); assert.equal(await input.getAttribute('aria-expanded'), 'true');
+        await page.keyboard.press('Escape');
+        await input.evaluate(el => el.readOnly = true); await input.click();
+        assert.equal(await input.getAttribute('aria-expanded'), 'false');
+        const touch = await browser.newContext({ hasTouch: true, viewport: { width: 390, height: 844 } });
+        try { const mobile = await touch.newPage(); await mobile.goto(base + '/workbench.html'); assert.ok((await mobile.locator('#bench-project-key').evaluate(el => getComputedStyle(el).backgroundImage)).includes('linear-gradient')); } finally { await touch.close(); }
+      });
+      await test('sidebar separates parent navigation, expansion and the current child page', async () => {
+        await page.goto(base + '/component-button.html');
+        const nav = page.locator('#primary-nav');
+        const toggle = nav.getByRole('button', { name: 'Components pages', exact: true });
+        const children = nav.locator('#nav-components-children');
+        assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
+        assert.equal(await nav.locator('[aria-current="page"]').count(), 1);
+        assert.equal(await nav.locator('[aria-current="page"]').getAttribute('href'), 'component-button.html');
+        assert.equal(await nav.locator('a[href="components.html"]').getAttribute('aria-current'), null);
+        assert.equal(await nav.locator('a[href="components.html"]').getAttribute('data-active-ancestor'), '');
+        for (const dir of ['ltr', 'rtl']) {
+          await page.evaluate(value => document.documentElement.dir = value, dir);
+          await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+          const geometry = await children.evaluate(el => {
+            const parent = el.previousElementSibling.getBoundingClientRect(), child = el.querySelector('a').getBoundingClientRect();
+            return { dir: getComputedStyle(el).direction, parentLeft: parent.left, parentRight: parent.right, left: child.left, right: child.right };
+          });
+          assert.ok(dir === 'ltr' ? geometry.left > geometry.parentLeft + 16 : geometry.right < geometry.parentRight - 16, JSON.stringify({ dir, ...geometry }));
+        }
+        await page.evaluate(() => document.documentElement.dir = 'ltr');
+        await toggle.focus(); await page.keyboard.press('Space');
+        assert.equal(await toggle.getAttribute('aria-expanded'), 'false');
+        await children.waitFor({ state: 'hidden' });
+        await page.keyboard.press('Tab');
+        assert.equal(await page.evaluate(() => !!document.activeElement.closest('#nav-components-children')), false);
+        await toggle.focus(); await page.keyboard.press('Enter');
+        assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
+        await children.waitFor({ state: 'visible' });
+        await nav.getByRole('link', { name: 'Checkbox', exact: true }).click();
+        assert.ok(page.url().endsWith('/component-checkbox.html'));
+        assert.equal(await nav.locator('[aria-current="page"]').getAttribute('href'), 'component-checkbox.html');
+        assert.equal(await nav.getByRole('button', { name: 'Components pages', exact: true }).getAttribute('aria-expanded'), 'true');
+        await page.screenshot({ animations: 'disabled', path: `.run/review/${name}-sidebar-hierarchy.png` });
+      });
       await test('schedule inputs align despite long labels, hints and validation', async () => {
         await page.goto(base + '/example-form.html');
         const controls = page.locator('[data-sk-project-schedule] .sk-field__control');
@@ -93,6 +188,24 @@ try {
         assert.ok(Math.abs(boxes[0].top - boxes[1].top) < 1 && Math.abs(boxes[0].height - boxes[1].height) < 1, JSON.stringify(boxes));
         await page.locator('#target-days').fill('45'); await page.locator('#target-days').blur();
         assert.equal(await page.locator('#target-days-error').count(), 0);
+      });
+      await test('open documents stay separate from collapsible menu children', async () => {
+        await page.goto(base + '/workbench.html');
+        const nav = page.locator('[data-sk-open-items-example]');
+        const openItems = nav.locator('.sk-side-nav__open-items');
+        assert.equal(await openItems.getByRole('heading', { name: 'Open items', exact: true }).count(), 1);
+        assert.equal(await openItems.locator('.sk-side-nav__children').count(), 0);
+        assert.equal(await openItems.getByRole('link').count(), 2);
+        assert.ok(await openItems.evaluate(el => parseFloat(getComputedStyle(el).borderBlockStartWidth) > 0));
+        const toggle = nav.getByRole('button', { name: 'Project pages', exact: true });
+        await toggle.click();
+        await nav.locator('#bench-project-pages').waitFor({ state: 'hidden' });
+        for (const link of await openItems.getByRole('link').all()) assert.equal(await link.isVisible(), true);
+        await toggle.click();
+        await nav.locator('#bench-project-pages').waitFor({ state: 'visible' });
+        await nav.screenshot({ path: `.run/review/${name}-open-documents.png` });
+        await openItems.getByRole('link', { name: 'Document workspace' }).click();
+        assert.ok(page.url().endsWith('/example-workspace.html'));
       });
       await test('touch input expands every peer in the filter row consistently', async () => {
         const touch = await browser.newContext({ hasTouch: true, viewport: { width: 1440, height: 1000 } });

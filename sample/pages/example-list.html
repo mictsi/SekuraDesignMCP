@@ -32,12 +32,13 @@
       <div class="sk-field-row" data-sk-project-filters>
         <div class="sk-field">
           <label class="sk-field__label" for="project-q">Search projects</label>
+          <p class="sk-field__hint" id="project-q-hint">Search projects and owners; leave blank to show all projects.</p>
           <form class="sk-search sk-search--sm sk-field__control" role="search" onsubmit="return false">
             <svg class="sk-search__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-search"></use></svg>
             <input class="sk-search__input" id="project-q" type="search" autocomplete="off"
                    placeholder="Projects and owners" aria-describedby="project-q-hint" aria-controls="project-table" data-sk-filter-input="#project-table" />
           </form>
-          <div class="sk-field__support"><p class="sk-field__hint" id="project-q-hint">Search projects and owners; leave blank to show all projects.</p></div>
+          <div class="sk-field__support"></div>
         </div>
         <div class="sk-field">
           <label class="sk-field__label" for="due-from">Due from</label>

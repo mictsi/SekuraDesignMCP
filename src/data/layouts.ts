@@ -330,7 +330,7 @@ export const layouts: LayoutRecipe[] = [
     regions: [
       { name: 'Page header', description: 'Title and cancel.', responsive: 'Standard wrap.' },
       { name: 'Error summary', description: 'Appears above the form after a failed submit, linking to each bad field.', responsive: 'Full width.' },
-      { name: 'Form sections', description: 'Fieldsets with legends.', responsive: 'Single column throughout. Related short fields share label/control/support tracks through sk-field-row.' },
+      { name: 'Form sections', description: 'Fieldsets with legends.', responsive: 'Single column throughout. Related short fields share label/hint/control/feedback tracks through sk-field-row.' },
       { name: 'Action bar', description: 'Save and cancel.', responsive: 'Sticks to the bottom on long forms.' },
     ],
     components: ['page-header', 'fieldset', 'form-field', 'text-field', 'select', 'checkbox', 'alert', 'button', 'stack'],

@@ -24,6 +24,11 @@ for (const [name, engine] of Object.entries({ chromium, firefox, webkit })) {
       await page.addScriptTag({ content: react.outputFiles[0].text });
       await page.getByLabel('Native project', { exact: true }).fill('bad');
       assert.equal(await page.getByLabel('Native project', { exact: true }).getAttribute('aria-invalid'), 'true');
+      const fieldOrder = await page.getByLabel('Native project', { exact: true }).evaluate(input => {
+        const field = input.closest('.sk-field'); const label = field.querySelector('label'), hint = field.querySelector('.sk-field__hint'), error = field.querySelector('.sk-field__error');
+        return !!(label.compareDocumentPosition(hint) & Node.DOCUMENT_POSITION_FOLLOWING) && !!(hint.compareDocumentPosition(input) & Node.DOCUMENT_POSITION_FOLLOWING) && !!(input.compareDocumentPosition(error) & Node.DOCUMENT_POSITION_FOLLOWING) && input.classList.contains('sk-field__control');
+      });
+      assert.equal(fieldOrder, true, 'React must render label, hint, control, error in order');
       const ids = await page.locator('#native-root input').evaluateAll(xs => xs.map(x=>x.id)); assert.equal(new Set(ids).size, ids.length);
       assert.match(await page.getByLabel('Native project', { exact: true }).getAttribute('aria-describedby'), /hint.*error/);
       await page.getByLabel('Native approval').check(); await text('native-result','bad:true:0');

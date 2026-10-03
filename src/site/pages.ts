@@ -1263,16 +1263,18 @@ export function layoutPage(): Page {
   });
 
   p.add(rules('responsive-layout'));
-  p.section('Align controls, not field wrappers', `<p class="docs-para">Use the same size and density for peer controls. Labeled fields share label, control and support tracks; hints and errors grow below the inputs. Keep actions inside the same row: <code class="sk-code">sk-field-row__actions</code> contains one <code class="sk-code">sk-field-row__action-group</code> for peer buttons. Keep filter chips and view controls in their own row. Never use offsets or negative margins to patch alignment.</p>` + demo(`<div class="sk-field-row">
+  p.section('Align controls, not field wrappers', `<p class="docs-para">Use the same size and density for peer controls. Labeled fields share four tracks: label, explanatory hint, control and validation feedback. Explanations follow the label above the control; only errors and counters go below. Keep actions inside the same row: <code class="sk-code">sk-field-row__actions</code> contains one <code class="sk-code">sk-field-row__action-group</code> for peer buttons. Keep filter chips and view controls in their own row. Never use offsets or negative margins to patch alignment.</p>` + demo(`<div class="sk-field-row">
   <div class="sk-field">
     <label class="sk-field__label" for="align-project">Project name</label>
+    <p class="sk-field__hint" id="align-project-hint">Explanations sit below the label and above the control. Shared tracks keep peer inputs aligned when this text wraps.</p>
     <input class="sk-input sk-field__control" id="align-project" value="Website redesign" aria-describedby="align-project-hint" />
-    <div class="sk-field__support"><p class="sk-field__hint" id="align-project-hint">Hints can wrap onto several lines without changing the position of the input next to them.</p></div>
+    <div class="sk-field__support"></div>
   </div>
   <div class="sk-field">
     <label class="sk-field__label" for="align-date">Due date</label>
+    <p class="sk-field__hint" id="align-date-hint">Optional.</p>
     <input class="sk-input sk-field__control" id="align-date" type="date" aria-describedby="align-date-hint" />
-    <div class="sk-field__support"><p class="sk-field__hint" id="align-date-hint">Optional.</p></div>
+    <div class="sk-field__support"></div>
   </div>
   <div class="sk-field-row__actions">
     <div class="sk-field-row__action-group">

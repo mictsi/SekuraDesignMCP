@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "version": "3.0.0",
+  "version": "3.0.1",
   "base": [
     "tokens.css",
     "base.css"
@@ -936,8 +936,7 @@
         "combobox",
         "fieldset",
         "number-input",
-        "date-picker",
-        "cluster"
+        "date-picker"
       ],
       "svgSymbols": [],
       "controller": "createDateRange",
@@ -1027,10 +1026,15 @@
       "id": "side-nav",
       "cssFile": "components/side-nav.css",
       "runtime": {
-        "controllers": [],
-        "autoSelectors": [],
+        "controllers": [
+          "createDisclosure"
+        ],
+        "autoSelectors": [
+          "[data-sk-disclosure]"
+        ],
         "notes": [
-          "Native markup and CSS provide presentation. Application code owns any data changes, navigation and persistence."
+          "Links navigate. Separate named toggle buttons expand one indented child list; enhance() wires optional branches. Keep the exact current link aria-current=page and open its ancestor in application route state.",
+          "Static group headings are not interactive. Open documents belong in a labeled, divided sk-side-nav__open-items region. The host owns open-item state and close/navigation outcomes."
         ],
         "manualOnly": []
       },
@@ -1039,13 +1043,27 @@
       "svgSymbols": [
         "sk-icon-home",
         "sk-icon-globe",
+        "sk-icon-chevron-down",
         "sk-icon-users"
       ],
       "controller": null,
       "behavior": "application",
       "frameworkOutput": "reference-recipe",
       "nativeReactExport": null,
-      "events": [],
+      "events": [
+        {
+          "name": "sk:disclosure:open",
+          "detail": {},
+          "source": "controller",
+          "applicationRequired": false
+        },
+        {
+          "name": "sk:disclosure:close",
+          "detail": {},
+          "source": "controller",
+          "applicationRequired": false
+        }
+      ],
       "autoMarker": null,
       "applicationResponsibilities": [
         "Provide real content and application state.",
