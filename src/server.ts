@@ -1269,6 +1269,7 @@ Work in this order:
 6. \`validate_integration\` with the selected components, markup, stylesheets, initialization and handled events; then compile, mount and exercise application outcomes.
 
 Hard requirements:
+- Reuse the design system’s navigation styling and behavior without copying docs-site UI. Navigation width controls, width/collapse preferences, Workspace labels and workspace switchers are optional product features, not requirements. Include them only when the application requires them; use application-specific names and preserve intentional existing features during upgrades.
 - Semantic tokens only. No hex values, no primitive tokens, no arbitrary spacing.
 - Flex-first: horizontal groups wrap, text-bearing flex children get \`min-inline-size: 0\`, widths are \`flex-basis\` not \`width\`.
 - Align peer control borders with matching size/density. For labeled rows use sk-field-row: label, sk-field__hint, sk-field__control, sk-field__support. Put explanatory hints below labels and ABOVE controls; put errors/counters below controls and action-only cells in sk-field-row__actions inside that same row, with multiple actions in one sk-field-row__action-group. Keep chips and view controls separate. Top-align header title/description columns with action groups; header forms use sk-page-header__controls sk-field-row. Centre only unlabeled peers. Keep dropdown indicators visible at rest. No positional alignment patches.

@@ -8,7 +8,7 @@ No application records, routes, permissions, or stored documents need migration.
 ## Branches and rollback baseline
 
 - `feature/2.1.0` preserves the previous `main` at `dc4d498`.
-- `3.0.0` contains the redesign; the current maintenance package version is `3.0.2`.
+- `3.0.0` contains the redesign; the current maintenance package version is `3.0.3`.
 - `main` includes the redesign merged from `3.0.0`.
 - `compatibility/v2-contract.json` records the public names from that baseline.
   `npm run test:compatibility` rejects removals. This is an API-name check, not a
@@ -170,7 +170,7 @@ The multi-tree selection event adds `checked`; range sliders emit
 
 Review the advanced [workbench](sample/workbench.html) and
 [support contracts](sample/support.html). Search providers, file transport,
-command execution and persistence remain application-owned. All 71 components are marked stable. The current package version is 3.0.2.
+command execution and persistence remain application-owned. All 71 components are marked stable. The current package version is 3.0.3.
 Implementation completion and automated checks do not substitute for the
 application and screen-reader review documented in MANUAL-VALIDATION.md.
 
@@ -220,15 +220,24 @@ current page has a separate 4px leading accent. Collapsing the list hides its
 guide and removes its links from the tab order. Expansion does not navigate or
 change the current route. Logical properties mirror these indicators in RTL.
 
-The docs shell also supplies route matching, current-item scrolling, remembered
-width/collapse preferences, and a responsive drawer trigger. Those are host
-integration responsibilities, not automatic behavior of `sk-side-nav`. For a
+The docs shell also supplies route matching, current-item scrolling and a
+responsive drawer trigger. Those are host integration responsibilities, not
+automatic behavior of `sk-side-nav`. For a
 matching responsive shell, own `createDrawer(nav, { modal:
 "(max-width: 63.999rem)" })`, show it for the expanded desktop rail, and wire the
 trigger to `show()`/`close()`. Do not also auto-initialize that same nav using
 `data-sk-drawer`. On router updates, use the owned disclosure's `open()` method
 or rerender with matching `aria-expanded` and `hidden` state; changing only
 `aria-expanded` cannot synchronize an already initialized controller.
+
+Navigation width controls and remembered width/collapse preferences are optional
+docs-site features, not application requirements. Use the sidebar width token
+without adding a resizing UI unless the product requires one. Likewise,
+Workspace is example terminology: do not add a Workspace heading, destination,
+product name or workspace switcher merely to match the examples. Use the
+application’s own names. Preserve intentional existing features when upgrading;
+this guidance does not require removing a product’s sidebar resizing or workspace
+functionality.
 
 Use a divided, labeled `sk-side-nav__open-items` section for application-owned
 open documents. Do not render them as children of the preceding menu item.

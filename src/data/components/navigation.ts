@@ -349,10 +349,11 @@ export const navigationComponents: ComponentSpec[] = [
     dos: [
       'Filter destinations server-side by permission.',
       'Mark the current page with both aria-current and a visible non-colour marker.',
-      'Persist the collapsed preference per user.',
+      'If the product offers sidebar collapse, persist that preference per user.',
       'Keep child destinations indented under their parent; use sk-side-nav__branch-row, sk-side-nav__toggle and sk-side-nav__children.',
       'Use the same hierarchy as the docs sidebar: the chevron indicates expansion, the 1px neutral leading guide groups visible children, and only the exact current destination has the separate 4px leading accent.',
-      'Own route matching, current-item scrolling, responsive drawer initialization and width/collapse preferences in the application shell. enhance() wires submenu disclosures, not those shell behaviors. See the runtime contract for createDrawer setup.',
+      'Own route matching, current-item scrolling and responsive drawer initialization in the application shell. enhance() wires submenu disclosures, not those shell behaviors. See the runtime contract for createDrawer setup.',
+      'Treat Navigation width controls and remembered width/collapse preferences as optional product features. The sidebar width token does not require a resizing control.',
       'Separate application-owned open items with sk-side-nav__open-items and a visible heading; use document icons so they do not look like another menu group.',
     ],
     donts: [
@@ -360,6 +361,7 @@ export const navigationComponents: ComponentSpec[] = [
       'Do not nest more than one level.',
       'Do not use colour alone for the current item.',
       'Do not default new users into collapsed mode.',
+      'Do not add Navigation width controls, Workspace labels or a workspace switcher just because the docs or examples contain them. Include them only when the product requires them; use the application’s own names.',
     ],
     html: `<nav class="sk-side-nav" aria-label="Primary" id="primary-nav">
   <ul class="sk-side-nav__list">

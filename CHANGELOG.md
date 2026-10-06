@@ -7,6 +7,11 @@ The version in `package.json` is the single source of truth — the server, the
 documentation site, the behaviours bundle and the container tag all derive from
 it, and `npm run check:version` fails the build if a literal drifts back in.
 
+## 3.0.3 — 2026-10-06
+
+- Explicitly make Navigation width controls, width/collapse preferences and Workspace UI optional in MCP prompts, foundations, sidebar contracts and migration guidance.
+- Preserve application-specific names and intentional existing features when adopting the shared navigation design.
+
 ## 3.0.2 — 2026-10-03
 
 - Verify standalone sidebar recipes against the docs menu across themes, RTL, keyboard expansion, guide lines and current-page indicators.
