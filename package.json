@@ -62,7 +62,7 @@
     "@modelcontextprotocol/sdk": "^1.32.0",
     "express": "^5.2.1",
     "parse5": "^8.0.1",
-    "zod": "^4.6.5"
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "@angular/compiler": "^21.2.25",
