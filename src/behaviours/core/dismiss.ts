@@ -11,7 +11,8 @@ export interface DismissOptions {
   escape?: boolean;
   outsidePointer?: boolean;
   focusOut?: boolean;
-  onDismiss: (reason: 'escape' | 'pointer' | 'focus') => void;
+  /** Parent means an owning surface closed; children must release their state. */
+  onDismiss: (reason: 'escape' | 'pointer' | 'focus' | 'parent') => void;
 }
 
 interface Layer {
@@ -108,6 +109,16 @@ export function dismissable(surface: Element, options: DismissOptions): Cleanup 
   return () => {
     if (disposed) return;
     disposed = true;
+    // A parent can close programmatically without an outside event. Its open
+    // descendants must release focus traps and positioners before it disappears.
+    for (const child of [...stack.layers].reverse()) {
+      if (child === layer || !stack.layers.includes(child)) continue;
+      for (let ancestor = child.parent; ancestor; ancestor = ancestor.parent) {
+        if (ancestor !== layer) continue;
+        child.options.onDismiss('parent');
+        break;
+      }
+    }
     const index = stack.layers.indexOf(layer);
     if (index >= 0) stack.layers.splice(index, 1);
     if (!stack.layers.length) { stack.destroy(); stacks.delete(doc); }

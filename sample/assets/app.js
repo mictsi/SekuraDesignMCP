@@ -48,12 +48,19 @@
   }
 
   function initTheme() {
+    function choose(value, label) {
+      var saved = window.sekuraTheme.set(value);
+      syncThemeControls();
+      var message = 'Theme set to ' + label + '. Currently showing ' + window.sekuraTheme.resolved() + '.';
+      if (saved === false) message += ' Applied for this page; preferences could not be saved on this device.';
+      var persistence = $('[data-sk-theme-persistence]');
+      if (persistence) persistence.textContent = saved === false ? 'Applied for this page. Device storage is unavailable.' : 'Saved on this device.';
+      announce(message);
+    }
     document.addEventListener('sk:segmented:change', function (event) {
       var btn = $('[data-sk-theme-option][aria-checked="true"]', event.target);
       if (!btn) return;
-      window.sekuraTheme.set(btn.dataset.skThemeOption);
-      syncThemeControls();
-      announce('Theme set to ' + btn.textContent.trim() + '.');
+      choose(btn.dataset.skThemeOption, btn.textContent.trim());
     });
 
     // The header button cycles; the settings page offers all three explicitly.
@@ -61,12 +68,11 @@
       btn.addEventListener('click', function () {
         var order = ['system', 'light', 'dark'];
         var next = order[(order.indexOf(window.sekuraTheme.get()) + 1) % order.length];
-        window.sekuraTheme.set(next);
-        syncThemeControls();
-        announce('Theme set to ' + next + '. Currently showing ' + window.sekuraTheme.resolved() + '.');
+        choose(next, next);
       });
     });
 
+    window.addEventListener('sk:theme-preference', syncThemeControls);
     syncThemeControls();
   }
 
@@ -127,7 +133,7 @@
     $$('[aria-haspopup="menu"][aria-controls]:not([data-sk-submenu])').forEach(function (el) { el.dataset.skMenuTrigger = el.getAttribute('aria-controls'); });
     $$('[data-sk-popover-target]').forEach(function (el) { el.dataset.skPopoverTrigger = el.dataset.skPopoverTarget; });
     $$('dialog.sk-dialog').forEach(function (el) { el.setAttribute('data-sk-dialog', ''); });
-    $$('.sk-drawer').forEach(function (el) { el.setAttribute('data-sk-drawer', ''); if (!el.hasAttribute('data-sk-modal')) el.dataset.skModal = '(max-width: 63.999rem)'; });
+    $$('.sk-drawer:not([data-sk-custom-drawer])').forEach(function (el) { el.setAttribute('data-sk-drawer', ''); if (!el.hasAttribute('data-sk-modal')) el.dataset.skModal = '(max-width: 63.999rem)'; });
     $$('[data-sk-table]').forEach(function (el) { el.dataset.skSelection = el.id === 'project-table' ? 'projects' : 'items'; });
     Sekura.autoEnhance(document.body);
   }
@@ -226,68 +232,40 @@
    * and a manual close is always available (WCAG 2.2.1).
    * ================================================================== */
 
+  var sampleToaster;
   function toast(opts) {
     var region = $('.sk-toast-region');
     if (!region) return;
-
-    var intent = opts.intent || 'success';
-    var el = document.createElement('div');
-    el.className = 'sk-toast sk-toast--' + intent;
-    el.dataset.state = 'entering';
-
-    var icons = { success: 'check-circle', info: 'info', danger: 'error' };
-    el.innerHTML =
-      '<svg class="sk-toast__icon" aria-hidden="true" focusable="false" width="20" height="20">' +
-        '<use href="#sk-icon-' + (icons[intent] || 'info') + '"></use></svg>' +
-      '<p class="sk-toast__message"></p>' +
-      (opts.action
-        ? '<button type="button" class="sk-button sk-button--ghost sk-button--sm sk-toast__action"></button>'
-        : '') +
-      '<button type="button" class="sk-icon-button sk-icon-button--sm sk-toast__dismiss">' +
-        '<svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-close"></use></svg>' +
-        '<span class="sk-visually-hidden">Dismiss notification</span></button>';
-
-    $('.sk-toast__message', el).textContent = opts.message;
-
-    if (opts.action) {
-      var actionBtn = $('.sk-toast__action', el);
-      actionBtn.textContent = opts.action.label;
-      actionBtn.addEventListener('click', function () {
-        opts.action.onClick();
-        dismiss();
-      });
-    }
-
-    // Toasts carrying an action get longer, because the user has to reach it.
-    var duration = opts.duration || (opts.action ? 10000 : 6000);
-    var timer;
-    var dismissed = false;
-
-    function dismiss() {
-      if (dismissed) return;
-      dismissed = true;
-      clearTimeout(timer);
-      el.dataset.state = 'leaving';
-      setTimeout(function () { el.remove(); }, 200);
-    }
-    function start() { timer = setTimeout(dismiss, duration); }
-    function pause() { clearTimeout(timer); }
-
-    $('.sk-toast__dismiss', el).addEventListener('click', dismiss);
-    el.addEventListener('mouseenter', pause);
-    el.addEventListener('mouseleave', start);
-    el.addEventListener('focusin', pause);
-    el.addEventListener('focusout', start);
-    el.addEventListener('keydown', function (e) { if (e.key === 'Escape') dismiss(); });
-
-    region.appendChild(el);
-    requestAnimationFrame(function () { el.dataset.state = 'visible'; });
-    start();
-
-    // Cap at three. More than that and none of them get read.
-    var all = $$('.sk-toast', region);
-    if (all.length > 3) all[0].remove();
+    if (!sampleToaster) sampleToaster = Sekura.createToaster(region);
+    return sampleToaster.show(opts.message, {
+      intent: opts.intent || 'success',
+      duration: opts.duration,
+      // Keep the sample's onClick API while the shared controller owns actions.
+      action: opts.action ? {
+        label: opts.action.label,
+        onAction: opts.action.onAction || opts.action.onClick
+      } : undefined,
+      render: function (message, options) {
+        var el = document.createElement('div');
+        el.className = 'sk-toast sk-toast--' + options.intent;
+        var text = document.createElement('p');
+        text.className = 'sk-toast__message'; text.textContent = message; el.appendChild(text);
+        if (options.action) {
+          var action = document.createElement('button');
+          action.type = 'button'; action.className = 'sk-button sk-button--ghost sk-button--sm sk-toast__action';
+          action.textContent = options.action.label; action.setAttribute('data-sk-toast-action', ''); el.appendChild(action);
+        }
+        var close = document.createElement('button');
+        close.type = 'button'; close.className = 'sk-icon-button sk-icon-button--sm sk-toast__dismiss';
+        close.setAttribute('data-sk-toast-dismiss', ''); close.setAttribute('aria-label', 'Dismiss notification');
+        close.innerHTML = '<svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-close"></use></svg>';
+        el.appendChild(close); return el;
+      }
+    });
   }
+  window.addEventListener('pagehide', function (event) {
+    if (!event.persisted && sampleToaster) sampleToaster.destroy();
+  });
   window.sekuraToast = toast;
 
   /* ================================================================== *
@@ -659,12 +637,32 @@
     });
 
     $$('[data-sk-toggle-target]').forEach(function (btn) {
+      var target = document.querySelector(btn.dataset.skToggleTarget);
+      if (!target) return;
+      function setOpen(open) {
+        if (open) target.removeAttribute('hidden');
+        else target.setAttribute('hidden', target.classList.contains('docs-demo__code') ? 'until-found' : '');
+        btn.setAttribute('aria-expanded', String(open));
+        var label = btn.querySelector('.sk-button__label');
+        if (label && target.classList.contains('docs-demo__code')) label.textContent = open ? 'Hide markup' : 'Show markup';
+      }
       btn.addEventListener('click', function () {
-        var target = document.querySelector(btn.dataset.skToggleTarget);
-        if (!target) return;
-        target.hidden = !target.hidden;
-        btn.setAttribute('aria-expanded', String(!target.hidden));
+        setOpen(target.hasAttribute('hidden'));
       });
+      target.addEventListener('beforematch', function () { setOpen(true); });
+      if (target.classList.contains('docs-demo__code')) {
+        function revealFragment() {
+          var id;
+          try { id = decodeURIComponent(location.hash.slice(1)); } catch (error) { return; }
+          var destination = document.getElementById(id);
+          if (destination && target.contains(destination)) {
+            setOpen(true);
+            requestAnimationFrame(function () { destination.scrollIntoView({ block: 'start' }); });
+          }
+        }
+        window.addEventListener('hashchange', revealFragment);
+        revealFragment();
+      }
     });
   }
 

@@ -7,7 +7,7 @@
  * rather than claiming a state it has not reached.
  */
 
-import { combine, emit, on, toggleAttr, type Cleanup } from '../core/dom.js';
+import { combine, emit, focusable, isVisible, on, toggleAttr, type Cleanup } from '../core/dom.js';
 import { announce } from '../core/live.js';
 
 /* ================================================================== *
@@ -61,8 +61,12 @@ export function createThemeManager(options: ThemeOptions = {}): ThemeManager {
     }
   }
 
+  const validTheme = (value: string): ThemePreference =>
+    value === 'light' || value === 'dark' ? value : 'system';
+  let preference = validTheme(read(storageKey, 'system'));
+
   function resolved(): string {
-    const pref = read(storageKey, 'system') as ThemePreference;
+    const pref = preference;
     const contrast = read(contrastKey, 'system') as ContrastPreference;
     const base = pref === 'system' ? (darkQuery.matches ? 'dark' : 'light') : pref;
     const hc = contrast === 'system' ? (contrastQuery.matches ? 'more' : 'normal') : contrast;
@@ -74,16 +78,17 @@ export function createThemeManager(options: ThemeOptions = {}): ThemeManager {
   }
 
   function set(value: ThemePreference): void {
+    preference = validTheme(value);
+    let persisted = true;
     try {
-      localStorage.setItem(storageKey, value);
+      localStorage.setItem(storageKey, preference);
     } catch {
-      /* storage unavailable — the attribute still updates for this session */
+      persisted = false;
     }
     apply();
-    options.onChange?.(resolved(), value);
-    // The visual change is completely silent to a screen reader user.
-    announce(`Theme set to ${value}.`);
-    emit(root, 'sk:theme:change', { preference: value, resolved: resolved() });
+    options.onChange?.(resolved(), preference);
+    announce(`Theme set to ${preference}.${persisted ? '' : ' This preference applies to this page only because storage is unavailable.'}`);
+    emit(root, 'sk:theme:change', { preference, resolved: resolved(), persisted });
   }
 
   apply();
@@ -91,10 +96,15 @@ export function createThemeManager(options: ThemeOptions = {}): ThemeManager {
   const cleanups = [
     on(darkQuery, 'change', apply),
     on(contrastQuery, 'change', apply),
+    on(window, 'storage', (nativeEvent: Event) => {
+      const event = nativeEvent as StorageEvent;
+      if (event.key === storageKey || event.key === null) preference = validTheme(read(storageKey, 'system'));
+      if (event.key === storageKey || event.key === contrastKey || event.key === null) apply();
+    }),
   ];
 
   return {
-    get: () => read(storageKey, 'system') as ThemePreference,
+    get: () => preference,
     set,
     resolved,
     destroy: combine(...cleanups),
@@ -135,58 +145,112 @@ export function createToaster(region: HTMLElement, defaults: ToastOptions = {}):
   if (!region.hasAttribute('role')) region.setAttribute('role', 'status');
   if (!region.hasAttribute('aria-live')) region.setAttribute('aria-live', 'polite');
 
-  const active = new Set<Cleanup>();
+  interface ToastEntry { element: HTMLElement; mount: () => void; dismiss: Cleanup }
+  const visible: ToastEntry[] = [];
+  const pending: ToastEntry[] = [];
+  const active = new Set<ToastEntry>();
+  let destroyed = false;
+  const initialTabindex = region.getAttribute('tabindex');
+
+  function drain(): void {
+    if (destroyed) return;
+    while (visible.length < 3 && pending.length) {
+      const entry = pending.shift()!;
+      visible.push(entry);
+      entry.mount();
+    }
+  }
 
   function show(message: string, options: ToastOptions = {}): Cleanup {
+    if (destroyed) return () => {};
     const opts = { ...defaults, ...options };
     const duration = opts.duration ?? (opts.action ? 10_000 : 6000);
-
-    const el = opts.render
-      ? opts.render(message, opts)
-      : defaultToast(message, opts);
-
+    const el = opts.render ? opts.render(message, opts) : defaultToast(message, opts);
+    const doc = region.ownerDocument;
+    let previousFocus = doc.activeElement instanceof HTMLElement && !region.contains(doc.activeElement)
+      ? doc.activeElement : null;
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let remaining = duration;
+    let started = 0;
+    let mounted = false;
     let dismissed = false;
+    let hovered = false;
 
-    const dismiss = (): void => {
+    function pause(): void {
+      if (timer !== undefined) {
+        remaining = Math.max(0, remaining - (performance.now() - started));
+        clearTimeout(timer);
+        timer = undefined;
+      }
+    }
+
+    function resume(): void {
+      if (dismissed || !mounted || hovered || el.contains(doc.activeElement) || duration <= 0 || timer !== undefined) return;
+      started = performance.now();
+      timer = setTimeout(() => { timer = undefined; dismiss(); }, remaining);
+    }
+
+    function restoreFocus(): void {
+      if (previousFocus?.isConnected && isVisible(previousFocus) && !previousFocus.matches(':disabled') && !previousFocus.closest('[inert]')) {
+        previousFocus.focus();
+        if (doc.activeElement === previousFocus) return;
+      }
+      const target = visible.map(entry => focusable(entry.element)[0]).find(Boolean);
+      if (target) { target.focus(); return; }
+      if (region.isConnected && isVisible(region)) {
+        if (!region.hasAttribute('tabindex')) region.tabIndex = -1;
+        region.focus();
+      }
+    }
+
+    function dismiss(): void {
       if (dismissed) return;
       dismissed = true;
-      clearTimeout(timer);
+      pause();
+      const hadFocus = el.contains(doc.activeElement);
       cleanup();
       el.remove();
-      active.delete(dismiss);
-    };
-    const start = (): void => {
-      if (duration > 0) timer = setTimeout(dismiss, duration);
-    };
-    const pause = (): void => clearTimeout(timer);
+      active.delete(entry);
+      for (const queue of [visible, pending]) {
+        const index = queue.indexOf(entry);
+        if (index >= 0) queue.splice(index, 1);
+      }
+      drain();
+      if (hadFocus) restoreFocus();
+    }
 
     const cleanup = combine(
-      on(el, 'pointerenter', pause),
-      on(el, 'pointerleave', start),
-      on(el, 'focusin', pause),
-      on(el, 'focusout', start),
+      on(el, 'pointerenter', () => { hovered = true; pause(); }),
+      on(el, 'pointerleave', () => { hovered = false; resume(); }),
+      on(el, 'focusin', (event: FocusEvent) => {
+        if (event.relatedTarget instanceof HTMLElement && !region.contains(event.relatedTarget)) previousFocus = event.relatedTarget;
+        pause();
+      }),
+      on(el, 'focusout', () => queueMicrotask(resume)),
       on(el, 'keydown', (event: KeyboardEvent) => {
-        if (event.key === 'Escape') dismiss();
+        if (event.key === 'Escape' && !event.isComposing) {
+          event.preventDefault();
+          event.stopPropagation();
+          dismiss();
+        }
       }),
       on(el, 'click', (event: MouseEvent) => {
         const target = event.target as Element;
         if (target.closest('[data-sk-toast-dismiss]')) dismiss();
-        if (target.closest('[data-sk-toast-action]')) {
+        else if (target.closest('[data-sk-toast-action]')) {
           opts.action?.onAction();
           dismiss();
         }
       })
     );
-
-    region.appendChild(el);
-    start();
-    active.add(dismiss);
-
-    // Cap the stack — more than about three and none of them get read.
-    const all = Array.from(region.children);
-    if (all.length > 3) all[0]?.remove();
-
+    const entry: ToastEntry = {
+      element: el,
+      dismiss,
+      mount() { mounted = true; region.appendChild(el); resume(); },
+    };
+    active.add(entry);
+    pending.push(entry);
+    drain();
     return dismiss;
   }
 
@@ -211,7 +275,7 @@ export function createToaster(region: HTMLElement, defaults: ToastOptions = {}):
     close.type = 'button';
     close.className = 'sk-icon-button sk-icon-button--sm sk-toast__dismiss';
     close.setAttribute('data-sk-toast-dismiss', '');
-    close.innerHTML = '<span class="sk-visually-hidden">Dismiss notification</span>';
+    close.innerHTML = '<svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-close"></use></svg><span class="sk-visually-hidden">Dismiss notification</span>';
     el.appendChild(close);
 
     return el;
@@ -220,7 +284,10 @@ export function createToaster(region: HTMLElement, defaults: ToastOptions = {}):
   return {
     show,
     destroy: () => {
-      for (const dismiss of [...active]) dismiss();
+      destroyed = true;
+      for (const entry of [...active]) entry.dismiss();
+      if (initialTabindex === null) region.removeAttribute('tabindex');
+      else region.setAttribute('tabindex', initialTabindex);
     },
   };
 }

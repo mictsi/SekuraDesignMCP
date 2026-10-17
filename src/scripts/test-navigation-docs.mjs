@@ -4,7 +4,8 @@ import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createDemoServer } from './demo-server.mjs';
-import { components } from '../../dist/data/components/index.js';
+import { components, getComponent } from '../../dist/data/components/index.js';
+import { generateCode } from '../../dist/lib/codegen.js';
 
 const pw = await import(process.env.SEKURA_PLAYWRIGHT
   ? pathToFileURL(resolve(process.env.SEKURA_PLAYWRIGHT)).href : 'playwright-core');
@@ -90,7 +91,7 @@ try {
     await page.locator('main').evaluate(element => { element.scrollTop += 200; });
     await page.waitForFunction(() => document.querySelector('.docs-toc__link[aria-current="location"]')?.getAttribute('href') === '#css');
     await page.locator('main').evaluate(element => { element.scrollTop = 0; });
-    await page.waitForFunction(() => document.querySelector('.docs-toc__link[aria-current="location"]')?.getAttribute('href') === '#usage');
+    await page.waitForFunction(() => document.querySelector('.docs-toc__link[aria-current="location"]')?.getAttribute('href') === '#example');
   });
 
   await test('fixed width ignores legacy values and preferences contain no sizing UI', async page => {
@@ -141,7 +142,7 @@ try {
     }, { width, height: 900 });
   }
 
-  await test('local settings navigation stays in flow and collapsed rail exposes child access', async page => {
+  await test('local settings navigation stays in flow and tracks the current section', async page => {
     await page.goto(base + '/example-settings.html');
     const nav = page.locator('[data-sk-settings-nav]');
     assert.equal(await nav.isVisible(), true);
@@ -151,18 +152,39 @@ try {
     await nav.locator('a[href="#notifications"]').click();
     await page.waitForFunction(() => document.querySelector('[data-sk-settings-nav] a[href="#notifications"]').getAttribute('aria-current') === 'location');
     assert.equal(new URL(page.url()).hash, '#notifications');
-    const rail = page.locator('#settings-nav-preview');
+    assert.equal(await page.locator('#settings-nav-preview').count(), 0, 'settings should contain the product settings rather than an unrelated navigation demo');
+    assert.equal(await page.locator('main').evaluate(element => element.scrollWidth <= element.clientWidth + 1), true);
+    await page.screenshot({ path: '.run/review/navigation-settings-390.png', fullPage: true });
+  }, { width: 390, height: 900 });
+
+  await test('the standalone collapsed rail exposes child access and restores focus', async page => {
+    // Collapse belongs to the application shell. Exercise the public recipe
+    // with the real sample wiring without putting a teaching UI in Settings.
+    const recipe = generateCode(getComponent('side-nav'), 'html')
+      .replace('class="sk-side-nav"', 'class="sk-side-nav sk-side-nav--collapsed"')
+      .replace('data-sk-nav-expand aria-expanded="true"', 'data-sk-nav-expand aria-expanded="false"');
+    await page.route('**/collapsed-rail-fixture.html', route => route.fulfill({
+      contentType: 'text/html',
+      body: `<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/assets/sekura.css"></head><body><button type="button" data-sk-nav-collapse="primary-nav">Collapse navigation</button><main style="display: flex; min-inline-size: 0">${recipe}</main><script src="/assets/icons.js"></script><script src="/assets/sekura.iife.min.js"></script><script src="/assets/app.js"></script></body></html>`,
+    }));
+    await page.goto(base + '/collapsed-rail-fixture.html');
+    const rail = page.locator('#primary-nav');
+    assert.equal(await rail.locator('.sk-side-nav__children').isVisible(), false);
     await rail.locator('[data-sk-nav-expand]').click();
     assert.equal(await rail.evaluate(element => element.classList.contains('sk-side-nav--collapsed')), false);
     assert.equal(await rail.locator('.sk-side-nav__children').isVisible(), true);
     assert.equal(await rail.locator('.sk-side-nav__children [aria-current]').evaluate(element => element === document.activeElement), true);
     assert.equal(await rail.locator('.sk-side-nav__children [aria-current]').evaluate(element => getComputedStyle(element, '::before').width), '4px', 'current local destination retains the leading marker');
-    await page.locator('[data-sk-nav-collapse="settings-nav-preview"]').click();
+    await rail.getByRole('button', { name: 'Project pages', exact: true }).click();
+    await page.locator('[data-sk-nav-collapse="primary-nav"]').click();
     assert.equal(await rail.locator('.sk-side-nav__children').isVisible(), false);
     assert.equal(await rail.locator('[data-sk-nav-expand]').evaluate(element => element === document.activeElement), true);
+    await page.keyboard.press('Enter');
+    assert.equal(await rail.locator('.sk-side-nav__children').isVisible(), true, 'expansion reveals the current destination even if its branch was closed');
+    assert.equal(await rail.locator('.sk-side-nav__children [aria-current]').evaluate(element => element === document.activeElement), true);
+    await assertWithinViewport(rail);
     assert.equal(await page.locator('main').evaluate(element => element.scrollWidth <= element.clientWidth + 1), true);
-    await page.screenshot({ path: '.run/review/navigation-settings-390.png', fullPage: true });
-  }, { width: 390, height: 900 });
+  }, { width: 320, height: 900 });
 
   await test('breadcrumb overflow contains normal links and supports native tab navigation', async page => {
     await page.goto(base + '/component-breadcrumbs.html');

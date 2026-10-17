@@ -14,6 +14,7 @@ export const implementationSchema = z.object({
   controller: z.string().nullable(), behavior: z.enum(['native', 'controller', 'application']),
   frameworkOutput: z.literal('reference-recipe'), applicationResponsibilities: z.array(z.string()),
   events: z.array(eventSchema), autoMarker: z.string().nullable(), nativeReactExport: z.string().nullable(),
+  designKit: z.boolean(),
 });
 export const recipeSchema = z.object({
   schemaVersion: z.literal(1), version: z.string(), componentId: z.string(),
@@ -58,15 +59,26 @@ export function componentRecipe(spec: ComponentSpec, framework: Framework) {
 
 export function validateIntegration(input: z.input<typeof integrationInput>) {
   const args = integrationInput.parse(input);
+  // Reject oversized trees and exhausted name-check budgets before integration
+  // traversal. Reuse the findings below instead of validating the markup twice.
+  const markupFindings = validateMarkup(args.markup);
+  const styles = requiredStyles(args.componentIds);
+  if (markupFindings.some(finding => finding.rule === 'validation-limit')) {
+    return integrationResultSchema.parse({ schemaVersion: 1, version: VERSION, valid: false,
+      requiredStylesheets: styles, requiredControllers: [], findings: markupFindings,
+      limitation: 'Integration checks were not completed because the markup exceeded static validation limits. Required controllers were not evaluated. Check a smaller fragment.',
+    });
+  }
   const findings: Finding[] = [];
   const issue = (rule: string, message: string, fix: string, severity: Finding['severity'] = 'error'): void => { findings.push({ severity, rule, message, fix }); };
   type Element = DefaultTreeAdapterMap['element'];
   const nodes: Element[] = [];
-  function visit(node: DefaultTreeAdapterMap['node']): void {
+  const pending: DefaultTreeAdapterMap['node'][] = [parseFragment(args.markup)];
+  while (pending.length) {
+    const node = pending.pop()!;
     if ('tagName' in node) nodes.push(node);
-    if ('childNodes' in node) node.childNodes.forEach(visit);
+    if ('childNodes' in node) for (let i = node.childNodes.length - 1; i >= 0; i--) pending.push(node.childNodes[i]!);
   }
-  visit(parseFragment(args.markup));
   const attr = (node: Element, name: string) => node.attrs.find(a => a.name === name)?.value;
   const hasClass = (node: Element, name: string) => attr(node, 'class')?.split(/\s+/).includes(name) ?? false;
   const within = (node: Element, roots: Element[]): boolean => {
@@ -99,7 +111,6 @@ export function validateIntegration(input: z.input<typeof integrationInput>) {
     const symbol = attr(node, 'href');
     if (node.tagName === 'use' && symbol?.startsWith('#') && !ids.has(symbol.slice(1)) && !args.svgSymbols.includes(symbol.slice(1))) issue('missing-icon', `Missing SVG symbol ${symbol}.`, 'Include the symbol in the sprite or replace the icon.');
   }
-  const styles = requiredStyles(args.componentIds);
   const loaded = new Set(args.stylesheets.map(path => path.replace(/[?#].*$/, '')));
   const hasStyle = (file: string) => [...loaded].some(path => path === file || path.endsWith('/' + file));
   if (!hasStyle('sekura.css')) for (const file of styles) if (!hasStyle(file)) issue('missing-stylesheet', `Missing ${file}.`, 'Load the full sekura.css bundle or every required stylesheet.');
@@ -157,7 +168,7 @@ export function validateIntegration(input: z.input<typeof integrationInput>) {
       if (!args.handledEvents.includes(`${id}:${event.name}`)) issue('unhandled-action', `${id}:${event.name} has no declared application handler.`, 'Wire an outcome, or explicitly document why local/native state is sufficient.', 'warning');
     }
   }
-  findings.push(...validateMarkup(args.markup));
+  findings.push(...markupFindings);
   return integrationResultSchema.parse({ schemaVersion: 1, version: VERSION, valid: !findings.some(f => f.severity === 'error'), requiredStylesheets: styles, requiredControllers: [...controllers], findings,
     limitation: 'Static integration checks cannot verify declared callbacks, request outcomes, focus timing or assistive-technology behavior. Compile, mount and exercise the application.',
   });

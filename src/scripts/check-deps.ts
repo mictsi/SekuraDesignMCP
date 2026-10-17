@@ -126,12 +126,14 @@ interface NodeRef {
   major: number;
   /** Consistency is required of the build runtime, not of `engines`. */
   pinned: boolean;
+  /** True only for a runtime configured in the CI workflow. */
+  tested: boolean;
 }
 
 const nodeRefs: NodeRef[] = [];
 
-function addRef(where: string, major: number, pinned = true): void {
-  nodeRefs.push({ where, major, pinned });
+function addRef(where: string, major: number, pinned = true, tested = false): void {
+  nodeRefs.push({ where, major, pinned, tested });
 }
 
 /* Dockerfile: FROM node:<major>-alpine */
@@ -151,7 +153,7 @@ for (const wf of ['.github/workflows/ci.yml', '.github/workflows/release.yml']) 
     const list = m[1] ? m[1].split(',') : [m[2]!];
     for (const v of list) {
       const major = Number(String(v).trim().replace(/['"]/g, ''));
-      if (Number.isFinite(major)) addRef(wf, major, false);
+      if (Number.isFinite(major)) addRef(wf, major, false, wf.endsWith('/ci.yml'));
     }
   }
   for (const m of content.matchAll(/node-version:\s*\$\{\{\s*matrix\.node\s*\}\}/g)) {
@@ -160,7 +162,7 @@ for (const wf of ['.github/workflows/ci.yml', '.github/workflows/release.yml']) 
   for (const m of content.matchAll(/^\s*node:\s*\[([^\]]*)\]/gm)) {
     for (const v of m[1]!.split(',')) {
       const major = Number(v.trim().replace(/['"]/g, ''));
-      if (Number.isFinite(major)) addRef(wf, major, false);
+      if (Number.isFinite(major)) addRef(wf, major, false, wf.endsWith('/ci.yml'));
     }
   }
 }
@@ -197,20 +199,20 @@ for (const ref of nodeRefs) {
 }
 
 /* Angular has a separate LTS maintenance line. Review against angular.dev/reference/releases. */
-for (const name of ['@angular/core', '@angular/compiler']) {
+for (const name of ['@angular/core', '@angular/compiler', '@angular/common', '@angular/platform-browser', '@angular/platform-server']) {
   const range = pkg.devDependencies?.[name];
   if (range && Number(/(\d+)/.exec(range)?.[1]) !== 21) findings.push({ where: `package.json → ${name}`, text: 'Angular must track the selected LTS 21 line', fix: 'Use the latest stable 21.x patch, or review the upstream LTS schedule.' });
 }
 
 /* The runtime the image builds on must be one the workflows actually test. */
 const pinnedMajors = [...new Set(nodeRefs.filter((r) => r.pinned).map((r) => r.major))];
-const testedMajors = [...new Set(nodeRefs.filter((r) => !r.pinned).map((r) => r.major))];
+const testedMajors = [...new Set(nodeRefs.filter((r) => r.tested).map((r) => r.major))];
 for (const major of pinnedMajors) {
-  if (testedMajors.length > 0 && !testedMajors.includes(major)) {
+  if (!testedMajors.includes(major)) {
     findings.push({
       where: nodeRefs.find((r) => r.pinned && r.major === major)!.where,
       text: `builds on Node ${major}, which CI never runs`,
-      fix: `add ${major} to the CI matrix, or build on one of: ${testedMajors.join(', ')}`,
+      fix: `add ${major} to the CI matrix${testedMajors.length ? `, or build on one of: ${testedMajors.join(', ')}` : ''}`,
     });
   }
 }

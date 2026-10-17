@@ -40,7 +40,7 @@ export const NAV: NavGroup[] = [
     label: 'Get started',
     items: [
       { file: 'index.html', label: 'Overview' },
-      { file: 'migration.html', label: 'Upgrade to v3.1' },
+      { file: 'migration.html', label: 'Upgrade to v3.2' },
       { file: 'structure.html', label: 'How it is structured' },
       { file: 'develop.html', label: 'For developers' },
       { file: 'behaviours.html', label: 'Behaviours package' },
@@ -252,11 +252,12 @@ export function resetDemoIds(): void {
 export function demo(
   preview: string,
   code?: string,
-  opts: { label?: string; lang?: string; pad?: boolean } = {}
+  opts: { label?: string; lang?: string; pad?: boolean; id?: string; expanded?: boolean } = {}
 ): string {
-  const id = `demo-${(demoCounter += 1)}`;
+  demoCounter += 1;
+  const id = opts.id ?? `demo-${demoCounter}`;
   const codeBlock = code
-    ? `<div class="docs-demo__code" id="${id}-code" hidden>
+    ? `<div class="docs-demo__code" id="${id}-code"${opts.expanded ? '' : ' hidden="until-found"'}>
         <div class="sk-code-block">
           <div class="sk-code-block__header">
             <span class="sk-code-block__language">${escapeHtml(opts.lang ?? 'html')}</span>
@@ -278,11 +279,12 @@ export function demo(
     ${code
       ? `<div class="docs-demo__toolbar">
            <button type="button" class="sk-button sk-button--ghost sk-button--sm"
-                   aria-expanded="false" aria-controls="${id}-code" data-sk-toggle-target="#${id}-code">
+                   aria-expanded="${opts.expanded ? 'true' : 'false'}" aria-controls="${id}-code" data-sk-toggle-target="#${id}-code">
              ${icon('chevron-down', 14, 'sk-button__icon')}
-             <span class="sk-button__label">Show markup</span>
+             <span class="sk-button__label">${opts.expanded ? 'Hide' : 'Show'} markup</span>
              <span class="sk-visually-hidden">${opts.label ? ` for ${escapeHtml(opts.label)}` : ` for example ${demoCounter}`}</span>
            </button>
+           <a class="sk-link" href="#${id}-code">Link to markup<span class="sk-visually-hidden"> for example ${demoCounter}</span></a>
          </div>`
       : ''}
     ${codeBlock}
@@ -315,14 +317,16 @@ export function themeCompare(fragment: string, caption?: string): string {
 const THEME_SCRIPT = `<script>
 (function () {
   var root = document.documentElement;
+  var pref = 'system', contrast = 'system';
+  function preference(value) { return ['system', 'light', 'dark'].indexOf(value) >= 0 ? value : 'system'; }
+  function contrastPreference(value) { return ['system', 'normal', 'more'].indexOf(value) >= 0 ? value : 'system'; }
+  try {
+    pref = preference(localStorage.getItem('sk-theme'));
+    contrast = contrastPreference(localStorage.getItem('sk-contrast'));
+  } catch (e) {}
   function sysTheme() { return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
   function sysContrast() { return matchMedia('(prefers-contrast: more)').matches ? 'more' : 'normal'; }
   function resolve() {
-    var pref, contrast;
-    try {
-      pref = localStorage.getItem('sk-theme') || 'system';
-      contrast = localStorage.getItem('sk-contrast') || 'system';
-    } catch (e) { pref = 'system'; contrast = 'system'; }
     var base = pref === 'system' ? sysTheme() : pref;
     var hc = contrast === 'system' ? sysContrast() : contrast;
     return hc === 'more' ? 'hc-' + base : base;
@@ -331,9 +335,19 @@ const THEME_SCRIPT = `<script>
   apply();
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', apply);
   matchMedia('(prefers-contrast: more)').addEventListener('change', apply);
+  window.addEventListener('storage', function (event) {
+    if (event.key === 'sk-theme' || event.key === null) pref = preference(event.newValue);
+    if (event.key === 'sk-contrast' || event.key === null) contrast = contrastPreference(event.newValue);
+    apply();
+    window.dispatchEvent(new Event('sk:theme-preference'));
+  });
   window.sekuraTheme = {
-    set: function (v) { try { localStorage.setItem('sk-theme', v); } catch (e) {} apply(); },
-    get: function () { try { return localStorage.getItem('sk-theme') || 'system'; } catch (e) { return 'system'; } },
+    set: function (v) {
+      pref = preference(v);
+      apply();
+      try { localStorage.setItem('sk-theme', pref); return true; } catch (e) { return false; }
+    },
+    get: function () { return pref; },
     resolved: resolve
   };
 })();
@@ -589,6 +603,21 @@ ${content}
 </body>
 </html>
 `;
+  }
+
+  if (opts.file === 'example-workspace.html') {
+    return `<!doctype html>
+<html lang="en"><head>${head(opts.title, opts.description)}</head>
+<body class="sk-app-shell docs-workspace-app">
+<script src="assets/icons.js"></script>
+<a class="sk-skip-link" href="#main">Skip to document</a>
+<div class="docs-workspace-banner"><p><strong>Local demo.</strong> Notes and stars stay on this device.</p><a class="sk-link" href="index.html">Back to documentation</a></div>
+<main class="sk-app-shell__main" id="main" tabindex="-1">${content}</main>
+<div class="sk-toast-region" role="status" aria-live="polite" aria-label="Notifications"></div>
+<script src="assets/sekura.iife.min.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/workspace.js"></script>
+</body></html>`;
   }
 
   return `<!doctype html>

@@ -1,250 +1,199 @@
 /**
- * Markup linting against the Sekura specification.
- *
- * This combines markup parsing with pragmatic pattern checks. It is
- * tuned to catch the failures that actually ship: icon buttons with no accessible
- * name, inputs with no label, colour used as the only signal, hard-coded hex values
- * that will break in dark mode, and flex containers that will overflow.
- *
- * Findings are advisory. A `no findings` result is not a certificate of
- * accessibility — it means none of the checked patterns matched.
+ * Bounded static markup checks. This does not compute a browser accessibility
+ * tree: external CSS, generated content and runtime state require browser tests.
  */
-
 import { parseFragment, type DefaultTreeAdapterMap } from 'parse5';
 import { components, getComponent } from '../data/components/index.js';
-import { semanticTokens } from '../data/tokens.js';
+import { componentVariableNames, tokenNames } from './token-registry.js';
 
 export type Severity = 'error' | 'warning' | 'info';
-
 export interface Finding {
   severity: Severity;
   rule: string;
   message: string;
-  /** The offending snippet, truncated. */
   snippet?: string;
-  /** What to do instead. */
   fix: string;
   wcag?: string;
 }
 
-const tokenNames = new Set(semanticTokens.map((t) => t.name));
-
+export const MARKUP_LIMITS = { codeUnits: 524288, nodes: 20000, depth: 128, nameVisits: 100000 } as const;
+export const MARKUP_CHECK_SCOPE = {
+  checked: ['Parsed label/ID associations', 'Static accessible names for links, buttons and form controls', 'Inline/HTML hidden content', 'Token names and the documented structural/CSS patterns'],
+  skipped: ['External stylesheet visibility', 'Pseudo-element content', 'Runtime state and shadow DOM', 'Full accessible-name computation', 'Keyboard and screen-reader behavior'],
+};
+class ValidationLimit extends Error {}
+type Element = DefaultTreeAdapterMap['element'];
+type Node = DefaultTreeAdapterMap['node'];
+function attr(node: Element, name: string): string | undefined { return node.attrs.find(a => a.name === name)?.value; }
 function snip(s: string, max = 120): string {
   const flat = s.replace(/\s+/g, ' ').trim();
   return flat.length > max ? `${flat.slice(0, max)}…` : flat;
 }
-
-/** Does this element have any plausible accessible name? */
-function hasAccessibleName(tag: string, inner: string): boolean {
-  if (/\baria-label\s*=\s*["'][^"']+["']/i.test(tag)) return true;
-  if (/\baria-labelledby\s*=\s*["'][^"']+["']/i.test(tag)) return true;
-  if (/\btitle\s*=\s*["'][^"']+["']/i.test(tag)) return true;
-  // Visible text that is not only an svg/icon.
-  const text = inner.replace(/<svg[\s\S]*?<\/svg>/gi, '').replace(/<[^>]+>/g, '').trim();
-  if (text.length > 0) return true;
-  // A visually hidden span counts, and is the preferred technique.
-  if (/class\s*=\s*["'][^"']*sk-visually-hidden/i.test(inner)) return true;
-  return false;
+function limitFinding(message: string): Finding {
+  return { severity: 'error', rule: 'validation-limit', message: `Validation was not completed: ${message}`,
+    fix: `Check a smaller fragment (at most ${MARKUP_LIMITS.codeUnits} UTF-16 code units, ${MARKUP_LIMITS.nodes} nodes and ${MARKUP_LIMITS.depth} levels). No clean-result claim is made.` };
 }
 
 export function validateMarkup(html: string, componentId?: string): Finding[] {
-  const findings: Finding[] = [];
-  const add = (f: Finding) => findings.push(f);
+  if (html.length > MARKUP_LIMITS.codeUnits) return [limitFinding('the input size limit was exceeded.')];
+  try { return validateWithinBudget(html, componentId); }
+  catch (error) {
+    if (error instanceof ValidationLimit) return [limitFinding(error.message)];
+    throw error;
+  }
+}
 
-  // Verify source order, not only CSS positions: descriptions precede text-entry
-  // controls while validation follows. Checkbox/radio labels contain their inputs.
-  const fieldLayouts: Array<{ control?: number; hints: Array<{ offset: number; html: string }> }> = [];
-  const visitField = (node: DefaultTreeAdapterMap['node'], field?: typeof fieldLayouts[number]): void => {
+function validateWithinBudget(html: string, componentId?: string): Finding[] {
+  const findings: Finding[] = [];
+  const add = (finding: Finding): void => {
+    if (findings.length >= 1000) throw new ValidationLimit('the finding limit was exceeded.');
+    findings.push(finding);
+  };
+  const root = parseFragment(html, { sourceCodeLocationInfo: true });
+  const elements: Element[] = [];
+  const byId = new Map<string, Element>();
+  const labels = new Map<string, Element[]>();
+  type Field = { control?: number; hints: Array<{ offset: number; html: string }> };
+  const fields: Field[] = [];
+  const pending: Array<{ node: Node; depth: number; field?: Field }> = [{ node: root, depth: 0 }];
+  let count = 0;
+  while (pending.length) {
+    let { node, depth, field } = pending.pop()!;
+    if (++count > MARKUP_LIMITS.nodes || depth > MARKUP_LIMITS.depth) throw new ValidationLimit('the parsed document is too large or deeply nested.');
     if ('tagName' in node) {
-      const attr = (name: string) => node.attrs.find(a => a.name === name)?.value;
-      const classes = attr('class')?.split(/\s+/) ?? [];
-      if (classes.includes('sk-field')) { field = { hints: [] }; fieldLayouts.push(field); }
+      elements.push(node);
+      const id = attr(node, 'id');
+      if (id && !byId.has(id)) byId.set(id, node);
+      if (node.tagName === 'label') {
+        const target = attr(node, 'for');
+        if (target !== undefined) {
+          const group = labels.get(target);
+          if (group) group.push(node); else labels.set(target, [node]);
+        }
+      }
+      const classes = attr(node, 'class')?.split(/\s+/) ?? [];
+      if (classes.includes('sk-field')) { field = { hints: [] }; fields.push(field); }
       const location = node.sourceCodeLocation;
       if (field && location) {
-        if (['input', 'select', 'textarea'].includes(node.tagName) && !['checkbox', 'radio', 'hidden'].includes(attr('type') ?? '')) field.control ??= location.startOffset;
+        if (['input', 'select', 'textarea'].includes(node.tagName) && !['checkbox', 'radio', 'hidden'].includes(attr(node, 'type') ?? '')) field.control ??= location.startOffset;
         if (classes.includes('sk-field__hint')) field.hints.push({ offset: location.startOffset, html: html.slice(location.startOffset, location.endOffset) });
       }
     }
-    if ('childNodes' in node) node.childNodes.forEach(child => visitField(child, field));
-  };
-  visitField(parseFragment(html, { sourceCodeLocationInfo: true }));
-  for (const field of fieldLayouts) for (const hint of field.hints) if (field.control !== undefined && hint.offset > field.control) add({
+    if ('childNodes' in node) for (let i = node.childNodes.length - 1; i >= 0; i--) pending.push({ node: node.childNodes[i]!, depth: depth + 1, field });
+  }
+  for (const field of fields) for (const hint of field.hints) if (field.control !== undefined && hint.offset > field.control) add({
     severity: 'warning', rule: 'field-hint-order', message: 'Explanatory text follows its control instead of its label.', snippet: snip(hint.html),
     fix: 'Move sk-field__hint directly after the label, before sk-field__control. Reserve sk-field__support for errors/counters after the control; preserve aria-describedby.',
   });
 
-  /* ---------------- Accessible names ---------------- */
+  const markupOf = (node: Element): string => {
+    const loc = node.sourceCodeLocation;
+    return loc ? html.slice(loc.startOffset, loc.endOffset) : `<${node.tagName}>`;
+  };
+  const hiddenHere = (node: Element, includeAria = true): boolean =>
+    attr(node, 'hidden') !== undefined || (includeAria && attr(node, 'aria-hidden')?.toLowerCase() === 'true') ||
+    /(?:^|;)\s*(?:display\s*:\s*none|visibility\s*:\s*(?:hidden|collapse))\s*(?:!important\s*)?(?:;|$)/i.test(attr(node, 'style') ?? '');
+  const hiddenByAncestor = (node: Element, includeAria = true): boolean => {
+    let current: Node | null = node;
+    while (current && 'tagName' in current) {
+      if (hiddenHere(current, includeAria)) return true;
+      current = current.parentNode;
+    }
+    return false;
+  };
+  let nameVisits = 0;
+  const visitName = (): void => {
+    if (++nameVisits > MARKUP_LIMITS.nameVisits) throw new ValidationLimit('the accessible-name work limit was exceeded.');
+  };
+  const nameCache = new WeakMap<Node, string>();
+  const referenceCache = new WeakMap<Node, string>();
+  const textAlternative = (node: Element, referenced = false): string => {
+    visitName();
+    const cache = referenced ? referenceCache : nameCache;
+    const cached = cache.get(node);
+    if (cached !== undefined) return cached;
+    const texts: string[] = [];
+    const queue: Node[] = [node];
+    while (queue.length) {
+      visitName();
+      const item = queue.pop()!;
+      if ('value' in item && item.nodeName === '#text') texts.push(item.value);
+      if ('tagName' in item) {
+        if ((!referenced && hiddenHere(item)) || ['script', 'style', 'template', 'input', 'select', 'textarea'].includes(item.tagName)) continue;
+        if (item.tagName === 'img') { texts.push(attr(item, 'alt') ?? ''); continue; }
+        if (item.tagName === 'svg') {
+          // SVG names count only when explicitly authored, not from path data.
+          const title = item.childNodes.find(child => 'tagName' in child && child.tagName === 'title');
+          texts.push(attr(item, 'aria-label') ?? (title && 'tagName' in title ? textAlternative(title, referenced) : ''));
+          continue;
+        }
+      }
+      if ('childNodes' in item) for (let i = item.childNodes.length - 1; i >= 0; i--) queue.push(item.childNodes[i]!);
+    }
+    const value = texts.join(' ').replace(/\s+/g, ' ').trim();
+    cache.set(node, value);
+    return value;
+  };
+  const explicitName = (node: Element): string | undefined => {
+    const targets = (attr(node, 'aria-labelledby') ?? '').trim().split(/\s+/).map(id => { visitName(); return byId.get(id); }).filter((target): target is Element => !!target);
+    // Directly referenced hidden text can name a control under the accessible-
+    // name rules; ordinary hidden descendants cannot name one by contents.
+    if (targets.length) return targets.map(target => textAlternative(target, hiddenByAncestor(target))).join(' ').trim();
+    const aria = attr(node, 'aria-label')?.trim();
+    return aria || undefined;
+  };
+  const hasName = (node: Element, contents: boolean): boolean => {
+    const explicit = explicitName(node);
+    if (explicit !== undefined) return explicit.length > 0;
+    return (contents && textAlternative(node).length > 0) || !!attr(node, 'title')?.trim();
+  };
 
-  // Buttons whose only content is an icon.
-  const buttonRe = /<button\b([^>]*)>([\s\S]*?)<\/button>/gi;
+  for (const node of elements) {
+    if (!['button', 'a', 'input', 'select', 'textarea'].includes(node.tagName) || hiddenByAncestor(node, false)) continue;
+    const full = markupOf(node);
+    if (node.tagName === 'button') {
+      if (hiddenByAncestor(node)) {
+        const notFocusable = Number(attr(node, 'tabindex') ?? 0) < 0 || attr(node, 'disabled') !== undefined;
+        if (!notFocusable) add({ severity: 'error', rule: 'aria-hidden-focusable', message: 'A button is hidden from assistive technology but remains focusable.', snippet: snip(full),
+          fix: 'Remove aria-hidden and provide a name, or use tabindex="-1" for a decorative duplicate control.', wcag: '4.1.2 Name, Role, Value; 2.4.3 Focus Order' });
+        continue;
+      }
+      if (!hasName(node, true)) add({ severity: 'error', rule: 'button-accessible-name', message: 'A button has no static accessible name. Empty labels and hidden contents do not provide one.', snippet: snip(full),
+        fix: 'Add visible text or a nonempty visually hidden label inside the button.', wcag: '4.1.2 Name, Role, Value; 1.1.1 Non-text Content' });
+    } else if (node.tagName === 'a') {
+      if (!hasName(node, true)) add({ severity: 'error', rule: 'link-accessible-name', message: 'A link has no accessible name.', snippet: snip(full),
+        fix: 'Give the link text describing its destination, or a nonempty visually hidden label.', wcag: '2.4.4 Link Purpose (In Context)' });
+      if (attr(node, 'href') === '#') add({ severity: 'error', rule: 'link-as-button', message: 'A link with href="#" is being used as a button.', snippet: snip(full),
+        fix: 'Use <button type="button"> for actions. Reserve <a href> for real destinations.', wcag: '4.1.2 Name, Role, Value' });
+      const content = textAlternative(node);
+      if (attr(node, 'target')?.toLowerCase() === '_blank' && !/opens in a new tab/i.test(content)) add({ severity: 'warning', rule: 'new-tab-unannounced', message: 'A link opens in a new tab without warning the user.', snippet: snip(full),
+        fix: 'Add <span class="sk-visually-hidden">(opens in a new tab)</span> inside the link.', wcag: '3.2.5 Change on Request' });
+      if (/^(click here|here|read more|more|learn more)$/i.test(content)) add({ severity: 'warning', rule: 'vague-link-text', message: 'Link text is not meaningful out of context.', snippet: snip(full),
+        fix: 'Describe the destination, for example "Task field reference".', wcag: '2.4.4 Link Purpose (In Context)' });
+    } else {
+      const type = attr(node, 'type')?.toLowerCase() ?? 'text';
+      if (['hidden', 'submit', 'button', 'reset', 'image'].includes(type)) continue;
+      const id = attr(node, 'id');
+      const explicit = explicitName(node);
+      const associated = id === undefined ? [] : labels.get(id) ?? [];
+      let labelled = explicit !== undefined ? !!explicit : associated.some(label => { visitName(); return !hiddenByAncestor(label) && !!textAlternative(label); });
+      let parent: Node | null = node.parentNode;
+      while (explicit === undefined && !labelled && parent && 'tagName' in parent) {
+        visitName();
+        if (parent.tagName === 'label' && (attr(parent, 'for') === undefined || attr(parent, 'for') === id)) labelled = !hiddenByAncestor(parent) && !!textAlternative(parent);
+        parent = parent.parentNode;
+      }
+      if (!labelled) add({ severity: 'error', rule: 'input-missing-label', message: `A <${node.tagName}> has no nonempty associated label.`, snippet: snip(full),
+        fix: 'Give the control a unique id and a nonempty matching <label for>, wrap it in a label, or provide a valid accessible name. A placeholder is not a label.', wcag: '1.3.1 Info and Relationships; 3.3.2 Labels or Instructions' });
+      if (attr(node, 'placeholder') !== undefined && !labelled) add({ severity: 'error', rule: 'placeholder-as-label', message: 'A placeholder is being used as the only label.', snippet: snip(full),
+        fix: 'Add a persistent visible <label>. Keep the placeholder for an example value only.', wcag: '3.3.2 Labels or Instructions' });
+      if (/^(email|name|tel|phone|address|postal|zip|country|username|given|family|cc-|organi[sz]ation)/i.test(attr(node, 'name') ?? '') && attr(node, 'autocomplete') === undefined) add({ severity: 'warning', rule: 'missing-autocomplete', message: 'A personal-information field has no autocomplete token.', snippet: snip(full),
+        fix: 'Add the appropriate autocomplete value, e.g. autocomplete="email".', wcag: '1.3.5 Identify Input Purpose' });
+      if (type === 'number') add({ severity: 'info', rule: 'number-input', message: 'type="number" has spinner and scroll-wheel behavior and rejects leading zeros.', snippet: snip(full),
+        fix: 'For identifiers such as postcodes and account numbers, use type="text" inputmode="numeric".' });
+    }
+  }
   let m: RegExpExecArray | null;
-  while ((m = buttonRe.exec(html)) !== null) {
-    const [full, attrs = '', inner = ''] = m;
-
-    /*
-     * A button removed from the accessibility tree needs no name, because
-     * nothing can reach it: `aria-hidden="true"` plus `tabindex="-1"` is the
-     * correct way to render a decorative control whose operation is already
-     * exposed by something else — a number input's steppers duplicate what
-     * `role="spinbutton"` announces, and naming them makes every numeric field
-     * read as three controls instead of one.
-     *
-     * `aria-hidden` WITHOUT `tabindex="-1"` is the opposite: a focusable
-     * element invisible to assistive technology, which is a worse defect than
-     * a missing name. That still fails, below.
-     */
-    const ariaHidden = /\baria-hidden\s*=\s*["']true["']/i.test(attrs);
-    const notFocusable = /\btabindex\s*=\s*["']-\d+["']/i.test(attrs) || /\bdisabled\b/i.test(attrs);
-    if (ariaHidden && notFocusable) continue;
-    if (ariaHidden && !notFocusable) {
-      add({
-        severity: 'error',
-        rule: 'aria-hidden-focusable',
-        message:
-          'A <button> is aria-hidden but still focusable. Keyboard users can reach a control that screen reader users cannot perceive at all.',
-        snippet: snip(full),
-        fix: 'Add tabindex="-1" if the button is genuinely decorative, or remove aria-hidden and give it a name.',
-        wcag: '4.1.2 Name, Role, Value; 2.4.3 Focus Order',
-      });
-      continue;
-    }
-
-    if (!hasAccessibleName(attrs, inner)) {
-      add({
-        severity: 'error',
-        rule: 'button-accessible-name',
-        message:
-          'A <button> has no accessible name. Its content is an icon or empty, so screen reader and voice control users cannot identify or invoke it.',
-        snippet: snip(full),
-        fix: 'Add a visually hidden label inside the button: <span class="sk-visually-hidden">Delete project</span>. Prefer this over aria-label — it survives translation pipelines that skip attributes.',
-        wcag: '4.1.2 Name, Role, Value; 1.1.1 Non-text Content',
-      });
-    }
-  }
-
-  // Links with no name, or href="#".
-  const linkRe = /<a\b([^>]*)>([\s\S]*?)<\/a>/gi;
-  while ((m = linkRe.exec(html)) !== null) {
-    const [full, attrs = '', inner = ''] = m;
-    if (!hasAccessibleName(attrs, inner)) {
-      add({
-        severity: 'error',
-        rule: 'link-accessible-name',
-        message: 'A link has no accessible name.',
-        snippet: snip(full),
-        fix: 'Give the link text describing its destination, or a visually hidden label.',
-        wcag: '2.4.4 Link Purpose (In Context)',
-      });
-    }
-    if (/\bhref\s*=\s*["']#["']/.test(attrs)) {
-      add({
-        severity: 'error',
-        rule: 'link-as-button',
-        message:
-          'A link with href="#" is being used as a button. It navigates nowhere, breaks middle-click and open-in-new-tab, and is announced as a link.',
-        snippet: snip(full),
-        fix: 'Use <button type="button"> for actions. Reserve <a href> for real destinations.',
-        wcag: '4.1.2 Name, Role, Value',
-      });
-    }
-    if (/target\s*=\s*["']_blank["']/i.test(attrs) && !/opens in a new tab/i.test(inner)) {
-      add({
-        severity: 'warning',
-        rule: 'new-tab-unannounced',
-        message: 'A link opens in a new tab without warning the user.',
-        snippet: snip(full),
-        fix: 'Add <span class="sk-visually-hidden">(opens in a new tab)</span> inside the link.',
-        wcag: '3.2.5 Change on Request',
-      });
-    }
-    if (/^\s*(click here|here|read more|more|learn more)\s*$/i.test(inner.replace(/<[^>]+>/g, ''))) {
-      add({
-        severity: 'warning',
-        rule: 'vague-link-text',
-        message:
-          'Link text is not meaningful out of context. Screen reader users often list all links on a page, stripped of their surrounding sentence.',
-        snippet: snip(full),
-        fix: 'Describe the destination: "Task field reference" rather than "read more".',
-        wcag: '2.4.4 Link Purpose (In Context)',
-      });
-    }
-  }
-
-  /* ---------------- Form labelling ---------------- */
-
-  const inputRe = /<(input|select|textarea)\b([^>]*)>/gi;
-  while ((m = inputRe.exec(html)) !== null) {
-    const [full, tag = '', attrs = ''] = m;
-    const typeMatch = /\btype\s*=\s*["']([^"']+)["']/i.exec(attrs);
-    const type = typeMatch?.[1]?.toLowerCase() ?? 'text';
-    if (['hidden', 'submit', 'button', 'reset', 'image'].includes(type)) continue;
-
-    const id = /\bid\s*=\s*["']([^"']+)["']/i.exec(attrs)?.[1];
-
-    // Wrapping the control in a <label> is a valid association — and a more
-    // robust one than for/id, since it cannot be broken by an id collision.
-    // Checking only for `for=` produces false positives on exactly the markup
-    // this design system recommends.
-    const before = html.slice(0, m.index);
-    const lastLabelOpen = before.lastIndexOf('<label');
-    const lastLabelClose = before.lastIndexOf('</label>');
-    const insideLabel = lastLabelOpen !== -1 && lastLabelOpen > lastLabelClose;
-
-    const labelled =
-      insideLabel ||
-      /\baria-label\s*=/i.test(attrs) ||
-      /\baria-labelledby\s*=/i.test(attrs) ||
-      (id && new RegExp(`<label[^>]*\\bfor\\s*=\\s*["']${id}["']`, 'i').test(html));
-
-    if (!labelled) {
-      add({
-        severity: 'error',
-        rule: 'input-missing-label',
-        message: `A <${tag}> has no associated label.`,
-        snippet: snip(full),
-        fix: id
-          ? `Add <label class="sk-field__label" for="${id}">…</label>, or wrap the control in a label.`
-          : 'Give the control an id and associate a <label for>. A placeholder is not a label.',
-        wcag: '1.3.1 Info and Relationships; 3.3.2 Labels or Instructions',
-      });
-    }
-
-    if (/\bplaceholder\s*=/i.test(attrs) && !labelled) {
-      add({
-        severity: 'error',
-        rule: 'placeholder-as-label',
-        message:
-          'A placeholder is being used as the only label. It disappears as soon as the user types, exactly when they need to check what they are filling in.',
-        snippet: snip(full),
-        fix: 'Add a persistent visible <label>. Keep the placeholder for an example value only.',
-        wcag: '3.3.2 Labels or Instructions',
-      });
-    }
-
-    // Autocomplete on personal-information fields.
-    const personal = /\bname\s*=\s*["'](email|name|tel|phone|address|postal|zip|country|username|given|family|cc-|organi[sz]ation)/i;
-    if (personal.test(attrs) && !/\bautocomplete\s*=/i.test(attrs)) {
-      add({
-        severity: 'warning',
-        rule: 'missing-autocomplete',
-        message: 'A field collecting information about the user has no autocomplete token.',
-        snippet: snip(full),
-        fix: 'Add the appropriate autocomplete value, e.g. autocomplete="email". This is a WCAG requirement, not an optimisation.',
-        wcag: '1.3.5 Identify Input Purpose',
-      });
-    }
-
-    if (type === 'number') {
-      add({
-        severity: 'info',
-        rule: 'number-input',
-        message:
-          'type="number" adds a spinner and scroll-wheel behaviour that cause accidental edits, and silently rejects leading zeros.',
-        snippet: snip(full),
-        fix: 'For identifiers that merely look numeric (postcodes, account numbers), use type="text" inputmode="numeric" pattern="[0-9]*".',
-      });
-    }
-  }
 
   /* ---------------- Grouping ---------------- */
 
@@ -366,16 +315,16 @@ export function validateMarkup(html: string, componentId?: string): Finding[] {
     });
   }
 
-  const varRe = /var\(\s*(--sk-[a-z0-9-]+)/gi;
+  const localTokens = new Set([...html.matchAll(/(--sk-[a-zA-Z0-9-]+)\s*:/g)].map(match => match[1]!.slice(5)));
+  const varRe = /var\(\s*(--sk-[a-zA-Z0-9-]+)/g;
   while ((m = varRe.exec(html)) !== null) {
     const name = m[1]!.replace(/^--sk-/, '');
-    const isScale = /^(space|radius|border-width|opacity|z|duration|easing|font|line-height|letter-spacing|container|elevation|control|stack|section|focus-ring|breakpoint|palette|grid|sidebar|cluster)-/.test(name);
-    if (!tokenNames.has(name) && !isScale) {
+    if (!tokenNames.has(name) && !componentVariableNames.has(name) && !localTokens.has(name)) {
       add({
         severity: 'warning',
         rule: 'unknown-token',
         message: `--sk-${name} is not a Sekura token. It will resolve to nothing and the property will fall back or be dropped.`,
-        fix: 'Check the name with list_tokens, or supply a fallback value as the second argument to var().',
+        fix: 'Check the name with get_tokens({ includeScales: true }), or supply a fallback value as the second argument to var().',
       });
     }
   }
@@ -501,7 +450,7 @@ export function summariseFindings(findings: Finding[]): string {
   const warnings = findings.filter((f) => f.severity === 'warning').length;
   const infos = findings.filter((f) => f.severity === 'info').length;
   if (findings.length === 0) {
-    return 'No issues matched the checked patterns. This is not a certificate of accessibility — automated checks catch roughly a third of real barriers. Manual keyboard and screen-reader testing is still required.';
+    return 'No issues matched the checked patterns. This is a scoped static check, not an accessibility certificate. External CSS, runtime state, keyboard and screen-reader behavior were not checked.';
   }
   return `${errors} error(s), ${warnings} warning(s), ${infos} note(s).`;
 }

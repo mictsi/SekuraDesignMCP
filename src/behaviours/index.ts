@@ -158,7 +158,7 @@ export {
 } from './controllers/misc.js';
 
 /* Auto-initialisation. */
-export { autoEnhance, dispose, enhance, getTheme, type EnhanceResult } from './auto.js';
+export { autoEnhance, defineAutoEnhanceElement, dispose, enhance, getTheme, type EnhanceResult } from './auto.js';
 
 export { createTree, TreeConfigurationError, type TreeOptions, type TreeController, type TreeFilterResult, type TreeRevealOptions } from './controllers/tree.js';
 export { createUpload, type UploadOptions } from './controllers/upload.js';

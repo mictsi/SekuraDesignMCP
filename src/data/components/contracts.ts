@@ -38,6 +38,7 @@ export interface ImplementationSpec {
   events: EventContract[];
   autoMarker: string | null;
   nativeReactExport: string | null;
+  designKit: boolean;
 }
 
 /** Canonical markup carries the same markers that the distributable recognizes. */
@@ -90,6 +91,7 @@ export function implementation(spec: ComponentSpec, catalogue: ComponentSpec[]):
     behavior: controllers[spec.id] ? 'controller' : ['text-field', 'textarea', 'select', 'checkbox', 'radio-group', 'link'].includes(spec.id) ? 'native' : 'application',
     frameworkOutput: 'reference-recipe',
     nativeReactExport: ({ button: 'Button', 'text-field': 'TextField', textarea: 'Textarea', select: 'Select', checkbox: 'Checkbox', switch: 'Switch' } as Record<string, string>)[spec.id] ?? null,
+    designKit: ['button', 'text-field', 'textarea', 'select', 'checkbox', 'switch'].includes(spec.id),
     events: componentEvents[spec.id] ?? [], autoMarker: componentMarkers[spec.id] ?? null,
     applicationResponsibilities: ['Provide real content and application state.', 'Handle persistence, permissions, network errors and navigation.', 'Include the listed SVG symbols in your icon sprite, or replace them with equivalent accessible icons.',
       ...(spec.id === 'switch' ? ['Pass an onToggle callback to createAsyncSwitch for persisted switches.'] : []),

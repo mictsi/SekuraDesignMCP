@@ -51,7 +51,7 @@ jobs:
       - name: Dependency policy
         # No pre-release dependencies anywhere in the tree, and every Node
         # reference is in the currently supported LTS window.
-        run: npm run check:deps
+        run: npm run check:deps && npm run test:release-policy
 
       - name: Environment documentation
         # .env.example must document every setting the code reads, and list none
@@ -62,6 +62,10 @@ jobs:
         # Path prefixes, stripped prefixes and forwarded headers, which are the
         # deployments that cannot be tried by hand.
         run: npm run test:urls
+
+      - name: Server and exporter reliability
+        # Runs the compiled boundary, parser, cache and token-export regressions.
+        run: npm run test:reliability:server
 
       - name: Colour maths reference test
         # The whole system rests on contrastRatio being right, so it is checked
@@ -109,6 +113,15 @@ jobs:
         # restore, aria-activedescendant, Escape handling, inert on close.
         run: npm run test:behaviours
 
+      - name: Input and overlay reliability
+        # Uses the behaviour bundle and Chromium installed above.
+        run: npm run test:reliability:inputs
+
+      - name: Installed consumers and framework lifecycles
+        # Real package routes, Web Components, Angular SSR/hydration and an
+        # interactive Blazor Server app; uses the browser and SDK installed above.
+        run: npm run test:consumers
+
       - name: Emit stylesheets
         run: npm run emit:css
 
@@ -130,6 +143,14 @@ jobs:
 
       - name: Design and example regressions
         run: npm run test:design && npm run test:redesign && npm run test:completion && npm run test:navigation
+
+      - name: Product interaction reliability
+        # Exercises the generated site in Chromium, Firefox and WebKit.
+        run: npm run test:reliability:product
+
+      - name: Form save and recovery reliability
+        # Exercises the generated form lab and its same-origin demo service.
+        run: npm run test:reliability:form
 
       - name: RTL regression
         # Logical properties are claimed to make RTL work with no extra CSS.

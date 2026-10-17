@@ -26,8 +26,10 @@
 
 import { position, type Positioner } from '../core/position.js';
 import { announce } from '../core/live.js';
-import { combine, direction, emit, ensureId, on, toggleAttr, type Cleanup } from '../core/dom.js';
+import { combine, direction, emit, ensureId, isVisible, on, toggleAttr, type Cleanup } from '../core/dom.js';
 import { saveFocus, trapFocus, type FocusRestore } from '../core/focus.js';
+import { dismissable } from '../core/dismiss.js';
+import { inputValidation } from '../core/input-state.js';
 
 /* ------------------------------------------------------------------ *
  * Date arithmetic
@@ -61,7 +63,8 @@ function daysInMonth(y: number, m: number): number {
 }
 
 function isReal({ y, m, d }: PlainDate): boolean {
-  return m >= 1 && m <= 12 && d >= 1 && d <= daysInMonth(y, m);
+  return Number.isInteger(y) && y >= 1 && y <= 9999 && Number.isInteger(m) &&
+    m >= 1 && m <= 12 && Number.isInteger(d) && d >= 1 && d <= daysInMonth(y, m);
 }
 
 export function addDays(date: PlainDate, n: number): PlainDate {
@@ -128,6 +131,26 @@ export interface Calendar {
   destroy: Cleanup;
 }
 
+function dateError(date: PlainDate, options: CalendarOptions): string | null {
+  if (!isReal(date)) return 'Enter a real calendar date.';
+  if (options.min && compare(date, options.min) < 0) return `Choose a date on or after ${toISO(options.min)}.`;
+  if (options.max && compare(date, options.max) > 0) return `Choose a date on or before ${toISO(options.max)}.`;
+  return options.isDisabled?.(date) || null;
+}
+
+function sameValue(a: PlainDate | null, b: PlainDate | null): boolean {
+  return a === b || isSame(a, b);
+}
+
+function copyDate(date: PlainDate | null): PlainDate | null {
+  return date ? { ...date } : null;
+}
+
+function escapeMarkup(value: string): string {
+  return value.replace(/[&<>"']/g, character =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]!);
+}
+
 /**
  * Renders a month into `container` and owns its keyboard model.
  *
@@ -139,13 +162,13 @@ export function createCalendar(container: HTMLElement, options: CalendarOptions 
   const {
     weekStartsOn = 1,
     locale = document.documentElement.lang || 'en',
-    isDisabled,
     onSelect,
     onMonthChange,
   } = options;
 
-  let value = options.value ?? null;
-  let rangeEnd = options.end ?? null;
+  let value = options.value && !dateError(options.value, options) ? copyDate(options.value) : null;
+  let rangeEnd = options.end && !dateError(options.end, options) ? copyDate(options.end) : null;
+  if (value && rangeEnd && compare(rangeEnd, value) < 0) rangeEnd = null;
   let focused: PlainDate = value ?? options.min ?? today();
   let view = { y: focused.y, m: focused.m };
   let hasRange = options.end !== undefined;
@@ -161,9 +184,7 @@ export function createCalendar(container: HTMLElement, options: CalendarOptions 
   const headingId = `${gridId}-heading`;
 
   function blocked(date: PlainDate): string | null {
-    if (options.min && compare(date, options.min) < 0) return 'before the earliest allowed date';
-    if (options.max && compare(date, options.max) > 0) return 'after the latest allowed date';
-    return isDisabled ? isDisabled(date) : null;
+    return dateError(date, options);
   }
 
   function label(date: PlainDate): string {
@@ -183,9 +204,9 @@ export function createCalendar(container: HTMLElement, options: CalendarOptions 
       const js = new Date(sample.y, sample.m - 1, sample.d);
       // The abbreviation is visible; the full name is what gets announced.
       weekdayCells.push(
-        `<th scope="col" class="sk-calendar__weekday" abbr="${shortDay.format(js)}">` +
-          `<span aria-hidden="true">${narrowDay.format(js)}</span>` +
-          `<span class="sk-visually-hidden">${shortDay.format(js)}</span>` +
+        `<th scope="col" class="sk-calendar__weekday" abbr="${escapeMarkup(shortDay.format(js))}">` +
+          `<span aria-hidden="true">${escapeMarkup(narrowDay.format(js))}</span>` +
+          `<span class="sk-visually-hidden">${escapeMarkup(shortDay.format(js))}</span>` +
           `</th>`
       );
     }
@@ -211,8 +232,8 @@ export function createCalendar(container: HTMLElement, options: CalendarOptions 
             (outside ? ' data-outside' : '') +
             (inRange ? ' data-in-range' : '') +
             (isSame(date, now) ? ' aria-current="date"' : '') +
-            (why ? ` aria-disabled="true" data-why="${why}"` : '') +
-            ` aria-label="${label(date)}">` +
+            (why ? ` aria-disabled="true" data-why="${escapeMarkup(why)}"` : '') +
+            ` aria-label="${escapeMarkup(label(date))}">` +
             `${date.d}</button></td>`
         );
       }
@@ -224,13 +245,13 @@ export function createCalendar(container: HTMLElement, options: CalendarOptions 
         `<button type="button" class="sk-calendar__nav" data-step="-1" aria-label="Previous month">` +
           `<svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-chevron-left"></use></svg>` +
         `</button>` +
-        `<h2 class="sk-calendar__month" id="${headingId}" aria-live="polite">` +
-          `${monthFmt.format(new Date(view.y, view.m - 1, 1))}</h2>` +
+        `<h2 class="sk-calendar__month" id="${escapeMarkup(headingId)}" aria-live="polite">` +
+          `${escapeMarkup(monthFmt.format(new Date(view.y, view.m - 1, 1)))}</h2>` +
         `<button type="button" class="sk-calendar__nav" data-step="1" aria-label="Next month">` +
           `<svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-chevron-right"></use></svg>` +
         `</button>` +
       `</div>` +
-      `<table class="sk-calendar__grid" role="grid" aria-labelledby="${headingId}">` +
+      `<table class="sk-calendar__grid" role="grid" aria-labelledby="${escapeMarkup(headingId)}">` +
         `<thead><tr role="row">${weekdayCells.join('')}</tr></thead>` +
         `<tbody>${rows.join('')}</tbody>` +
       `</table>`;
@@ -241,7 +262,7 @@ export function createCalendar(container: HTMLElement, options: CalendarOptions 
   }
 
   function setFocused(date: PlainDate, moveDom: boolean): void {
-    focused = date;
+    focused = { ...date };
     if (date.y !== view.y || date.m !== view.m) {
       view = { y: date.y, m: date.m };
       render();
@@ -262,10 +283,10 @@ export function createCalendar(container: HTMLElement, options: CalendarOptions 
       announce(`${label(date)} is unavailable: ${why}.`, 'assertive');
       return;
     }
-    value = date;
+    value = { ...date };
     render();
     setFocused(date, true);
-    onSelect?.(date);
+    onSelect?.({ ...date });
     emit(container, 'sk:calendar:select', { date: toISO(date) });
   }
 
@@ -288,6 +309,7 @@ export function createCalendar(container: HTMLElement, options: CalendarOptions 
   });
 
   const offKey = on(container, 'keydown', (event: KeyboardEvent) => {
+    if (event.isComposing) return;
     const target = event.target as HTMLElement;
     if (!target.classList.contains('sk-calendar__day')) return;
 
@@ -321,32 +343,40 @@ export function createCalendar(container: HTMLElement, options: CalendarOptions 
 
   return {
     get value() {
-      return value;
+      return copyDate(value);
     },
     get month() {
       return { ...view };
     },
     setValue(date) {
-      value = date;
+      const error = date ? blocked(date) : null;
+      if (error) { announce(error); return; }
+      value = copyDate(date);
       hasRange = false;
+      rangeEnd = null;
       if (date) focused = date;
       render();
       setFocused(focused, false);
     },
     setRange(start, end) {
+      const error = (start && blocked(start)) || (end && blocked(end)) ||
+        (start && end && compare(end, start) < 0 ? 'The end date must be on or after the start date.' : null);
+      if (error) { announce(error); return; }
       hasRange = true;
-      value = start;
-      rangeEnd = end;
+      value = copyDate(start);
+      rangeEnd = copyDate(end);
       render();
       setFocused(focused, false);
     },
     goToMonth(y, m) {
+      if (!isReal({ y, m, d: 1 })) return;
       view = { y, m };
+      focused = { y, m, d: Math.min(focused.d, daysInMonth(y, m)) };
       render();
       onMonthChange?.(y, m);
     },
     focus() {
-      dayButton(focused)?.focus() ?? container.querySelector<HTMLElement>('.sk-calendar__day')?.focus();
+      (dayButton(focused) ?? container.querySelector<HTMLElement>('.sk-calendar__day'))?.focus();
     },
     destroy: combine(offClick, offKey),
   };
@@ -389,113 +419,180 @@ export function createDatePicker(
 ): DatePicker {
   const parse = options.parse ?? fromISO;
   const format = options.format ?? toISO;
-
+  const validation = inputValidation(input);
   const panelId = ensureId(panel, 'sk-datepicker-panel');
   trigger.setAttribute('aria-controls', panelId);
   trigger.setAttribute('aria-haspopup', 'dialog');
   trigger.setAttribute('aria-expanded', 'false');
+  if (trigger.tagName === 'BUTTON' && !trigger.hasAttribute('type')) trigger.setAttribute('type', 'button');
   panel.setAttribute('role', 'dialog');
   panel.setAttribute('aria-modal', 'true');
   if (!panel.hasAttribute('aria-label')) panel.setAttribute('aria-label', 'Choose a date');
   panel.hidden = true;
 
-  let value = parse(input.value) ?? options.value ?? null;
+  let value: PlainDate | null = null;
   let open = false;
+  let composing = false;
+  let dispatching = false;
+  let destroyed = false;
+  let lastRejected = '';
   let restore: FocusRestore | null = null;
   let release: Cleanup | null = null;
+  let undismiss: Cleanup | null = null;
+  let watchOwner: MutationObserver | null = null;
   let positioner: Positioner | null = null;
 
   let grid = panel.querySelector<HTMLElement>('.sk-calendar');
   if (!grid) {
-    grid = document.createElement('div');
+    grid = input.ownerDocument.createElement('div');
     panel.appendChild(grid);
   }
 
   const calendar = createCalendar(grid, {
     ...options,
-    value,
+    value: null,
     onSelect(date) {
-      value = date;
-      input.value = format(date);
-      // A real input event, so framework bindings and validation see it.
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-      input.dispatchEvent(new Event('change', { bubbles: true }));
-      options.onChange?.(date);
-      closePanel();
+      if (input.disabled || input.readOnly) { calendar.setValue(value); return; }
+      if (commit(date, format(date), true, true, true)) closePanel();
     },
   });
 
+  // The committed value is distinct from an editable draft. Only this function
+  // publishes changes; native events generated here cannot re-enter it.
+  function commit(date: PlainDate | null, text: string, write: boolean, notify: boolean, nativeEvents: boolean): boolean {
+    const error = date ? dateError(date, options) : text.trim() ? 'Enter a valid date.' : null;
+    validation.setError(error);
+    if (error) {
+      const rejection = JSON.stringify([text, error]);
+      if (rejection !== lastRejected) emit(input, 'sk:datepicker:invalid', { draft: text, message: error });
+      lastRejected = rejection;
+      return false;
+    }
+    lastRejected = '';
+    const changed = !sameValue(value, date);
+    value = copyDate(date);
+    if (write) input.value = date ? format(date) : '';
+    calendar.setValue(value);
+    if (notify && changed) {
+      if (nativeEvents) {
+        dispatching = true;
+        try {
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+        } finally { dispatching = false; }
+      }
+      options.onChange?.(copyDate(value));
+      emit(input, 'sk:datepicker:change', { value: value ? toISO(value) : null });
+    }
+    return true;
+  }
+
+  function commitDraft(): void {
+    if (dispatching || composing || input.disabled || input.readOnly) return;
+    commit(input.value.trim() ? parse(input.value) : null, input.value, false, true, false);
+  }
+
+  function canOpenPanel(): boolean {
+    return !destroyed && !input.disabled && !input.readOnly &&
+      trigger.getAttribute('aria-disabled') !== 'true' && !trigger.matches(':disabled') &&
+      input.isConnected && trigger.isConnected && panel.isConnected &&
+      isVisible(input) && isVisible(trigger) &&
+      ![input, trigger, panel].some(element => element.closest('[inert]'));
+  }
+
   function openPanel(): void {
-    if (open) return;
-    open = true;
-    // Re-read the input first: someone may have typed since the last open.
-    const typed = parse(input.value);
-    if (typed) calendar.setValue(typed);
+    if (open || !canOpenPanel()) return;
+    commitDraft();
+    // Committing a draft can call host code that destroys, removes, disables or
+    // opens this picker. Recheck before acquiring any popup resources.
+    if (open || !canOpenPanel()) return;
+    calendar.setValue(value);
+    if (open || !canOpenPanel()) return;
     panel.hidden = false;
+    if (!isVisible(panel)) { panel.hidden = true; return; }
+    open = true;
     toggleAttr(panel, 'data-open', true);
     trigger.setAttribute('aria-expanded', 'true');
     positioner = position(panel, trigger, { align: 'end' });
     restore = saveFocus();
-    release = trapFocus(panel);
+    undismiss = dismissable(panel, {
+      exclude: [trigger, input],
+      onDismiss: reason => closePanel(reason === 'escape'),
+    });
+    release = trapFocus(panel, { initial: () => grid!.querySelector<HTMLElement>('.sk-calendar__day[tabindex="0"]') });
+    // Initial focus also invokes host listeners before trapFocus returns its
+    // cleanup. Release that late handle if a listener closed/destroyed the picker.
+    if (!open || !canOpenPanel()) {
+      release?.(); release = null;
+      closePanel(false);
+      return;
+    }
     calendar.focus();
+    if (!open || !canOpenPanel()) { closePanel(false); return; }
+
+    // Watch only the owning ancestor chain, and only while open. A native
+    // dialog close or host removal must release the calendar's focus trap too.
+    watchOwner = new MutationObserver(() => {
+      if (!input.isConnected || !panel.isConnected || !trigger.isConnected ||
+          !isVisible(input) || !isVisible(panel) || !isVisible(trigger)) closePanel(false);
+    });
+    const owners = new Set<HTMLElement>();
+    for (const element of [input, trigger, panel]) {
+      for (let owner = element.parentElement; owner; owner = owner.parentElement) owners.add(owner);
+    }
+    for (const owner of owners) watchOwner.observe(owner, {
+      childList: true, attributes: true, attributeFilter: ['hidden', 'inert', 'open', 'style', 'class'],
+    });
     emit(trigger, 'sk:datepicker:open');
   }
 
-  function closePanel(): void {
+  function closePanel(restoreFocus = true): void {
     if (!open) return;
     open = false;
-    release?.();
-    release = null;
+    watchOwner?.disconnect(); watchOwner = null;
+    release?.(); release = null;
+    undismiss?.(); undismiss = null;
     positioner?.destroy(); positioner = null;
     panel.hidden = true;
     toggleAttr(panel, 'data-open', false);
     trigger.setAttribute('aria-expanded', 'false');
-    restore?.restore();
+    if (restoreFocus) restore?.restore();
+    else restore?.cancel();
     restore = null;
     emit(trigger, 'sk:datepicker:close');
   }
 
-  const offTrigger = on(trigger, 'click', () => (open ? closePanel() : openPanel()));
+  const cleanups: Cleanup[] = [
+    on(trigger, 'click', () => open ? closePanel() : openPanel()),
+    on(input, 'change', commitDraft),
+    on(input, 'blur', commitDraft),
+    on(input, 'compositionstart', () => { composing = true; }),
+    on(input, 'compositionend', () => { composing = false; }),
+  ];
+  if (input.form) cleanups.push(on(input.form, 'reset', event => {
+    queueMicrotask(() => {
+      if (destroyed || event.defaultPrevented) return;
+      closePanel(false);
+      value = null;
+      calendar.setValue(null);
+      commit(input.value.trim() ? parse(input.value) : null, input.value, false, false, false);
+    });
+  }));
 
-  const offKey = on(panel, 'keydown', (event: KeyboardEvent) => {
-    if (event.key === 'Escape') {
-      event.stopPropagation();
-      closePanel();
-    }
-  });
-
-  /* Typing stays authoritative. An invalid string is left alone rather than
-     rewritten mid-keystroke — correcting someone while they type is how a
-     field becomes impossible to edit. */
-  const offInput = on(input, 'change', () => {
-    const parsed = parse(input.value);
-    value = parsed;
-    input.setAttribute('aria-invalid', input.value && !parsed ? 'true' : 'false');
-    if (parsed) calendar.setValue(parsed);
-    options.onChange?.(parsed);
-  });
-
-  const offOutside = on(document, 'pointerdown', (event: PointerEvent) => {
-    if (!open) return;
-    const target = event.target as Node;
-    if (!panel.contains(target) && !trigger.contains(target)) closePanel();
-  });
+  const initial = input.value.trim() ? parse(input.value) : options.value ?? null;
+  commit(initial, input.value, !input.value.trim(), false, false);
 
   return {
-    get value() {
-      return value;
-    },
-    get open() {
-      return open;
-    },
+    get value() { return copyDate(value); },
+    get open() { return open; },
     setValue(date) {
-      value = date;
-      input.value = date ? format(date) : '';
-      calendar.setValue(date);
+      // Programmatic setters remain silent. Invalid candidates leave the last
+      // committed value intact and expose their reason through field validity.
+      commit(date, date ? format(date) : '', true, false, false);
     },
     openPanel,
     closePanel,
-    destroy: combine(offTrigger, offKey, offInput, offOutside, calendar.destroy, () => closePanel()),
+    destroy: combine(() => { destroyed = true; closePanel(false); }, ...cleanups, calendar.destroy, validation.destroy),
   };
 }
 
@@ -527,53 +624,103 @@ export function createDateRange(
   container: HTMLElement,
   options: DateRangeOptions = {}
 ): DateRange {
-  let start = fromISO(startInput.value);
-  let end = fromISO(endInput.value);
-  let awaiting: 'start' | 'end' = start && !end ? 'end' : 'start';
+  let start: PlainDate | null = null;
+  let end: PlainDate | null = null;
+  let awaiting: 'start' | 'end' = 'start';
+  let dispatching = false;
+  let composing = false;
+  let destroyed = false;
+  let lastRejected = '';
+  const startValidation = inputValidation(startInput);
+  const endValidation = inputValidation(endInput);
 
   const calendar = createCalendar(container, {
     ...options,
-    value: start,
-    end,
+    // Seed the view from the saved start, which the calendar validates. Later
+    // range commits preserve paging rather than jumping back after every edit.
+    value: fromISO(startInput.value),
+    end: null,
     onSelect(date) {
-      if (awaiting === 'start' || (start && compare(date, start) < 0)) {
-        start = date;
-        end = null;
-        awaiting = 'end';
-        announce(`Start ${toISO(date)} selected. Now choose an end date.`);
-      } else {
-        end = date;
-        awaiting = 'start';
-        announce(`Range ${toISO(start!)} to ${toISO(date)} selected.`);
+      if ([startInput, endInput].some(input => input.disabled || input.readOnly) || composing) {
+        calendar.setRange(start, end);
+        return;
       }
-      startInput.value = start ? toISO(start) : '';
-      endInput.value = end ? toISO(end) : '';
-      for (const el of [startInput, endInput]) {
-        el.dispatchEvent(new Event('input', { bubbles: true }));
-        el.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-      calendar.setRange(start, end);
-      options.onChange?.(start, end);
+      const selectingStart = awaiting === 'start' || Boolean(start && compare(date, start) < 0);
+      const nextStart = selectingStart ? date : start;
+      const nextEnd = selectingStart ? null : date;
+      if (!commit(nextStart, nextEnd, nextStart ? toISO(nextStart) : '', nextEnd ? toISO(nextEnd) : '', true, true)) return;
+      announce(selectingStart ? `Start ${toISO(date)} selected. Now choose an end date.`
+        : `Range ${toISO(start!)} to ${toISO(date)} selected.`);
     },
   });
 
-  const sync = () => {
-    start = fromISO(startInput.value);
-    end = fromISO(endInput.value);
+  function commit(nextStart: PlainDate | null, nextEnd: PlainDate | null, startText: string, endText: string,
+    write: boolean, notify: boolean): boolean {
+    let startError = nextStart ? dateError(nextStart, options) : startText.trim() ? 'Enter a valid start date.' : null;
+    let endError = nextEnd ? dateError(nextEnd, options) : endText.trim() ? 'Enter a valid end date.' : null;
+    if (!startError && !endError && nextStart && nextEnd && compare(nextEnd, nextStart) < 0) {
+      startError = 'The start date must be on or before the end date.';
+      endError = 'The end date must be on or after the start date.';
+    }
+    startValidation.setError(startError);
+    endValidation.setError(endError);
+    if (startError || endError) {
+      const rejection = JSON.stringify([startText, endText, startError, endError]);
+      if (rejection !== lastRejected) emit(container, 'sk:daterange:invalid', { start: startText, end: endText, message: startError || endError });
+      lastRejected = rejection;
+      return false;
+    }
+    lastRejected = '';
+    const startChanged = !sameValue(start, nextStart);
+    const endChanged = !sameValue(end, nextEnd);
+    start = copyDate(nextStart);
+    end = copyDate(nextEnd);
     awaiting = start && !end ? 'end' : 'start';
+    if (write) { startInput.value = startText; endInput.value = endText; }
     calendar.setRange(start, end);
-    options.onChange?.(start, end);
-  };
-  const offStart = on(startInput, 'change', sync);
-  const offEnd = on(endInput, 'change', sync);
+    if (notify && (startChanged || endChanged)) {
+      if (write) {
+        dispatching = true;
+        try {
+          for (const [input, changed] of [[startInput, startChanged], [endInput, endChanged]] as const) {
+            if (!changed) continue;
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        } finally { dispatching = false; }
+      }
+      options.onChange?.(copyDate(start), copyDate(end));
+      emit(container, 'sk:daterange:change', { start: start ? toISO(start) : null, end: end ? toISO(end) : null });
+    }
+    return true;
+  }
+
+  function sync(notify = true): void {
+    if (dispatching || composing) return;
+    commit(fromISO(startInput.value), fromISO(endInput.value), startInput.value, endInput.value, false, notify);
+  }
+  const cleanups: Cleanup[] = [];
+  for (const input of [startInput, endInput]) {
+    const commitDraft = (): void => { if (!input.disabled && !input.readOnly) sync(); };
+    cleanups.push(on(input, 'change', commitDraft), on(input, 'blur', commitDraft),
+      on(input, 'compositionstart', () => { composing = true; }),
+      on(input, 'compositionend', () => { composing = false; }));
+  }
+  for (const form of new Set([startInput.form, endInput.form].filter(Boolean))) {
+    cleanups.push(on(form!, 'reset', event => queueMicrotask(() => {
+      if (destroyed || event.defaultPrevented) return;
+      start = null; end = null;
+      calendar.setRange(null, null);
+      sync(false);
+    })));
+  }
+  sync(false);
+  // Invalid initial pairs must not leave the view's seed looking committed.
+  calendar.setRange(start, end);
 
   return {
-    get start() {
-      return start;
-    },
-    get end() {
-      return end;
-    },
-    destroy: combine(offStart, offEnd, calendar.destroy),
+    get start() { return copyDate(start); },
+    get end() { return copyDate(end); },
+    destroy: combine(() => { destroyed = true; }, ...cleanups, calendar.destroy, startValidation.destroy, endValidation.destroy),
   };
 }

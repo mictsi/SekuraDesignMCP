@@ -33,6 +33,15 @@ const NOT_DEPLOYMENT_SETTINGS = new Map<string, string>([
   ['PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH', 'test-only: alternate explicit Chromium executable'],
   ['SEKURA_BEHAVIOUR_BUNDLE', 'test-only: independently built behavior fixture'],
   ['SEKURA_ENV_FILE', 'bootstrap: names the env file itself, so it cannot live inside it'],
+  ['SEKURA_FORM_TEST_FILTER', 'test-only: selects a focused form recovery fixture'],
+  ['SEKURA_FORM_LAB_HTML', 'test-only: independently rendered form fixture'],
+  ['SEKURA_ARTIFACT_STAGE', 'build-only: Docker build argument selecting verified release artifacts'],
+  ['SK_DOTNET', 'test-only: explicit .NET SDK executable for consumer fixtures'],
+  ['DOTNET_ROOT', 'toolchain: standard SDK location for .NET consumer tests'],
+  ['RELEASE_TAG', 'release-only: existing tag selected by the release resolver'],
+  ['GITHUB_OUTPUT', 'release-only: GitHub Actions output protocol'],
+  ['RELEASE_IMAGE', 'release-only: exact container digest to probe'],
+  ['RELEASE_VERSION', 'release-only: expected package version of the probed image'],
   ['NO_COLOR', 'a de facto standard read by run.sh, not a Sekura setting'],
 ]);
 

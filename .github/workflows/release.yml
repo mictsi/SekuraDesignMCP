@@ -6,236 +6,260 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag to release, e.g. v1.1.0'
+        description: 'Existing tag to release, e.g. v3.2.0'
         required: true
 
 permissions:
-  contents: write   # create the release
-  packages: write   # push to GHCR
+  contents: write
+  packages: write
 
 concurrency:
-  group: release-${{ github.ref }}
-  cancel-in-progress: false   # never cancel a half-finished release
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
 
 jobs:
-  verify:
-    name: Verify before releasing
+  resolve:
+    name: Resolve existing release tag
     runs-on: ubuntu-latest
-    timeout-minutes: 25
     outputs:
-      version: ${{ steps.version.outputs.version }}
-
+      tag: ${{ steps.release.outputs.tag }}
+      sha: ${{ steps.release.outputs.sha }}
+      version: ${{ steps.release.outputs.version }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Resolve tag and verify its package version
+        id: release
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: node src/scripts/resolve-release.mjs
+
+  verify:
+    name: Verify release commit
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: resolve
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.resolve.outputs.sha }}
       - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
-
       - run: npm ci
-
-      - name: Resolve and check version
-        id: version
-        run: |
-          TAG="${{ github.event.inputs.tag || github.ref_name }}"
-          TAG_VERSION="${TAG#v}"
-          PKG_VERSION="$(node -p "require('./package.json').version")"
-
-          echo "tag:         $TAG_VERSION"
-          echo "package.json: $PKG_VERSION"
-
-          # A tag that disagrees with package.json produces artefacts labelled
-          # with one version and containing another. Refuse rather than guess.
-          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
-            echo "::error::Tag $TAG_VERSION does not match package.json $PKG_VERSION. Bump package.json and re-tag."
-            exit 1
-          fi
-          echo "version=$PKG_VERSION" >> "$GITHUB_OUTPUT"
-
       - name: Install browser engines
         run: node node_modules/playwright-core/cli.js install --with-deps chromium firefox webkit
-
       - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
-
       - name: Run every gate
-        # The same chain CI runs. A release must not be able to skip a check.
         run: npm run verify
-
-      - name: Package artefacts
+      - name: Package verified artefacts
+        env:
+          VERSION: ${{ needs.resolve.outputs.version }}
+          RELEASE_SHA: ${{ needs.resolve.outputs.sha }}
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
           mkdir -p release
-
-          # 1. Stylesheets — the primary artefact for a consumer with no build step.
           (cd dist-css && zip -qr "../release/sekura-css-$VERSION.zip" .)
-
-          # 2. Behaviours — the framework-agnostic keyboard/ARIA implementation.
           (cd dist-js && zip -qr "../release/sekura-behaviours-$VERSION.zip" .)
-
-          # 3. Documentation site, so it can be hosted anywhere.
-          (cd sample && zip -qr "../release/sekura-docs-$VERSION.zip" . -x 'pages/*')
-
-          # 4. Loose token files, for pipelines that want one file rather than a zip.
-          cp dist-css/tokens.css            "release/tokens-$VERSION.css"
-          cp dist-css/tokens.dtcg.json      "release/tokens-$VERSION.dtcg.json"
-          cp dist-css/sekura.css            "release/sekura-$VERSION.css"
-          cp dist-js/sekura.iife.min.js     "release/sekura-behaviours-$VERSION.iife.min.js"
-          cp dist-js/sekura.esm.min.js      "release/sekura-behaviours-$VERSION.esm.min.js"
-
-          # 5. npm tarball for the behaviours package.
+          (cd dist-site && zip -qr "../release/sekura-docs-$VERSION.zip" .)
+          cp dist-css/tokens.css "release/tokens-$VERSION.css"
+          cp dist-css/tokens.dtcg.json "release/tokens-$VERSION.dtcg.json"
+          cp dist-css/sekura.css "release/sekura-$VERSION.css"
+          cp dist-js/sekura.iife.min.js "release/sekura-behaviours-$VERSION.iife.min.js"
+          cp dist-js/sekura.esm.min.js "release/sekura-behaviours-$VERSION.esm.min.js"
           (cd dist-js && npm pack --pack-destination ../release >/dev/null)
-
-          # Native React package and editable design-tool starter library.
           (cd dist-react && npm pack --pack-destination ../release >/dev/null)
           (cd dist-design-kit && zip -qr "../release/sekura-design-kit-$VERSION.zip" .)
-
-          # Checksums, so a consumer can verify what they downloaded.
+          node -e 'require("fs").writeFileSync("release/SOURCE.json", JSON.stringify({version:process.env.VERSION, commit:process.env.RELEASE_SHA}, null, 2) + "\n")'
           (cd release && sha256sum * > SHA256SUMS.txt)
-          ls -la release
-
+          # The image consumes these exact assets. Dependencies install per architecture.
+          tar --transform='s|^dist-site|sample|' -czf release-runtime.tgz package.json package-lock.json dist dist-css dist-js dist-site
       - uses: actions/upload-artifact@v7
         with:
           name: release-artifacts
           path: release/
           retention-days: 30
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-runtime
+          path: release-runtime.tgz
+          retention-days: 7
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-site
+          path: dist-site/
+          retention-days: 30
 
   image:
-    name: Publish container image
+    name: Verify and publish container image
     runs-on: ubuntu-latest
-    timeout-minutes: 25
-    needs: verify
-
+    timeout-minutes: 30
+    needs: [resolve, verify]
+    outputs:
+      image: ${{ steps.name.outputs.image }}
+      digest: ${{ steps.build.outputs.digest }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.resolve.outputs.sha }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-runtime
+          path: verified
+      - name: Extract verified runtime context
+        run: |
+          mkdir release-runtime
+          tar -xzf verified/release-runtime.tgz -C release-runtime
+      - uses: docker/setup-qemu-action@v4
       - uses: docker/setup-buildx-action@v4
-
       - name: Log in to GHCR
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Metadata
+      - name: Image name
+        id: name
+        run: echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+      - name: Release metadata from the resolved tag
         id: meta
         uses: docker/metadata-action@v6
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ${{ steps.name.outputs.image }}
+          flavor: latest=false
+          labels: |
+            org.opencontainers.image.revision=${{ needs.resolve.outputs.sha }}
+            org.opencontainers.image.version=${{ needs.resolve.outputs.version }}
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}},enable=${{ !contains(needs.verify.outputs.version, '-') }}
-            type=semver,pattern={{major}},enable=${{ !contains(needs.verify.outputs.version, '-') }}
-            type=raw,value=latest,enable=${{ !contains(needs.verify.outputs.version, '-') }}
-
-      - name: Build and push
+            type=semver,pattern={{version}},value=${{ needs.resolve.outputs.tag }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ needs.resolve.outputs.tag }},enable=${{ !contains(needs.resolve.outputs.version, '-') }}
+            type=semver,pattern={{major}},value=${{ needs.resolve.outputs.tag }},enable=${{ !contains(needs.resolve.outputs.version, '-') }}
+            type=raw,value=latest,enable=${{ !contains(needs.resolve.outputs.version, '-') }}
+      - name: Build candidate from verified artefacts
+        id: build
         uses: docker/build-push-action@v7
         with:
-          context: .
+          context: release-runtime
+          file: Dockerfile
+          build-args: SEKURA_ARTIFACT_STAGE=verified
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ steps.name.outputs.image }}:verification-${{ github.run_id }}-${{ github.run_attempt }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+      - name: Probe the exact image digest on both platforms
+        env:
+          RELEASE_IMAGE: ${{ steps.name.outputs.image }}@${{ steps.build.outputs.digest }}
+          RELEASE_VERSION: ${{ needs.resolve.outputs.version }}
+        run: node src/scripts/test-release-image.mjs
+      - name: Promote the verified digest to release tags
+        env:
+          RELEASE_IMAGE: ${{ steps.name.outputs.image }}@${{ steps.build.outputs.digest }}
+          RELEASE_DIGEST: ${{ steps.build.outputs.digest }}
+          IMAGE_TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          TAG_ARGS=()
+          while IFS= read -r tag; do
+            if [ -n "$tag" ]; then TAG_ARGS+=(--tag "$tag"); fi
+          done <<< "$IMAGE_TAGS"
+          docker buildx imagetools create --metadata-file promotion.json "${TAG_ARGS[@]}" "$RELEASE_IMAGE"
+          node -e 'const m=require("./promotion.json"); if(m["containerimage.descriptor"]?.digest!==process.env.RELEASE_DIGEST) throw new Error("Promoted digest differs from the verified image")'
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-image-verification
+          path: release-image-verification.json
+          retention-days: 30
 
   publish:
     name: Create GitHub release
     runs-on: ubuntu-latest
-    needs: [verify, image]
-
+    needs: [resolve, verify, image]
     steps:
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 0   # for the changelog diff
-
+          ref: ${{ needs.resolve.outputs.sha }}
       - uses: actions/download-artifact@v8
         with:
           name: release-artifacts
           path: release
-
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-image-verification
+          path: release
       - name: Compose release notes
-        id: notes
+        env:
+          VERSION: ${{ needs.resolve.outputs.version }}
+          RELEASE_SHA: ${{ needs.resolve.outputs.sha }}
+          RELEASE_IMAGE: ${{ needs.image.outputs.image }}@${{ needs.image.outputs.digest }}
         run: |
-          VERSION="${{ needs.verify.outputs.version }}"
+          (cd release && sha256sum --check SHA256SUMS.txt)
+          (cd release && sha256sum release-image-verification.json >> SHA256SUMS.txt)
           {
             echo "## Sekura Design System v$VERSION"
             echo ""
-            echo "### Verified before release"
+            echo "Source commit: $RELEASE_SHA"
             echo ""
-            echo "Every gate below ran and passed. A release cannot skip them."
+            echo "### Verification completed for this release"
             echo ""
-            echo "| Gate | What it checks |"
-            echo "|---|---|"
-            echo "| Contrast audit | Every declared colour pairing, in all four themes |"
-            echo "| CSS lint | Structure, tokens only, no physical properties |"
-            echo "| MCP smoke | Every tool, component, framework and export format |"
-            echo "| Behaviour tests | Real key presses: focus, ARIA, Escape, inert |"
-            echo "| Site verification | Dangling references, links, markup lint |"
-            echo "| Image health | \`/health\` re-runs the contrast audit in the container |"
-            echo ""
-            echo "### Artefacts"
-            echo ""
-            echo "| File | Use |"
-            echo "|---|---|"
-            echo "| \`sekura-$VERSION.css\` | The whole stylesheet, one file |"
-            echo "| \`tokens-$VERSION.css\` | Custom properties only, all themes and densities |"
-            echo "| \`tokens-$VERSION.dtcg.json\` | W3C Design Tokens format |"
-            echo "| \`sekura-behaviours-$VERSION.iife.min.js\` | Drop-in \`<script>\`, global \`Sekura\` |"
-            echo "| \`sekura-behaviours-$VERSION.esm.min.js\` | ES module for bundlers |"
-            echo "| \`sekura-css-$VERSION.zip\` | All stylesheets, per-component files, native exports |"
-            echo "| \`sekura-docs-$VERSION.zip\` | The documentation site, host it anywhere |"
-            echo "| \`SHA256SUMS.txt\` | Checksums |"
+            echo "The verification job passed npm run verify against the commit above."
+            echo "The container job checked health, release version, assets and MCP on linux/amd64 and linux/arm64 using the digest below."
+            echo "The documentation archive and Pages deployment reuse the verified dist-site artifact."
             echo ""
             echo "### Container"
             echo ""
             echo '```bash'
-            echo "docker run -d -p 8080:8080 ghcr.io/${{ github.repository }}:$VERSION"
+            echo "docker run -d -p 8080:8080 $RELEASE_IMAGE"
             echo '```'
+            echo ""
+            echo "Download the CSS, behaviours, React, design-kit and documentation archives below. SOURCE.json records the source commit; SHA256SUMS.txt covers every download."
+            echo "See release-image-verification.json for the image checks."
             echo ""
             if [ -f CHANGELOG.md ]; then
               echo "### Changes"
               echo ""
-              # The section for this version, up to the next heading.
-              awk "/^## \[?$VERSION\]?/{flag=1;next}/^## /{flag=0}flag" CHANGELOG.md
+              awk -v version="$VERSION" '/^## / { active = index($0, "[" version "]") > 0 || index($0, "## " version " ") == 1; next } active { print }' CHANGELOG.md
             fi
           } > notes.md
-          cat notes.md
-
-      - name: Publish
+      - name: Publish resolved tag
         uses: softprops/action-gh-release@v3
         with:
+          tag_name: ${{ needs.resolve.outputs.tag }}
+          target_commitish: ${{ needs.resolve.outputs.sha }}
           files: release/*
           body_path: notes.md
           draft: false
-          prerelease: ${{ contains(needs.verify.outputs.version, '-') }}
+          prerelease: ${{ contains(needs.resolve.outputs.version, '-') }}
           generate_release_notes: true
 
   pages:
-    if: ${{ !contains(needs.verify.outputs.version, '-') }}
-    name: Deploy documentation
+    if: ${{ !contains(needs.resolve.outputs.version, '-') }}
+    name: Deploy verified documentation
     runs-on: ubuntu-latest
-    needs: verify
+    needs: [resolve, verify, publish]
     permissions:
       pages: write
       id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
-
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/download-artifact@v8
         with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - run: npm run build && npm run build:behaviours && npm run emit:css && npm run site:build
-
+          name: release-site
+          path: dist-site
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: sample
+          path: dist-site
       - id: deploy
         uses: actions/deploy-pages@v5

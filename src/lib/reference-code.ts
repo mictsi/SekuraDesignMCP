@@ -1,12 +1,12 @@
 import { parse, parseFragment, type DefaultTreeAdapterMap } from 'parse5';
 import type { ComponentSpec } from '../data/components/types.js';
 import type { Framework } from './codegen.js';
+import { ID_REFERENCE_ATTRIBUTES } from '../behaviours/core/id-references.js';
 
 type Node = DefaultTreeAdapterMap['node'];
 const voids = new Set('area base br col embed hr img input link meta param source track wbr'.split(' '));
 const booleans = new Set('disabled checked selected multiple required readonly autofocus hidden open inert novalidate'.split(' '));
 const reactAttrs: Record<string, string> = { class: 'className', for: 'htmlFor', datetime: 'dateTime', tabindex: 'tabIndex', readonly: 'readOnly', autofocus: 'autoFocus', autocomplete: 'autoComplete', spellcheck: 'spellCheck', inputmode: 'inputMode', maxlength: 'maxLength', minlength: 'minLength', colspan: 'colSpan', rowspan: 'rowSpan', novalidate: 'noValidate', 'stroke-width': 'strokeWidth', 'stroke-linecap': 'strokeLinecap', 'stroke-linejoin': 'strokeLinejoin', 'fill-rule': 'fillRule', 'clip-rule': 'clipRule', 'xlink:href': 'href' };
-const refs = new Set('for aria-controls aria-labelledby aria-describedby aria-activedescendant aria-owns headers data-sk-combobox data-sk-tag-input data-sk-menu-trigger data-sk-popover-trigger data-sk-tooltip-target data-sk-dialog-open data-sk-drawer-open data-sk-disclosure data-sk-palette-open data-sk-slider-value'.split(' '));
 const escape = (text: string): string => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /** Parse authored HTML; every framework receives the same native element tree. */
@@ -19,9 +19,14 @@ function markup(spec: ComponentSpec, framework: Framework): string {
   };
   collect(doc);
   const idExpression = (value: string, name: string): string | null => {
-    if (name === 'id' || refs.has(name)) {
+    if (name === 'id' || ID_REFERENCE_ATTRIBUTES.has(name)) {
       const words = value.split(/\s+/);
-      if (words.some(word => ids.has(word))) return words.map(word => ids.has(word) ? `instanceId + ${JSON.stringify('-' + word)}` : JSON.stringify(word)).join(' + " " + ');
+      const reference = (word: string): string | null => {
+        const hash = name !== 'id' && word.startsWith('#');
+        const id = hash ? word.slice(1) : word;
+        return ids.has(id) ? `${hash ? '"#" + ' : ''}instanceId + ${JSON.stringify('-' + id)}` : null;
+      };
+      if (words.some(word => reference(word))) return words.map(word => reference(word) ?? JSON.stringify(word)).join(' + " " + ');
     }
     if (name === 'href' && value.startsWith('#') && ids.has(value.slice(1))) return `"#" + instanceId + ${JSON.stringify('-' + value.slice(1))}`;
     return null;
@@ -118,34 +123,31 @@ onBeforeUnmount(() => cleanup?.());
 <div use:wire>{#if children}{@render children()}{:else}${html}{/if}</div>
 `;
   if (framework === 'angular') return `/** ${note} */
-import { Component, ElementRef, Input, AfterViewInit, OnDestroy, inject } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, afterNextRender, inject } from '@angular/core';
 import { autoEnhance } from '@sekura/behaviours';
 @Component({ selector: 'sk-${spec.id}-example', standalone: true, template: ${JSON.stringify(html)} })
-export class ${name}Example implements AfterViewInit, OnDestroy {
+export class ${name}Example implements OnDestroy {
   // Supply a unique, stable prefix per instance, including during server rendering.
   @Input({ required: true }) instanceId!: string;
   private host = inject<ElementRef<HTMLElement>>(ElementRef);
   private cleanup?: () => void;
-  ngAfterViewInit() { this.cleanup = autoEnhance(this.host.nativeElement); }
+  constructor() {
+    afterNextRender(() => { this.cleanup = autoEnhance(this.host.nativeElement); });
+  }
   ngOnDestroy() { this.cleanup?.(); }
 }
 `;
   if (framework === 'blazor') return `@* ${note}
-Load sekura.iife.min.js before rendering this component.
+Load sekura.iife.min.js before rendering this component. The custom host owns
+browser cleanup when a child, this component, or an ancestor is removed.
 *@
 @using Microsoft.JSInterop
-@implements IAsyncDisposable
 @inject IJSRuntime JS
-<div @ref="Root">${html}</div>
+<sekura-behaviour-root style="display: block"><div>${html}</div></sekura-behaviour-root>
 @code {
-  private ElementReference Root;
   private string InstanceId { get; } = "sk-" + Guid.NewGuid().ToString("N");
   protected override async Task OnAfterRenderAsync(bool firstRender) {
-    await JS.InvokeVoidAsync("Sekura.enhance", Root);
-  }
-  public async ValueTask DisposeAsync() {
-    try { await JS.InvokeVoidAsync("Sekura.dispose", Root); }
-    catch (JSDisconnectedException) { }
+    if (firstRender) await JS.InvokeVoidAsync("Sekura.defineAutoEnhanceElement");
   }
 }
 `;

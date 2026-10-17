@@ -20,7 +20,7 @@
             <li><a class="sk-side-nav__item" href="#appearance" aria-current="location"><span class="sk-side-nav__label">Appearance</span></a></li>
             <li><a class="sk-side-nav__item" href="#notifications"><span class="sk-side-nav__label">Notifications</span></a></li>
             <li><a class="sk-side-nav__item" href="#profile"><span class="sk-side-nav__label">Profile</span></a></li>
-            <li><a class="sk-side-nav__item" href="#danger"><span class="sk-side-nav__label">Delete account</span></a></li>
+            <li><a class="sk-side-nav__item" href="#danger"><span class="sk-side-nav__label">Account</span></a></li>
           </ul>
         </nav>
 
@@ -31,17 +31,14 @@
             <div>
               <h2 class="sk-fieldset__legend" id="appearance-h">Appearance</h2>
               <p class="sk-field__hint">
-                These are switches, not checkboxes, because they take effect the
-                moment they move — there is no Save button on this page.
+                Changes apply immediately. Preferences are saved on this device when storage is available.
               </p>
             </div>
 
             <fieldset class="sk-fieldset">
               <legend class="sk-fieldset__legend">Colour theme</legend>
               <p class="sk-field__hint" id="theme-hint">
-                Three options, not two. <strong>System</strong> follows your operating
-                system and is the default — a two-state toggle would silently override
-                that preference the first time you touched it, with no way back.
+                Choose a theme, or select <strong>System</strong> to follow your device.
               </p>
               <div class="sk-fieldset__body">
                 <div class="sk-button-group sk-button-group--segmented" role="radiogroup"
@@ -60,6 +57,7 @@
                   </button>
                 </div>
               </div>
+              <p class="sk-field__hint" data-sk-theme-persistence></p>
             </fieldset>
 
             <!-- Both themes side by side. Forcing a theme on a subtree works
@@ -67,11 +65,9 @@
                  element carrying data-sk-theme — no separate stylesheet, no
                  duplicated component code. -->
             <div>
-              <h3 class="sk-fieldset__legend" style="font-size:var(--sk-font-size-heading-xs)">Both themes at once</h3>
+              <h3 class="sk-fieldset__legend" style="font-size:var(--sk-font-size-heading-xs)">Theme preview</h3>
               <p class="sk-field__hint" style="margin-block-end:var(--sk-space-12)">
-                The same markup, rendered under two themes. Note that the card gets
-                <em>lighter</em> than its page in dark mode while the border does the
-                separating work — in light mode the shadow does it instead.
+                Compare the light and dark appearance before choosing.
               </p>
               <div class="theme-preview">
                 <div class="theme-preview__pane" data-sk-theme="light">
@@ -121,9 +117,7 @@
             <fieldset class="sk-fieldset">
               <legend class="sk-fieldset__legend">Density</legend>
               <p class="sk-field__hint" id="density-hint">
-                Changes interface control padding and row height across this demo.
-                The project list has a separate row-density choice. Control labels stay at least
-                14px, metadata uses 12px, and targets stay at least 24 by 24 pixels.
+                Choose how closely controls and rows are spaced. The project list has its own row-density preference.
               </p>
               <div class="sk-fieldset__body">
                 <div class="sk-button-group sk-button-group--segmented" role="radiogroup"
@@ -132,29 +126,6 @@
                   <button type="button" class="sk-button-group__segment" role="radio" data-sk-density-option="compact">Compact</button>
                   <button type="button" class="sk-button-group__segment" role="radio" data-sk-density-option="dense">Dense</button>
                 </div>
-              </div>
-            </fieldset>
-
-            <fieldset class="sk-fieldset">
-              <legend class="sk-fieldset__legend">Collapsed navigation</legend>
-              <p class="sk-field__hint">A collapsed rail retains a visible expand control. Expand this preview to reach its child sections.</p>
-              <div class="docs-rail-preview">
-                <nav class="sk-side-nav sk-side-nav--collapsed" id="settings-nav-preview" aria-label="Navigation preview">
-                  <button class="sk-side-nav__expand" type="button" data-sk-nav-expand aria-expanded="false" aria-controls="settings-nav-preview" aria-label="Expand navigation preview"><svg aria-hidden="true" width="20" height="20"><use href="#sk-icon-menu"></use></svg></button>
-                  <ul class="sk-side-nav__list">
-                    <li>
-                      <div class="sk-side-nav__branch-row">
-                        <a class="sk-side-nav__item" href="#appearance" data-active-ancestor data-sk-tooltip="Settings"><svg aria-hidden="true" width="20" height="20"><use href="#sk-icon-settings"></use></svg><span class="sk-side-nav__label">Settings</span></a>
-                        <button class="sk-side-nav__toggle" type="button" data-sk-disclosure="settings-preview-children" aria-expanded="true" aria-controls="settings-preview-children" aria-label="Settings preview sections"><svg aria-hidden="true" width="16" height="16"><use href="#sk-icon-chevron-down"></use></svg></button>
-                      </div>
-                      <ul class="sk-side-nav__children" id="settings-preview-children">
-                        <li><a class="sk-side-nav__item" href="#appearance" aria-current="location"><span class="sk-side-nav__label">Appearance</span></a></li>
-                        <li><a class="sk-side-nav__item" href="#notifications"><span class="sk-side-nav__label">Notifications</span></a></li>
-                      </ul>
-                    </li>
-                  </ul>
-                </nav>
-                <div class="docs-rail-preview__content"><p>Parent links navigate. The separate chevron only expands or collapses children.</p><button class="sk-button sk-button--secondary sk-button--sm" type="button" data-sk-nav-collapse="settings-nav-preview">Collapse preview</button></div>
               </div>
             </fieldset>
 
@@ -191,9 +162,7 @@
             <div>
               <h2 class="sk-fieldset__legend" id="notifications-h">Notifications</h2>
               <p class="sk-field__hint">
-                Each toggle saves on change. Watch the pending state — the switch shows
-                a spinner until the server confirms, rather than claiming a state it
-                has not reached.
+                Changes save on this device. Wait for confirmation before leaving; no email is sent by this demo.
               </p>
             </div>
 

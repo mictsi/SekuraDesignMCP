@@ -742,7 +742,7 @@ export const actionComponents: ComponentSpec[] = [
     ],
     tokensUsed: ['color-action-primary-bg', 'color-action-primary-text', 'color-action-secondary-border', 'color-border-inverse', 'color-focus-ring', 'radius-md'],
     darkMode:
-      'The divider between the two segments is the detail that breaks in dark mode. On a light primary fill it is a white 24% overlay; on the dark theme, where the fill is cobalt-400 and the label is near-black, the divider inverts to a black 24% overlay. It is declared as its own token pairing rather than inherited, because inheriting currentColor would make it vanish exactly when it matters most.',
+      'The primary divider uses the local action text token at 32% opacity. Its color follows the same theme scope as the action fill, including nested previews and automatic system themes. An outer page theme must not override a differently themed split button.',
     accessibility: {
       role: 'Two sibling <button> elements inside a role="group". The trigger uses aria-haspopup="menu".',
       keyboard: [
@@ -852,14 +852,10 @@ export const actionComponents: ComponentSpec[] = [
 .sk-split-button--primary .sk-split-button__action:hover,
 .sk-split-button--primary .sk-split-button__trigger:hover { background-color: var(--sk-color-action-primary-bg-hover); }
 
-/* The divider must survive the label flipping from white (light) to near-black (dark),
-   so it is declared per theme rather than inherited from currentColor. */
+/* Resolve the divider from the local action token, including nested themes.
+   An outer theme selector would also match controls inside an opposite theme. */
 .sk-split-button--primary .sk-split-button__trigger {
-  border-inline-start: var(--sk-border-width-hairline) solid rgb(255 255 255 / 32%);
-}
-[data-sk-theme="dark"] .sk-split-button--primary .sk-split-button__trigger,
-[data-sk-theme="hc-dark"] .sk-split-button--primary .sk-split-button__trigger {
-  border-inline-start-color: rgb(0 0 0 / 32%);
+  border-inline-start: var(--sk-border-width-hairline) solid color-mix(in srgb, var(--sk-color-action-primary-text) 32%, transparent);
 }
 
 .sk-split-button__trigger[aria-expanded="true"] { background-color: var(--sk-color-surface-active); }

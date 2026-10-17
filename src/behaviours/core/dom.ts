@@ -7,6 +7,8 @@
  * per-framework reimplementation.
  */
 
+import { ID_REFERENCE_ATTRIBUTES } from './id-references.js';
+
 /** Elements that can receive focus, excluding those made inert or hidden. */
 const FOCUSABLE = [
   'a[href]',
@@ -61,10 +63,13 @@ export function scopeIds(root: HTMLElement, prefix: string): void {
   root.setAttribute('data-sk-id-scope', prefix);
   const elements = Array.from(root.querySelectorAll<HTMLElement>('*'));
   const ids = new Map(elements.filter(el => el.id).map(el => [el.id, `${prefix}-${el.id}`]));
-  const refs = new Set('for aria-controls aria-labelledby aria-describedby aria-activedescendant aria-owns headers data-sk-combobox data-sk-tag-input data-sk-menu-trigger data-sk-popover-trigger data-sk-tooltip-target data-sk-dialog-open data-sk-drawer-open data-sk-disclosure'.split(' '));
   for (const el of elements) for (const attr of Array.from(el.attributes)) {
     if (attr.name === 'id') el.id = ids.get(attr.value) ?? attr.value;
-    else if (refs.has(attr.name)) el.setAttribute(attr.name, attr.value.split(/\s+/).map(id => ids.get(id) ?? id).join(' '));
+    else if (ID_REFERENCE_ATTRIBUTES.has(attr.name)) el.setAttribute(attr.name, attr.value.split(/\s+/).map(id => {
+      const hash = id.startsWith('#');
+      const scoped = ids.get(hash ? id.slice(1) : id);
+      return scoped ? `${hash ? '#' : ''}${scoped}` : id;
+    }).join(' '));
     else if (attr.name === 'href' && attr.value.startsWith('#') && ids.has(attr.value.slice(1))) el.setAttribute('href', `#${ids.get(attr.value.slice(1))}`);
   }
 }

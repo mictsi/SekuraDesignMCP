@@ -1,5 +1,9 @@
 # syntax=docker/dockerfile:1
 
+# Releases select `verified` and supply the artifacts from the verification job.
+# Local builds keep compiling and testing from source by default.
+ARG SEKURA_ARTIFACT_STAGE=build
+
 # ---------- Build ----------
 # Node 24 "Krypton" is the newest LTS line as of 17 October 2026.
 # Review the official release schedule before changing major versions;
@@ -42,6 +46,20 @@ RUN npm run build:behaviours && npm run test:compatibility && node dist/scripts/
 RUN npm prune --omit=dev
 
 
+# ---------- Already verified release artifacts ----------
+# This stage uses the isolated release-runtime context, without .dockerignore.
+FROM node:24.22.0-alpine AS verified
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+COPY dist ./dist
+COPY dist-css ./dist-css
+COPY dist-js ./dist-js
+COPY sample ./sample
+
+FROM ${SEKURA_ARTIFACT_STAGE} AS artifacts
+
+
 # ---------- Runtime ----------
 FROM node:24.22.0-alpine AS runtime
 
@@ -54,7 +72,7 @@ RUN apk add --no-cache dumb-init
 # SEKURA_EXTERNAL_URL — public base URL used to generate links, e.g.
 #                     https://example.com/design-system. Set it when the proxy
 #                     strips the prefix, because the container cannot infer what
-#                     it was. Left unset, links are derived from X-Forwarded-*.
+#                     it was. Forwarded headers require explicit proxy trust.
 ENV NODE_ENV=production \
     SEKURA_MCP_TRANSPORT=http \
     PORT=8080 \
@@ -62,17 +80,17 @@ ENV NODE_ENV=production \
     SEKURA_MCP_PATH=/mcp \
     SEKURA_BASE_PATH=/ \
     SEKURA_EXTERNAL_URL= \
-    SEKURA_TRUST_PROXY=true
+    SEKURA_TRUST_PROXY=false
 
 WORKDIR /app
 
 # node:alpine already provides an unprivileged `node` user (uid 1000).
-COPY --from=build --chown=node:node /app/node_modules ./node_modules
-COPY --from=build --chown=node:node /app/dist ./dist
-COPY --from=build --chown=node:node /app/dist-css ./dist-css
-COPY --from=build --chown=node:node /app/dist-js ./dist-js
-COPY --from=build --chown=node:node /app/sample ./sample
-COPY --from=build --chown=node:node /app/package.json ./package.json
+COPY --from=artifacts --chown=node:node /app/node_modules ./node_modules
+COPY --from=artifacts --chown=node:node /app/dist ./dist
+COPY --from=artifacts --chown=node:node /app/dist-css ./dist-css
+COPY --from=artifacts --chown=node:node /app/dist-js ./dist-js
+COPY --from=artifacts --chown=node:node /app/sample ./sample
+COPY --from=artifacts --chown=node:node /app/package.json ./package.json
 
 USER node
 
@@ -86,7 +104,7 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
 # One image, both transports. HTTP is the default so the container is useful with
 # `docker run -p`; clients that spawn the server directly override the env var:
 #
-#   docker run -i --rm -e SEKURA_MCP_TRANSPORT=stdio sekura-design-mcp:3.1.0
+#   docker run -i --rm -e SEKURA_MCP_TRANSPORT=stdio sekura-design-mcp:3.2.0
 #
 # `runtime` is deliberately the final stage, so a bare `docker build` produces the
 # servable image rather than a variant.

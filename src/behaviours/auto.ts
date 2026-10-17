@@ -65,6 +65,10 @@ export interface EnhanceResult {
  * Safe to call repeatedly. Elements already wired are skipped.
  */
 export function enhance(root: ParentNode = document): EnhanceResult {
+  return enhanceOwned(root);
+}
+
+function enhanceOwned(root: ParentNode, owner?: Set<Cleanup>): EnhanceResult {
   const cleanups: Cleanup[] = [];
   let count = 0;
 
@@ -80,6 +84,7 @@ export function enhance(root: ParentNode = document): EnhanceResult {
         const destroy = (): void => {
           if (!active) return;
           active = false;
+          owner?.delete(destroy);
           cleanup(); entries.delete(kind);
           if (entries.size) el.dataset[MARK] = [...entries.keys()].join(',');
           else { delete el.dataset[MARK]; registry.delete(el); }
@@ -87,6 +92,7 @@ export function enhance(root: ParentNode = document): EnhanceResult {
         entries.set(kind, destroy); registry.set(el, entries);
         el.dataset[MARK] = [...entries.keys()].join(',');
         cleanups.push(destroy); count += 1;
+        owner?.add(destroy);
       }
     }
   };
@@ -333,7 +339,8 @@ export function getTheme(): ReturnType<typeof createThemeManager> {
  * debounced to a microtask so a burst of mutations costs one pass.
  */
 export function autoEnhance(root: HTMLElement = document.body): Cleanup {
-  enhance(root);
+  const owned = new Set<Cleanup>();
+  enhanceOwned(root, owned);
   let queued = false;
   let stopped = false;
   const removed = new Set<Element>();
@@ -348,15 +355,33 @@ export function autoEnhance(root: HTMLElement = document.body): Cleanup {
       if (stopped) return;
       for (const node of removed) if (!root.contains(node)) dispose(node);
       removed.clear();
-      enhance(root);
+      enhanceOwned(root, owned);
     });
   });
   observer.observe(root, { childList: true, subtree: true });
   return () => {
     stopped = true; observer.disconnect();
     for (const node of removed) if (!root.contains(node)) dispose(node);
-    removed.clear(); dispose(root);
+    removed.clear();
+    // Retain handles independently of DOM membership. A framework can remove
+    // both a child and its host before a mutation callback has been delivered.
+    for (const cleanup of [...owned]) cleanup();
+    dispose(root);
   };
+}
+
+/**
+ * Register a lifecycle host for Blazor and other DOM-rendering frameworks.
+ * Its narrow child observer handles updates; disconnectedCallback also runs
+ * when an ancestor is removed, without observing the entire document.
+ */
+export function defineAutoEnhanceElement(tagName = 'sekura-behaviour-root'): void {
+  if (customElements.get(tagName)) return;
+  customElements.define(tagName, class extends HTMLElement {
+    private cleanup?: Cleanup;
+    connectedCallback(): void { this.cleanup ??= autoEnhance(this); }
+    disconnectedCallback(): void { this.cleanup?.(); this.cleanup = undefined; }
+  });
 }
 
 function bindSurface(surface: HTMLElement, kind: string, show: () => void, close: () => void, destroy: Cleanup): Cleanup {

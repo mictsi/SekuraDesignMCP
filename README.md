@@ -8,7 +8,7 @@ Agents and developers can inspect the same tokens, native markup and interaction
 Application behavior still needs implementation and accessibility verification.
 
 ```
-71 components · 16 foundations · 18 UX patterns · 9 layout recipes
+71 components · 16 foundations · 19 UX patterns · 9 layout recipes
 120 semantic tokens · 4 themes · 3 densities · 8 target frameworks
 Build-derived counts and support: sample/assets/component-manifest.json
 ```
@@ -21,24 +21,33 @@ explains it with live demos, a full colour guide and worked examples.
 
 ## Integration and migration
 
-**Sekura 3.1** adds grouped documentation navigation, owned action submenus and
-opt-in tree navigation to the compact v3 workspace. Navigation has a fixed system
-width and no width control. Read the [migration plan](./MIGRATION.md) for separate
-v2 and v3.0.0 upgrade paths, the optional v2 geometry bridge, compatibility checks
-and rollback. Public-name checks cover the recorded v2.1 and v3.0.0 baselines.
+**Sekura 3.2.0** addresses the reliability and product issues found in the
+3.1 review: locale-aware input commitment, shared date validation, keyboard
+suggestions, predictable overlay and toast cleanup, safer HTTP boundaries,
+correct token exports, framework lifecycle integration and consistent release
+artifacts. The [3.2 review record](./SYSTEM-REVIEW-3.2.0.md) maps each finding to
+its implementation and verification scope.
 
-The updated samples include a Pages tree with filter/reveal/current-route state,
-a Share → Export submenu, local Settings section navigation and breadcrumb
-overflow. `npm run test:navigation` exercises their runtime contracts. The source
-patch targets the reviewed 3.0.3 commit; older source branches integrate that
-base before applying it.
+Navigation keeps the fixed system width with **no width control in the UI**.
+The Workspace sample has its own app frame, scoped page search and mobile
+Document actions. Component pages lead with an interactive example and separate
+API maturity, native framework support, design-kit coverage and verification.
+The Form integration lab demonstrates draft retention and revision comparison
+after a conflict or uncertain save acknowledgment.
+
+Read the [migration plan](./MIGRATION.md) for separate v2, v3.0.0 and v3.1.0
+upgrade paths, HTTP configuration changes and rollback. Public-name checks cover
+recorded v2.1, v3.0.0 and v3.1.0 baselines. The source patch targets **3.1.0**
+commit `115375177e0aff5e8dbadf39bdb55d0b10948f2c`; older source branches must
+first integrate that upstream base. New design files use the versioned
+[handoff guide](./DESIGN-HANDOFF.md).
 
 The [support matrix](./sample/support.html) distinguishes CSS, native behavior,
 controllers, and application-owned actions. The [workbench](./sample/workbench.html)
 compares every control size and density and demonstrates pending, failure, retry,
 cancellation and real undo. Example data stays local; simulated remote actions are labelled.
 
-All 71 components are marked stable. The completed implementations include multi-select and async search, a reusable
+All 71 components have stable API maturity; native implementation and verification coverage are reported separately. The completed implementations include multi-select and async search, a reusable
 command palette, exact/range sliders, tri-state lazy trees, cancellable upload
 retries, and complete workspace/timeline states. `npm run test:completion` checks
 these contracts in Chromium, Firefox and WebKit. Human screen-reader and
@@ -92,7 +101,7 @@ reports it.
 ## The documentation site
 
 ```bash
-./run.sh start-build          # then open http://localhost:4173
+./run.sh start-build          # then open http://localhost:8080/docs/
 ```
 
 A 107-page documentation site — explanations, a full colour guide, a type
@@ -136,10 +145,13 @@ breaks a declared WCAG pairing does not get built.**
 ### Local
 
 ```bash
-npm install
+npm ci
 npm run build
+npm run build:behaviours
+npm run emit:css
+npm run site:build
 npm start              # stdio
-npm run start:http     # HTTP on :8080
+npm run start:http     # HTTP on 127.0.0.1:8080
 ```
 
 ---
@@ -175,7 +187,7 @@ table:
 
 [mcp_servers.sekura-design]
 command = "docker"
-args = ["run", "-i", "--rm", "-e", "SEKURA_MCP_TRANSPORT=stdio", "sekura-design-mcp:3.1.0"]
+args = ["run", "-i", "--rm", "-e", "SEKURA_MCP_TRANSPORT=stdio", "sekura-design-mcp:3.2.0"]
 
 # The first call builds a 5,900-line overview, so allow a little headroom.
 startup_timeout_sec = 30
@@ -194,7 +206,7 @@ Recent Codex versions can add it for you:
 
 ```bash
 codex mcp add sekura-design -- docker run -i --rm \
-  -e SEKURA_MCP_TRANSPORT=stdio sekura-design-mcp:3.1.0
+  -e SEKURA_MCP_TRANSPORT=stdio sekura-design-mcp:3.2.0
 
 codex mcp list          # confirm it registered
 ```
@@ -229,7 +241,7 @@ to start, but these help:
     "sekura-design": {
       "command": "docker",
       "args": ["run", "-i", "--rm", "-e", "SEKURA_MCP_TRANSPORT=stdio",
-               "sekura-design-mcp:3.1.0"]
+               "sekura-design-mcp:3.2.0"]
     }
   }
 }
@@ -385,6 +397,12 @@ non-zero, so a change that breaks a promise cannot merge green:
 | `smoke` | Every MCP tool, component, framework and export format |
 | `test:color` | Colour maths against WCAG reference values |
 | `test:urls` | Path prefixes and proxy headers resolve to reachable URLs |
+| `test:reliability:server` | Bounded validation, composited contrast, exact token exports, HTTP boundaries, cache refresh and artifact health |
+| `test:reliability:inputs` | Locale drafts, shared date validation, keyboard suggestions, nested cleanup and focused toast queue |
+| `test:reliability:product` | Storage failure, filtered contents, dedicated Workspace and component preview behavior |
+| `test:reliability:form` | Conflict comparison, uncertain save outcomes and explicit recovery without draft loss |
+| `test:consumers` | Packed ESM/CJS, strict declarations, real Angular SSR/hydration and Blazor Server cleanup |
+| `test:release-policy` | Existing-tag resolution and verified-artifact release invariants |
 | `test:codegen` | React, Angular and Web Component typechecks; Vue/Svelte compilation; Angular templates |
 | `test:blazor` | All generated Razor components compile with .NET 10 |
 | `test:design` | Example workflows, control alignment, generated React mounts, lifecycle and mobile geometry |
@@ -400,9 +418,14 @@ non-zero, so a change that breaks a promise cannot merge green:
 
 **`release.yml`** runs on a `v*` tag and publishes artifacts.
 
+The 3.2.0 source patch already sets the release version. Commit and push the
+reviewed source on `main` first. When ready to publish that committed version,
+tag it without running another version bump:
+
 ```bash
-npm version minor          # bumps package.json; everything else derives from it
-git push --follow-tags
+sekura_release_version=$(node -p "require('./package.json').version")
+git tag -a "v${sekura_release_version}" -m "Sekura ${sekura_release_version}"
+git push origin "v${sekura_release_version}"
 ```
 
 The workflow **refuses to release if the tag disagrees with `package.json`** —
@@ -425,7 +448,7 @@ Stable releases also publish a multi-arch image to GHCR, tagged `1.2.3`, `1.2`,
 `latest` or the stable documentation site. After publishing the release:
 
 ```bash
-docker run -d -p 8080:8080 ghcr.io/mictsi/sekuradesignmcp:3.1.0
+docker run -d -p 8080:8080 ghcr.io/mictsi/sekuradesignmcp:3.2.0
 ```
 
 Stable releases deploy the documentation site to GitHub Pages.
@@ -455,7 +478,7 @@ npm run check:env       # .env.example matches what the code actually reads
 npm run test:color      # colour maths vs WCAG reference values
 npm run test:urls       # URL generation under prefixes and reverse proxies
 npm run audit:contrast  # 344 contrast checks — build gate
-npm run lint:css        # structural CSS lint over all 67 stylesheets
+npm run lint:css        # structural CSS lint over all 83 emitted stylesheets
 npm run smoke           # checks every tool, component and export
 npm run emit:css        # write dist-css/ and the dependency/event manifest
 npm run site:build      # regenerate the 107-page documentation site
@@ -539,8 +562,9 @@ so the host toolchain is never involved:
 ./run.sh build --image      # or plain: docker build -t sekura-design-mcp .
 ```
 
-Verified on a clean `git archive` with no `node_modules`, no `dist`, no `tsc`
-and no browser on the host.
+The source-build path is self-contained. For 3.2.0, local checks cover the
+Docker/release policy and the HTTP readiness contract; an actual image build,
+container probe and live workflow run remain release acceptance steps.
 
 Plain `./run.sh build` does more than that: it also compiles and verifies on the
 host *before* building the image, which is why it wants TypeScript and
@@ -615,7 +639,10 @@ location /design-system/ {
 }
 ```
 ```bash
-docker run -d -p 8080:8080 -e SEKURA_BASE_PATH=/design-system sekura-design-mcp:3.1.0
+docker run -d -p 127.0.0.1:8080:8080 \
+  -e SEKURA_BASE_PATH=/design-system \
+  -e SEKURA_EXTERNAL_URL=https://example.com/design-system \
+  sekura-design-mcp:3.2.0
 ```
 
 **If the proxy strips the prefix**, the app still listens at the root but has no
@@ -631,17 +658,29 @@ location /design-system/ {
 ```bash
 docker run -d -p 8080:8080 \
   -e SEKURA_EXTERNAL_URL=https://example.com/design-system \
-  sekura-design-mcp:3.1.0
+  sekura-design-mcp:3.2.0
 ```
 
-**With Traefik or ingress-nginx, neither is needed.** `X-Forwarded-Prefix` is
-honoured automatically. Set `SEKURA_TRUST_PROXY=false` if the container is
-exposed directly to the internet, so a forged `X-Forwarded-Host` cannot rewrite
-the links it hands out.
+**With Traefik or ingress-nginx**, pin `SEKURA_EXTERNAL_URL` when the public URL
+is known. Forwarded headers are honored only from peers explicitly listed in
+`SEKURA_TRUST_PROXY`; the default is `false`, and legacy `true` means loopback
+only. The edge must overwrite each forwarded header with a single value.
 
-### If it starts but never becomes healthy
+Host validation applies to the incoming Host and any trusted forwarded host.
+Loopback hosts and the external URL's host are included automatically; add
+other intended authorities to `SEKURA_ALLOWED_HOSTS`. Browser requests must use
+the resolved server origin or an explicit `SEKURA_ALLOWED_ORIGINS` entry.
+Missing Origin is allowed for non-browser clients. These checks do not add
+authentication or CORS. See [.env.example](./.env.example) and the
+[HTTP upgrade section](./MIGRATION.md#http-deployment-changes) for exact values.
 
-Almost always `HOST`. A published port forwards to the container's *external*
+### Check binding and built artifacts
+
+Inspect `/health` for contrast and artifact status. Missing `sekura.css` or
+`sekura.iife.min.js` now produces a 503; build or copy matching artifacts before
+starting the service. Documentation availability is reported separately.
+
+If the container is healthy but unreachable, inspect `HOST`. A published port forwards to the container's *external*
 interface; `HOST=127.0.0.1` binds the container's own loopback instead, so
 nothing on the host can connect — while the container's health check, probing
 from inside, passes and Docker reports it **healthy**.
@@ -672,7 +711,7 @@ where a link, a bookmark or a proxy rule eventually points at the wrong one.
 | Path | What |
 |---|---|
 | `/mcp` | MCP endpoint (POST). Rename with `SEKURA_MCP_PATH` |
-| `/health` | Liveness, and the contrast audit re-run inside the container |
+| `/health` | Required artifact availability and the declared contrast audit; 503 if degraded |
 | `/manifest.json` | **Every URL above and below, as JSON** |
 | `/tokens.css` | Custom properties, all themes and densities |
 | `/tokens.json` | W3C DTCG format |
@@ -792,9 +831,9 @@ Run `npm run test:integration` for structured MCP contracts and `npm run test:re
 - `get_component({ id })` returns the complete specification as text and structured data. `sekura://components` contains all 71 stable components.
 - `get_component_code({ id, framework })` includes CSS dependencies, primary controller, all runtime factories, automatic selectors, manual-only APIs, events and application responsibilities.
 - `get_behavior({ id })` accepts a component ID or any public behavior export name. It returns generated TypeScript declarations with supporting types, initialization and cleanup instructions. Omit `id` for the complete API catalogue; `sekura://behaviors` exposes the same catalogue as a resource.
-- `get_migration_guide({ componentId, fromVersion })` returns the complete canonical plan and source-specific steps. `fromVersion` accepts `2.x`, `3.0.0` or `3.0.x`; omitting it preserves the complete legacy response. Public-name baselines cover v2.1 and v3.0.0. The legacy `sekura://migration/v2-to-v3` resource remains available alongside `sekura://migration/v3.1` and `sekura://migration/v3.0-to-v3.1`.
+- `get_migration_guide({ componentId, fromVersion })` returns the complete canonical plan and source-specific steps. `fromVersion` accepts `2.x`, `3.0.0`, `3.0.x`, `3.1.0` or `3.1.x`; omitting it preserves the complete legacy response. Public-name baselines cover v2.1, v3.0.0 and v3.1.0. The legacy `sekura://migration/v2-to-v3` resource remains available alongside `sekura://migration/v3.2`, `sekura://migration/v3.1-to-v3.2` and `sekura://migration/v3.0-to-v3.2`. Older v3.1 URIs remain aliases.
 - `search` supports `behavior` and `migration` kinds as well as the existing design records.
 
 The build embeds declarations and migration content in `dist/data/mcp-reference.json`, so stdio and HTTP installations work without source files or the original working directory. Rebuild after changing behavior APIs or migration documentation. `npm run test:mcp` checks all component specifications, every recipe format, public APIs and resources through an MCP client.
 
-Dependency policy: use the newest supported LTS line when a project offers one (Node 24, Angular 21), otherwise its latest stable release. See [the release dependency record](./DEPENDENCIES.md) for verified versions and source links. Angular packages validate templates and wrapper code; a consuming Angular application must use its own supported Angular/TypeScript toolchain. These checks are not a complete `ngc` application build. The package version is `3.1.0`; component maturity does not mean the manual acceptance record is complete.
+Dependency policy: use the newest supported LTS line when a project offers one (Node 24, Angular 21), otherwise its latest stable release. See [the release dependency record](./DEPENDENCIES.md) for verified versions and source links. Angular packages validate templates, wrapper code and an actual server-render/hydration fixture; a consuming Angular application must use its own supported Angular/TypeScript toolchain. These checks are not a complete `ngc` application build. The package version is `3.2.0`; component maturity does not mean the manual acceptance record is complete.

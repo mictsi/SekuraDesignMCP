@@ -10,6 +10,12 @@
   var key = 'sk-demo-workspace-note';
   var currentPage = 'working-together';
   var details = document.getElementById('workspace-details');
+  var detailsButton = document.querySelector('[data-sk-drawer-open="workspace-details"]');
+  function syncDetails(event) {
+    if (event.target === details) detailsButton.setAttribute('aria-expanded', String(!details.hidden));
+  }
+  details.addEventListener('sk:drawer:open', syncDetails);
+  details.addEventListener('sk:drawer:close', syncDetails);
   details.addEventListener('click', function (event) {
     var link = event.target.closest('a[href^="#"]');
     if (!link) return;
@@ -50,10 +56,59 @@
       Sekura.announce(next ? 'Document starred on this device.' : 'Document removed from your stars.');
     } catch (e) { Sekura.announce('Could not save your star. Device storage is unavailable.'); }
   });
+  document.querySelector('[data-sk-copy-link]').addEventListener('click', function () {
+    if (!navigator.clipboard) {
+      Sekura.announce('Could not copy the link. Copy the address from your browser.');
+      return;
+    }
+    navigator.clipboard.writeText(location.href).then(function () {
+      Sekura.announce('Link copied.');
+    }, function () {
+      Sekura.announce('Could not copy the link. Copy the address from your browser.');
+    });
+  });
 
   var treeRoot = document.getElementById('workspace-tree');
   if (!treeRoot) return;
   var pageDrawer = document.getElementById('workspace-pages');
+  var pagesButton = document.querySelector('[data-sk-workspace-pages-toggle]');
+  var mobilePages = matchMedia('(max-width: 63.999rem)');
+  var pagesController = Sekura.createDrawer(pageDrawer, {
+    modal: '(max-width: 63.999rem)',
+    onOpenChange: function (open) { pagesButton.setAttribute('aria-expanded', String(open)); }
+  });
+  pagesButton.addEventListener('click', function () {
+    if (!details.hidden && details.getAttribute('aria-modal') === 'true') details.querySelector('[data-sk-drawer-close]').click();
+    if (pagesController.open) pagesController.close(); else pagesController.show();
+  });
+  pageDrawer.querySelector('[data-sk-drawer-close]').addEventListener('click', function () { pagesController.close(); });
+  function syncPages() {
+    var hadFocus = pageDrawer.contains(document.activeElement);
+    if (mobilePages.matches) {
+      pagesController.close();
+      if (hadFocus) pagesButton.focus();
+    } else pagesController.show();
+  }
+  mobilePages.addEventListener('change', syncPages);
+  syncPages();
+  var actions = document.querySelector('.docs-workspace-more');
+  var narrowActions = matchMedia('(max-width: 39.999rem)');
+  function syncActions() {
+    var summary = actions.querySelector('summary');
+    var active = document.activeElement;
+    var hadFocus = actions.contains(active);
+    if (narrowActions.matches) {
+      summary.hidden = false;
+      if (hadFocus && active !== summary) summary.focus();
+      actions.open = false;
+    } else {
+      actions.open = true;
+      if (active === summary) actions.querySelector('button').focus();
+      summary.hidden = true;
+    }
+  }
+  narrowActions.addEventListener('change', syncActions);
+  syncActions();
   var filter = document.getElementById('workspace-page-filter');
   var clear = document.getElementById('workspace-clear-filter');
   var result = document.getElementById('workspace-tree-status');
@@ -110,7 +165,7 @@
     document.querySelector('.sk-document__eyebrow').textContent = locationText;
     var locations = details.querySelectorAll('.sk-dl__detail'); locations[1].textContent = locationText;
     var crumbs = document.querySelector('.sk-content-header__context ol');
-    var first = node('li', 'sk-breadcrumbs__item'); var home = node('a', 'sk-link', 'Workspace'); home.href = 'example-dashboard.html'; first.appendChild(home);
+    var first = node('li', 'sk-breadcrumbs__item'); var home = node('a', 'sk-link', 'Workspace'); home.href = '#page=engineering'; first.appendChild(home);
     crumbs.replaceChildren(first);
     page.path.forEach(function (part) {
       var entry = node('li', 'sk-breadcrumbs__item'); var link = node('a', 'sk-link', pages[part].title); link.href = '#page=' + encodeURIComponent(part); entry.appendChild(link); crumbs.appendChild(entry);
@@ -154,12 +209,11 @@
     }
   }
   window.addEventListener('hashchange', restoreRoute);
-  // Keep one contextual panel visible without changing either panel's controller owner.
-  document.querySelectorAll('[data-sk-drawer-open="workspace-pages"], [data-sk-drawer-open="workspace-details"]').forEach(function (button) {
+  // Close an existing mobile layer before the details opener establishes its modal background.
+  document.querySelectorAll('[data-sk-drawer-open="workspace-details"]').forEach(function (button) {
     button.addEventListener('click', function () {
-      var other = button.dataset.skDrawerOpen === 'workspace-pages' ? details : pageDrawer;
-      if (!other.hidden) other.querySelector('[data-sk-drawer-close]').click();
-    });
+      if (pagesController.open && pagesController.modal) pagesController.close();
+    }, true);
   });
   tree.filter('');
   var initial = routeId();
@@ -168,5 +222,6 @@
   window.addEventListener('pagehide', function (event) {
     if (event.persisted) return;
     clearTimeout(filterTimer); window.removeEventListener('hashchange', restoreRoute); tree.destroy();
+    mobilePages.removeEventListener('change', syncPages); narrowActions.removeEventListener('change', syncActions); pagesController.destroy();
   });
 })();

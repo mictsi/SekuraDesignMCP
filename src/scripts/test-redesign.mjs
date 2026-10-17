@@ -320,7 +320,7 @@ try {
         assert.equal(await page.locator('[data-sk-workspace-save]').getAttribute('data-state'), 'error');
       });
       await test('desktop navigation has a fixed width, ignores old sizing preferences and retains collapse', async () => {
-        await page.goto(base + '/example-workspace.html');
+        await page.goto(base + '/index.html');
         await page.evaluate(() => localStorage.setItem('sk-nav-width', '400'));
         await page.reload();
         assert.equal(await page.locator('#nav-width, [data-sk-nav-width], [data-sk-nav-reset]').count(), 0);
@@ -342,6 +342,7 @@ try {
         assert.ok(article.x + article.width <= panel.x + 1, 'panel covers document');
         await page.getByRole('button', { name: 'Close document details' }).click();
         await page.setViewportSize({ width: 390, height: 844 });
+        await page.locator('.docs-workspace-more > summary').click();
         await page.getByRole('button', { name: 'Details', exact: true }).click();
         assert.equal(await page.locator('#workspace-details').getAttribute('aria-modal'), 'true');
         assert.equal(await page.locator('.sk-document').evaluate(el => el.inert), true);

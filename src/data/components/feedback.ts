@@ -1318,7 +1318,7 @@ export const feedbackComponents: ComponentSpec[] = [
 .sk-loading--page {
   position: fixed;
   inset: 0;
-  z-index: var(--sk-z-modal);
+  z-index: var(--sk-z-dialog);
   background-color: var(--sk-color-surface-base);
   min-block-size: 100dvh;
 }
@@ -1326,7 +1326,7 @@ export const feedbackComponents: ComponentSpec[] = [
 .sk-loading--blocking {
   position: fixed;
   inset: 0;
-  z-index: var(--sk-z-modal);
+  z-index: var(--sk-z-dialog);
   background-color: var(--sk-color-surface-scrim);
 }
 .sk-loading--blocking .sk-loading__label { color: var(--sk-color-text-on-inverse); }

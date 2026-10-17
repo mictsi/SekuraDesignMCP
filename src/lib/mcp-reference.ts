@@ -70,10 +70,11 @@ export const migrationSchema = z.object({
 export function migrationReference(componentId?: string, fromVersion?: MigrationSource) {
   if (componentId && !components.some(component => component.id === componentId)) return null;
   const reference = mcpReference().migration;
-  const baseline = fromVersion?.startsWith('3.') ? reference.baselines?.['3.0'] : reference.baseline;
+  const baseline = fromVersion?.startsWith('3.1') ? reference.baselines?.['3.1']
+    : fromVersion?.startsWith('3.0') ? reference.baselines?.['3.0'] : reference.baseline;
   if (!baseline) throw new Error('Migration baseline missing. Rebuild the package.');
   const applies = (change: typeof migrationChanges[number]) => !fromVersion || (change.fromVersions ?? ['2.x']).includes(fromVersion)
-    || (fromVersion.startsWith('3.') && ['navigation-hierarchy', 'field-alignment'].includes(change.id));
+    || (fromVersion.startsWith('3.0') && ['navigation-hierarchy', 'field-alignment'].includes(change.id));
   return migrationSchema.parse({ schemaVersion: 1, version: VERSION, fromVersion: fromVersion ?? String(baseline.sourceVersion), componentId: componentId ?? null,
     markdown: reference.markdown,
     changes: migrationChanges.filter(change => applies(change) && (!componentId || !change.components.length || change.components.includes(componentId))),

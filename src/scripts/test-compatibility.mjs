@@ -13,7 +13,7 @@ function retains(label, previous, current) {
   assert.deepEqual(missing, [], `${label}: removed public names`);
   checked += previous.length;
 }
-for (const file of ['compatibility/v2-contract.json', 'compatibility/v3.0-contract.json']) {
+for (const file of ['compatibility/v2-contract.json', 'compatibility/v3.0-contract.json', 'compatibility/v3.1-contract.json']) {
   const baseline = JSON.parse(readFileSync(file, 'utf8'));
   const before = checked;
   retains('semantic tokens', baseline.tokens, semanticTokens.map(t => t.name));
@@ -32,4 +32,4 @@ for (const file of ['compatibility/v2-contract.json', 'compatibility/v3.0-contra
   }
   console.log(`Compatibility: ${checked - before} public names retained from ${baseline.sourceVersion} (${baseline.sourceCommit}), 0 removed.`);
 }
-console.log(`Compatibility: ${checked} baseline entries checked across v2 and v3.0.`);
+console.log(`Compatibility: ${checked} baseline entries checked across v2, v3.0 and v3.1.`);

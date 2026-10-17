@@ -440,7 +440,7 @@ export const layouts: LayoutRecipe[] = [
       'Move focus to the step heading on step change, and announce the new step politely.',
       'Only completed steps are focusable; future steps are plain text, not disabled buttons.',
       'Mark steps containing validation errors in the stepper itself, not only in the panel.',
-      'Save progress between steps so going back never loses work.',
+      'Preserve drafts between steps and name the durability boundary: this session, a device checkpoint, or a server acknowledgement. Explain what survives reload, leaving and reconnecting.',
       'The final step is "Review", showing everything before commit.',
     ],
     darkMode: 'The stepper connector uses border-strong so the steps still read as a sequence on dark; a connector at border-subtle disappears.',
@@ -500,7 +500,7 @@ export const layouts: LayoutRecipe[] = [
     components: ['sidebar-layout', 'side-nav', 'switch', 'fieldset', 'divider', 'button', 'stack'],
     responsive: 'A Sidebar layout with a 14rem rail. The sk-settings-layout container changes its local sk-settings-nav into a wrapping link strip below 48rem. Omit sk-side-nav--drawer here: these links stay in flow.',
     accessibility: [
-      'Settings that apply immediately use Switch; settings behind a Save button use Checkbox. Mixing the two models in one section is confusing.',
+      'Choose one save model per clearly labeled section: immediate settings use Switch; a transaction behind Save uses Checkbox. Independent sections may differ when boundaries and feedback are clear.',
       'Announce the result of an immediate change politely — a switch that moves silently gives no confirmation it worked.',
       'Show a pending state rather than optimistically reporting success.',
       'Each section is a labelled region with a heading.',

@@ -15,6 +15,7 @@ import { VERSION } from '../lib/version.js';
 const migration = readFileSync('MIGRATION.md', 'utf8');
 const baseline = JSON.parse(readFileSync('compatibility/v2-contract.json', 'utf8'));
 const v3Baseline = JSON.parse(readFileSync('compatibility/v3.0-contract.json', 'utf8'));
+const v31Baseline = JSON.parse(readFileSync('compatibility/v3.1-contract.json', 'utf8'));
 const originalCwd = process.cwd();
 process.chdir(tmpdir()); // Packaged resources must not depend on a source checkout cwd.
 const server = createServer();
@@ -55,14 +56,39 @@ try {
   const filtered = migrationSchema.parse((await client.callTool({ name: 'get_migration_guide', arguments: { componentId: 'combobox' } })).structuredContent);
   assert.ok(filtered.changes.some(c => c.components.includes('combobox')));
   assert.ok(filtered.changes.every(c => !c.components.length || c.components.includes('combobox')));
+  const reliabilityChanges = ['input-commit-contract', 'overlay-lifecycle-and-feedback', 'consumer-lifecycle-and-packaging', 'http-deployment-boundary', 'validation-and-token-export-contract'];
+  const navigation31Changes = ['navigation-fixed-width', 'navigation-drawer-scope', 'nested-action-menus', 'menu-focus-handoff', 'tree-navigation-mode', 'navigation-mcp-contracts'];
+  const sourceGuides = new Map<string, ReturnType<typeof migrationSchema.parse>>();
   for (const fromVersion of MIGRATION_SOURCES) {
     const result = migrationSchema.parse((await client.callTool({ name: 'get_migration_guide', arguments: { fromVersion } })).structuredContent);
+    sourceGuides.set(fromVersion, result);
+    assert.equal(result.version, VERSION);
     assert.equal(result.fromVersion, fromVersion);
+    assert.equal(result.markdown, migration);
     assert.equal(result.upgradePaths?.length, 1);
+    assert.equal(result.upgradePaths?.[0]?.fromVersion, fromVersion);
     assert.equal(result.upgradePaths?.[0]?.toVersion, VERSION);
-    assert.deepEqual(result.compatibility.baseline, fromVersion.startsWith('3.') ? v3Baseline : baseline);
-    assert.ok(result.changes.some(c => c.id === 'tree-navigation-mode'));
-    if (fromVersion.startsWith('3.')) assert.ok(!result.changes.some(c => c.id === 'shared-geometry'));
+    const expectedBaseline = fromVersion.startsWith('3.1') ? v31Baseline : fromVersion.startsWith('3.0') ? v3Baseline : baseline;
+    assert.deepEqual(result.compatibility.baseline, expectedBaseline);
+    assert.equal(result.compatibility.sourceCommit, expectedBaseline.sourceCommit);
+    const ids = new Set(result.changes.map(change => change.id));
+    for (const id of reliabilityChanges) assert.ok(ids.has(id), `${fromVersion}: missing ${id}`);
+    for (const id of navigation31Changes) assert.equal(ids.has(id), !fromVersion.startsWith('3.1'), `${fromVersion}: intervening 3.1 change ${id}`);
+    if (fromVersion.startsWith('3.')) assert.ok(!ids.has('shared-geometry'), `${fromVersion}: v2 geometry is not required`);
+    if (fromVersion.startsWith('3.1')) {
+      for (const id of ['navigation-hierarchy', 'field-alignment', 'tree-selection']) assert.ok(!ids.has(id), `${fromVersion}: previously adopted ${id}`);
+      assert.match(result.upgradePaths![0]!.summary, /reliability/);
+      for (const componentId of ['date-picker', 'side-nav']) {
+        const scoped = migrationSchema.parse((await client.callTool({ name: 'get_migration_guide', arguments: { fromVersion, componentId } })).structuredContent);
+        assert.equal(scoped.fromVersion, fromVersion);
+        assert.deepEqual(scoped.compatibility.baseline, v31Baseline);
+        assert.deepEqual(scoped.changes, result.changes.filter(change => !change.components.length || change.components.includes(componentId)));
+        assert.ok(scoped.changes.some(change => change.id === 'http-deployment-boundary'));
+        assert.ok(scoped.changes.some(change => change.id === 'validation-and-token-export-contract'));
+        assert.equal(scoped.changes.some(change => change.id === 'input-commit-contract'), componentId === 'date-picker');
+        assert.ok(!scoped.changes.some(change => navigation31Changes.includes(change.id)));
+      }
+    }
   }
   for (const id of ['hierarchical-navigation', 'action-submenus', 'navigation-tree']) {
     const result = await client.callTool({ name: 'get_pattern', arguments: { id } });
@@ -75,16 +101,26 @@ try {
     assert.ok(JSON.stringify(result.content).includes(expected!));
   }
   const resources = await client.listResources();
-  for (const uri of ['sekura://components', 'sekura://behaviors', 'sekura://migration/v2-to-v3', 'sekura://migration/v3.1', 'sekura://migration/v3.0-to-v3.1']) {
-    assert.ok(resources.resources.some(r => r.uri === uri));
+  const migrationResources = new Map<string, string | undefined>([
+    ['sekura://migration/v2-to-v3', undefined],
+    ['sekura://migration/v3.1', undefined],
+    ['sekura://migration/v3.0-to-v3.1', '3.0.0'], // version-check-ignore: resource source version is deliberately historical.
+    ['sekura://migration/v3.2', undefined],
+    ['sekura://migration/v3.0-to-v3.2', '3.0.0'], // version-check-ignore: resource source version is deliberately historical.
+    ['sekura://migration/v3.1-to-v3.2', '3.1.0'], // version-check-ignore: resource source version is deliberately historical.
+  ]);
+  for (const uri of ['sekura://components', 'sekura://behaviors', ...migrationResources.keys()]) {
+    assert.ok(resources.resources.some(resource => resource.uri === uri), `Missing resource ${uri}`);
     const resource = await client.readResource({ uri });
     const content = resource.contents[0]!;
     assert.ok('text' in content);
     const data = JSON.parse(content.text);
     if (uri.endsWith('components')) assert.deepEqual(data.components, components);
     if (uri.endsWith('behaviors')) assert.deepEqual(behaviorSchema.parse(data).api, mcpReference().api);
-    if (uri.endsWith('v2-to-v3')) assert.deepEqual(migrationSchema.parse(data), full);
-    if (uri.endsWith('v3.0-to-v3.1')) assert.equal(migrationSchema.parse(data).fromVersion, MIGRATION_SOURCES[1]);
+    if (migrationResources.has(uri)) {
+      const source = migrationResources.get(uri);
+      assert.deepEqual(migrationSchema.parse(data), source ? sourceGuides.get(source) : full, `Resource ${uri} must match its source-specific tool result`);
+    }
   }
-  console.log(`MCP coverage: ${components.length} stable specs, ${components.length * FRAMEWORKS.length} recipes, ${mcpReference().api.filter(a => a.exported).length} public APIs, migration/filter/errors/search/resources passed outside checkout cwd.`);
+  console.log(`MCP coverage: ${components.length} stable specs, ${components.length * FRAMEWORKS.length} recipes, ${mcpReference().api.filter(a => a.exported).length} public APIs, ${MIGRATION_SOURCES.length} source-specific migration paths and ${migrationResources.size} migration resource aliases, filtering/errors/search passed outside checkout cwd.`);
 } finally { process.chdir(originalCwd); await client.close(); await server.close(); }

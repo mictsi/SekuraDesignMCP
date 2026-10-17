@@ -3,16 +3,19 @@ import { createServer } from 'node:http';
 import { readFileSync } from 'node:fs';
 import { resolve, extname } from 'node:path';
 import { pathToFileURL } from 'node:url';
-export function createDemoServer() {
-  const root = resolve('sample'); let version = 1; let project = null;
+export function createDemoServer({ saveDelayMs = 350 } = {}) {
+  const root = resolve('sample'); let version = 1; let project = null; let pending = 0;
   return createServer(async (req, res) => {
-    const json = (status, body) => { res.writeHead(status, { 'content-type': 'application/json', 'cache-control': 'no-store' }); res.end(JSON.stringify(body)); };
+    const json = (status, body) => {
+      if (res.destroyed || res.writableEnded) return;
+      res.writeHead(status, { 'content-type': 'application/json', 'cache-control': 'no-store' }); res.end(JSON.stringify(body));
+    };
     // No CORS. Reject cross-origin mutations, including requests from unrelated local ports.
     if (req.headers.origin && req.headers.origin !== `http://${req.headers.host}`) { json(403, { message: 'Use the same-origin local demo page.' }); return; }
     let pathname;
     try { pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname); } catch { json(400, { message: 'Invalid URL.' }); return; }
     if (pathname.startsWith('/demo-api/')) {
-      if (req.method === 'GET' && pathname === '/demo-api/version') { json(200, { version, project }); return; }
+      if (req.method === 'GET' && pathname === '/demo-api/version') { json(200, { version, project, pending }); return; }
       if (req.method === 'GET' && pathname === '/demo-api/name') {
         const value = new URL(req.url, 'http://localhost').searchParams.get('value') || '';
         setTimeout(() => json(200, { available: value.trim().length > 0 && value.toLowerCase() !== 'taken' }), 250); return;
@@ -23,14 +26,29 @@ export function createDemoServer() {
       try {
         for await (const chunk of req) { text += chunk; if (text.length > 16000) { json(413, { message: 'Request too large.' }); return; } }
         const body = JSON.parse(text);
-        if (typeof body.name !== 'string' || !body.name.trim() || body.name.length > 80 || body.name.toLowerCase() === 'taken' || !Number.isInteger(body.version) || !({ design: ['Alex', 'Sam'], engineering: ['Jordan', 'Taylor'] }[body.team]?.includes(body.owner))) { json(422, { message: 'Check the project name, team and owner.' }); return; }
+        if (typeof body.name !== 'string' || !body.name.trim() || body.name.length > 80 || body.name.toLowerCase() === 'taken' || !Number.isInteger(body.version) || !({ design: ['Alex', 'Sam'], engineering: ['Jordan', 'Taylor'] }[body.team]?.includes(body.owner))) { json(422, { message: 'Check the project name, team and owner.', committed: false }); return; }
+        pending++;
         setTimeout(() => {
-          if (body.outcome === 'failure') { json(503, { message: 'The service is unavailable. Your draft is retained; try saving again.' }); return; }
-          if (body.outcome === 'conflict') version++;
-          if (body.version !== version) { json(409, { message: 'Another editor changed this project. Load its latest version before retrying.' }); return; }
-          project = { name: body.name, team: body.team, owner: body.owner, notes: String(body.notes || '') }; version++;
-          json(200, { version, project });
-        }, 350);
+          try {
+            if (body.outcome === 'failure') { json(503, { message: 'The service is unavailable. Your draft is retained; try saving again.', committed: false }); return; }
+            if (body.outcome === 'conflict') {
+              project = { ...(project ?? { name: body.name, team: body.team, owner: body.owner }), notes: 'Updated by another editor.' };
+              version++;
+            }
+            if (body.version !== version) { json(409, { message: 'Another editor changed this project. Check the latest saved values before retrying.', committed: false }); return; }
+            project = { name: body.name, team: body.team, owner: body.owner, notes: String(body.notes || '') }; version++;
+            // Deliberately lose only the acknowledgment; the committed state
+            // remains available through the latest-version endpoint.
+            if (body.outcome === 'uncertain') {
+              if (!res.destroyed) {
+                res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' });
+                res.end('{"version":');
+              }
+              return;
+            }
+            json(200, { version, project });
+          } finally { pending--; }
+        }, saveDelayMs);
       } catch { if (!res.headersSent) json(400, { message: 'Invalid JSON.' }); }
       return;
     }

@@ -53,7 +53,7 @@ export const navigationComponents: ComponentSpec[] = [
   position: fixed;
   inset-block-start: var(--sk-space-8);
   inset-inline-start: var(--sk-space-8);
-  z-index: var(--sk-z-skip-link);
+  z-index: var(--sk-z-skipLink);
   padding: var(--sk-space-12) var(--sk-space-16);
   /* Opaque, never translucent: a semi-transparent skip link composites against
      unknown content and its contrast becomes unpredictable. */

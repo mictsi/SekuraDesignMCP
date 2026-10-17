@@ -1,7 +1,7 @@
 {
   "name": "sekura-design-mcp",
-  "version": "3.1.0",
-  "description": "Sekura Design System — MCP server exposing the complete design, UX, accessibility and dark-mode specification as machine-readable tools.",
+  "version": "3.2.0",
+  "description": "Sekura Design System \u2014 MCP server exposing the complete design, UX, accessibility and dark-mode specification as machine-readable tools.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -20,7 +20,7 @@
     "emit:css": "node dist/scripts/emit-css.js",
     "smoke": "node dist/scripts/smoke.js",
     "test:errors": "node dist/scripts/test-errors.js",
-    "verify": "npm run build && npm run check:version && npm run check:deps && npm run check:env && npm run test:color && npm run test:urls && npm run audit:contrast && npm run lint:css && npm run smoke && npm run test:errors && npm run test:integration && npm run test:mcp && npm run test:request && npm run build:behaviours && npm run test:compatibility && npm run test:codegen && npm run test:blazor && npm run test:behaviours && npm run emit:css && npm run site:build && npm run verify:sample && npm run site:publish && npm run test:rtl && npm run test:announce && npm run build:design-kit && npm run build:react && npm run test:browsers && npm run test:design && npm run test:redesign && npm run test:completion && npm run test:navigation && npm run test:a11y",
+    "verify": "npm run build && npm run check:version && npm run check:deps && npm run check:env && npm run test:color && npm run test:urls && npm run audit:contrast && npm run lint:css && npm run smoke && npm run test:errors && npm run test:integration && npm run test:mcp && npm run test:request && npm run test:reliability:server && npm run test:release-policy && npm run build:behaviours && npm run test:compatibility && npm run test:reliability:inputs && npm run test:consumers && npm run test:codegen && npm run test:blazor && npm run test:behaviours && npm run emit:css && npm run site:build && npm run verify:sample && npm run site:publish && npm run test:rtl && npm run test:announce && npm run build:design-kit && npm run build:react && npm run test:browsers && npm run test:design && npm run test:redesign && npm run test:completion && npm run test:navigation && npm run test:reliability:product && npm run test:reliability:form && npm run test:a11y",
     "verify:sample": "node dist/scripts/verify-sample.js",
     "site:build": "node dist/scripts/build-site.js",
     "site:publish": "npm run site:build && node dist/scripts/publish-site.js",
@@ -47,7 +47,13 @@
     "test:redesign": "node src/scripts/test-redesign.mjs",
     "test:completion": "node src/scripts/test-component-completion.mjs",
     "test:mcp": "node dist/scripts/test-mcp.js",
-    "test:navigation": "node src/scripts/test-navigation-menus.mjs && node src/scripts/test-navigation-tree.mjs && node src/scripts/test-navigation-docs.mjs"
+    "test:navigation": "node src/scripts/test-navigation-menus.mjs && node src/scripts/test-navigation-tree.mjs && node src/scripts/test-navigation-docs.mjs",
+    "test:reliability:inputs": "node src/scripts/test-reliability-inputs.mjs",
+    "test:reliability:server": "node dist/scripts/test-reliability-server.js",
+    "test:reliability:product": "node src/scripts/test-reliability-product.mjs",
+    "test:reliability:form": "node src/scripts/test-reliability-form.mjs",
+    "test:consumers": "node src/scripts/test-consumer-regressions.mjs && node src/scripts/test-angular-consumer.mjs && node src/scripts/test-blazor-consumer.mjs",
+    "test:release-policy": "node src/scripts/test-release-policy.mjs"
   },
   "keywords": [
     "mcp",
@@ -66,8 +72,11 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@angular/common": "^21.2.25",
     "@angular/compiler": "^21.2.25",
     "@angular/core": "^21.2.25",
+    "@angular/platform-browser": "^21.2.25",
+    "@angular/platform-server": "^21.2.25",
     "@figma/plugin-typings": "^1.142.0",
     "@types/express": "^5.0.6",
     "@types/node": "^24.19.2",
@@ -98,7 +107,9 @@
     "MANUAL-VALIDATION.md",
     "MIGRATION.md",
     "DEPENDENCIES.md",
-    "compatibility"
+    "compatibility",
+    "DESIGN-HANDOFF.md",
+    "SYSTEM-REVIEW-3.2.0.md"
   ],
   "repository": {
     "type": "git",

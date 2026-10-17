@@ -30,7 +30,7 @@ function eq(name: string, actual: unknown, expected: unknown): void {
 /** A request carrying the given headers. */
 function req(headers: Record<string, string>, protocol = 'http'): RequestLike {
   const lower = Object.fromEntries(Object.entries(headers).map(([k, v]) => [k.toLowerCase(), v]));
-  return { protocol, get: (h: string) => lower[h.toLowerCase()] };
+  return { protocol, trustedProxy: true, get: (h: string) => lower[h.toLowerCase()] };
 }
 
 /* ------------------------------------------------------------------ *
@@ -65,7 +65,7 @@ eq('joinUrl: no double slash', joinUrl('https://x.test/ds/', '/health'), 'https:
   eq('config: default base path is root', cfg.basePath, '');
   eq('config: default MCP path', cfg.mcpPath, '/mcp');
   eq('config: default external URL is unset', cfg.externalUrl, '');
-  eq('config: proxy trusted by default', cfg.trustProxy, true);
+  eq('config: proxy untrusted by default', cfg.trustProxy, false);
 }
 {
   const cfg = readUrlConfig({ SEKURA_MCP_PATH: '/' });
@@ -98,7 +98,7 @@ eq('joinUrl: no double slash', joinUrl('https://x.test/ds/', '/health'), 'https:
 
 /* 2. TLS terminated upstream. The app only ever sees plain HTTP. */
 {
-  const cfg = readUrlConfig({});
+  const cfg = readUrlConfig({ SEKURA_TRUST_PROXY: 'loopback' });
   const u = publishedUrls(
     cfg,
     req({ host: 'app:8080', 'x-forwarded-proto': 'https', 'x-forwarded-host': 'design.example.com' })
@@ -115,7 +115,7 @@ eq('joinUrl: no double slash', joinUrl('https://x.test/ds/', '/health'), 'https:
  * The app must both listen under the prefix and generate links under it.
  */
 {
-  const cfg = readUrlConfig({ SEKURA_BASE_PATH: '/design-system' });
+  const cfg = readUrlConfig({ SEKURA_BASE_PATH: '/design-system', SEKURA_TRUST_PROXY: 'loopback' });
   const u = publishedUrls(cfg, req({ host: 'example.com', 'x-forwarded-proto': 'https' }));
   eq('passthrough: listens under the prefix', cfg.basePath, '/design-system');
   eq('passthrough: base', u.base, 'https://example.com/design-system');
@@ -144,7 +144,7 @@ eq('joinUrl: no double slash', joinUrl('https://x.test/ds/', '/health'), 'https:
 
 /* 5. Traefik / ingress-nginx announcing the prefix it stripped. */
 {
-  const cfg = readUrlConfig({});
+  const cfg = readUrlConfig({ SEKURA_TRUST_PROXY: 'loopback' });
   const u = publishedUrls(
     cfg,
     req({
@@ -203,15 +203,13 @@ eq('joinUrl: no double slash', joinUrl('https://x.test/ds/', '/health'), 'https:
   eq('no request, no config: root', resolveExternalBase(readUrlConfig({})), '');
 }
 
-/* 11. A comma-separated forwarded chain: the first entry is the client-facing one. */
+/* 11. A trusted edge must replace forwarded values, not append client input. */
 {
-  const cfg = readUrlConfig({});
-  const u = publishedUrls(
-    cfg,
-    req({ host: 'app:8080', 'x-forwarded-proto': 'https, http', 'x-forwarded-host': 'example.com, inner.test' })
-  );
-  eq('chain: first proto wins', u.base.startsWith('https://'), true);
-  eq('chain: first host wins', u.base, 'https://example.com');
+  const cfg = readUrlConfig({ SEKURA_TRUST_PROXY: 'loopback' });
+  let rejected = false;
+  try { publishedUrls(cfg, req({ host: 'app:8080', 'x-forwarded-proto': 'https, http', 'x-forwarded-host': 'example.com, inner.test' })); }
+  catch { rejected = true; }
+  eq('chain: ambiguous forwarded values are rejected', rejected, true);
 }
 
 /* ------------------------------------------------------------------ *

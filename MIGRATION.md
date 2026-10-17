@@ -1,9 +1,9 @@
-# Upgrading to Sekura 3.1.0
+# Upgrading to Sekura 3.2.0
 
 This guide covers consuming applications and the generated samples. Install CSS,
 behaviors, native React artifacts and MCP references from the same build. The
-source patch for this release is based on **3.0.3**, commit
-`0fff714a415293e473e2e7776f98ab6df771ac66`; it is not a patch that can be applied
+source patch for this release is based on **3.1.0**, commit
+`115375177e0aff5e8dbadf39bdb55d0b10948f2c`; it is not a patch that can be applied
 directly to arbitrary v2 or v3.0.0 source files. An older repository branch must
 first integrate that upstream base, resolving its own custom changes.
 
@@ -11,9 +11,10 @@ first integrate that upstream base, resolving its own custom changes.
 
 | Starting version | Required work |
 |---|---|
-| v2.1, or an earlier v2 release | Follow **Path A**, the v3 foundation migration below, and the 3.1 navigation changes. The automated v2 name baseline is specifically v2.1. |
-| v3.0.0 | Follow **Path B**, including the intervening field-order and sidebar-hierarchy changes. The v2 geometry bridge is unnecessary. |
-| v3.0.1–v3.0.3 | Follow **Path B** and review the 3.1 navigation changes; retain already-adopted alignment/hierarchy markup. |
+| v2.1, or an earlier v2 release | Follow **Path A**, the v3 foundation migration below, the 3.1 navigation changes, and **Path C** reliability/deployment changes. The automated v2 name baseline is specifically v2.1. |
+| v3.0.0 | Follow **Path B**, including the intervening field-order and sidebar-hierarchy changes. Then follow **Path C**. The v2 geometry bridge is unnecessary. |
+| v3.0.1–v3.0.3 | Follow **Path B** and review the 3.1 navigation changes; retain already-adopted alignment/hierarchy markup, then follow **Path C**. |
+| v3.1.0 or v3.1.x | Follow **Path C**. Navigation width remains fixed; no width UI is introduced. |
 
 Existing public component IDs, CSS classes, semantic tokens and behavior exports
 remain available. This protects integration names, not every old CSS override or
@@ -21,7 +22,7 @@ interaction assumption. Navigation trees and submenus are opt-in. The disabled
 menu item correction, command focus handoff and explicit drawer styling require
 the checks below even when no new feature is adopted.
 
-### Path A — v2 to v3.1.0
+### Path A — v2 to v3.2.0
 
 1. Retain the deployed v2 application build, lockfile, generated artifacts and
    representative screenshots. The recorded baseline is v2.1 at `dc4d498`.
@@ -30,7 +31,7 @@ the checks below even when no new feature is adopted.
 2. Follow the **v2 foundation migration** later in this guide: fonts, colors,
    density, field ordering, shared geometry and modal-background ownership.
    Keep application data, services, routes and permission checks in the host.
-3. Build 3.1.0, install its complete matching asset set in an isolated application
+3. Build 3.2.0, install its complete matching asset set in an isolated application
    branch and regenerate reference recipes selectively. Merge their changes into
    application code; do not overwrite application handlers with generated demos.
 4. If necessary, use the existing `data-sk-geometry="v2"` bridge while replacing
@@ -38,10 +39,10 @@ the checks below even when no new feature is adopted.
    behavior. Never load both complete v2 and v3 stylesheets together.
 5. Apply the navigation changes below. Existing selection trees can remain in
    selection mode; route navigation is an explicit adoption decision.
-6. Run repository compatibility checks and the consuming application's critical
+6. Follow **Path C**, then run repository compatibility checks and the consuming application's critical
    workflows before rollout. Retain the old application and assets for rollback.
 
-### Path B — v3.0.0 or v3.0.x to v3.1.0
+### Path B — v3.0.0 or v3.0.x to v3.2.0
 
 1. Retain the deployed application, lockfile and matching v3.0 assets. Keep the v3
    visual foundations; do not introduce the v2 geometry bridge for this upgrade.
@@ -61,7 +62,140 @@ the checks below even when no new feature is adopted.
    or destination can retain focus. Remove delayed-focus workarounds.
 6. Adopt submenus and navigation trees only where useful, using the contracts
    below. Rebuild samples and MCP references, run `test:navigation`, and verify
-   the application's own route, permission and error handling.
+   the application's own route, permission and error handling. Follow **Path C**
+   for the additional reliability and deployment changes.
+
+### Path C — v3.1.0 or v3.1.x to v3.2.0
+
+1. Retain the deployed application, lockfile, configuration and complete asset
+   set. The recorded 3.1.0 public-name baseline is commit `115375177e0a`.
+2. Install matching 3.2.0 CSS, behavior and framework artifacts. Review **Input
+   and overlay contracts** below and remove workarounds for duplicate events,
+   invalid committed values, toast eviction and nested Escape handling.
+3. Merge the updated Angular, Blazor or Web Component recipes into the host if
+   those frameworks are used. Preserve application state and handlers. Recipes
+   are editable integration examples, not an in-place upgrade to a framework SDK.
+4. Review **HTTP deployment changes** before restarting an existing deployment.
+   External hosts and proxy peers now need explicit configuration. A deployment
+   with missing CSS or behavior artifacts reports 503 from `/health`.
+5. Reimport corrected token exports and native design-tool controls into a copy
+   of the design file, using [DESIGN-HANDOFF.md](./DESIGN-HANDOFF.md). Check aliases,
+   field order and supported coverage before replacing the team's library.
+6. Run `npm run verify` and the consuming application's critical workflows. This
+   checks public-name baselines for v2.1, v3.0.0 and v3.1.0, plus focused behavior,
+   server, product, framework and release-policy regressions. Complete the
+   application-specific manual checks in `MANUAL-VALIDATION.md` before rollout.
+
+## Reliability contracts in 3.2
+
+### Input and overlay contracts
+
+- **Numbers:** parsing respects the configured locale's decimal separator,
+  grouping and digits. An invalid draft remains editable and invalid; public
+  getters and callbacks retain the last valid committed value. Do not derive
+  application data from a formatted string using `parseFloat`. Initial numeric
+  values normalize to configured step/bounds; inferred precision includes
+  fractional bounds. Explicitly insufficient precision throws `RangeError`
+  instead of displaying a different canonical value. Destroying a controller
+  restores canonical ASCII text only while the field still contains its owned
+  formatted display, so reinitialization does not reinterpret locale grouping.
+  An uncommitted draft is retained.
+- **Dates and ranges:** typed, calendar and programmatic updates use the same
+  date and range validation. Invalid drafts do not replace committed values.
+  One accepted date/range action produces one controller change callback;
+  remove host code that compensates for duplicate calendar events. Disabled
+  date reasons are literal text. Calendar opening chooses a usable date and
+  its Escape handling participates in the existing overlay stack.
+- **Tag input:** strict suggestions support keyboard traversal, active-option
+  announcement, selection and Escape. Selection tabs and segments do not
+  activate disabled targets. Tab navigation and menu disabled-item semantics
+  remain distinct; the menu contract below is unchanged.
+- **Toasts:** excess messages queue instead of evicting an existing message.
+  Focus or hover pauses the same timeout. The message resumes only after both
+  have left. Keep urgent blocking failures and field correction at their task
+  boundary; avoid an extra live announcement when focus already explains it.
+- **Cleanup:** destroy manually owned controllers before replacing their DOM.
+  Automatic framework roots also clean up removed descendants and ancestors.
+  A calendar inside a modal closes before the modal, and removing its owner
+  releases the modal background state.
+- **Validation ownership:** controller errors preserve the current host business
+  error before taking ownership. Correcting or destroying a controller restores
+  only the custom validity and `aria-invalid` state that it still owns; later
+  host validation updates remain in place.
+
+The `editing-and-commit` pattern separates draft, committed value, validation,
+notification ownership and cleanup. The Form integration lab shows explicit
+save boundaries and comparison after a conflict or uncertain acknowledgment.
+The application still owns persistence, revision checks and merge policy.
+
+### Framework and package integration
+
+Angular recipes use `afterNextRender` for DOM enhancement. They can render on
+the server and hydrate without calling browser-only APIs during SSR. The
+repository tests an actual Angular render/hydration fixture; a full production
+`ngc` build of every consuming application remains its owner's responsibility.
+
+Blazor recipes wrap enhanced markup in `<sekura-behaviour-root>` and call the
+additive `Sekura.defineAutoEnhanceElement()` registration API after first render.
+The element owns descendants and disconnect cleanup. Do not add a second
+manual `enhance` owner inside that root. Existing public `enhance` and `dispose`
+APIs remain available for other integration strategies. The real Blazor Server
+fixture covers conditional child and component/host removal with a modal open.
+Separate browser lifecycle fixtures cover ancestor removal and same-turn
+child/host removal.
+
+Scoped recipes rewrite single IDs, ID lists, local fragments, table headers,
+ARIA details/error references and modern popover/command targets consistently.
+Keep external fragment URLs unchanged. Regenerate scoped recipes when adding
+multiple copies of the same example.
+
+`@sekura/behaviours` now supplies an actual `.cjs` entry for `require()` and type
+declarations for the normal and `/min` exports. Install the newly packed tarball;
+do not copy an old generated `package.json` over the new bundle.
+
+### HTTP deployment changes
+
+| Setting / behavior | 3.2 contract | Upgrade action |
+|---|---|---|
+| Local HTTP binding | Defaults to `127.0.0.1` | Set `HOST` explicitly only when another interface is required. |
+| Container binding | Docker retains `HOST=0.0.0.0` | Restrict host exposure using published port bindings and your existing network policy. |
+| `SEKURA_TRUST_PROXY` | Defaults to `false`; accepts explicit Express IP/subnet peer lists. Legacy `true` trusts loopback only. | List only actual proxy peers. The edge must overwrite forwarded headers with a single value. |
+| `SEKURA_ALLOWED_HOSTS` | Exact comma-separated hostnames or host:port entries; no wildcard | Include the direct Host sent by the proxy and any allowed forwarded host. Loopback hosts and the configured external host are included automatically. |
+| `SEKURA_ALLOWED_ORIGINS` | Exact comma-separated HTTP(S) origins | Add deliberate extra origins if needed. The resolved server origin and configured external origin are accepted. Missing Origin remains valid for non-browser MCP clients. This is not a CORS or authentication feature. |
+| `SEKURA_EXTERNAL_URL` | Pins generated public URLs, including an external prefix | Prefer an explicit value for a known deployment URL. Host validation still applies to the incoming request. |
+| `SEKURA_ASSET_ROOT` | Optional absolute directory containing `dist-css`, `dist-js`, and `sample` | Leave unset for the normal installed package/container. Current working directory no longer chooses which files are served. |
+| Stable CSS and JS URLs | Require revalidation; conditional requests use validators | Remove proxy rules that force old unversioned assets to stay immutable. |
+| `/health` | Returns 503 when required CSS/behavior artifacts are missing or a declared contrast pair fails | Build/copy matching artifacts before starting the server. Documentation availability is reported separately. |
+
+Use `.env.example` as the complete deployment reference. Test the actual public
+prefix, a real MCP request, stylesheet, script and health response after updating
+configuration. Failed Host/Origin/forwarding checks return a bounded 403 response
+before the MCP transport is created. These controls do not add authentication.
+
+HTTP JSON bodies are limited to 1 MiB. Markup validation also bounds input length,
+parsed nodes, depth, naming work and number of findings. A `validation-limit`
+error means validation did not complete; never treat it as a clean result.
+
+### Token and contrast consumers
+
+CSS/SCSS/flat-JSON scale exports, token discovery and lint use the emitted CSS
+name registry. Corrected names include type size/line/letter-spacing and z-index
+casing. Other export formats use their documented target-specific mappings. Unknown token lookalikes are
+reported; explicitly declared component-local custom properties remain valid.
+The [DTCG 2025.10 format](https://www.designtokens.org/tr/2025.10/format/) and
+[color module](https://www.designtokens.org/tr/2025.10/color/) define the structured
+value shapes. This release uses structured color, dimension, duration and typography values.
+Fluid typography projects the minimum size and retains original CSS expressions
+in `$extensions`. Easing is not included in this export. Older consumers that
+expect string colors or dimensions must adapt. DTCG/Figma alpha primitives now
+resolve within their own exported palettes; the corresponding CSS values
+already existed. Native platform exports also
+state their coverage; they are not a complete set of compiled native components.
+
+Contrast results composite a translucent background over an opaque backdrop,
+then the foreground. Pass `backdrop` when the real surface is known. The MCP tool
+uses and discloses the selected theme's base surface if it is omitted. A ratio
+for one declared pair does not validate images, gradients or every UI state.
 
 ## Navigation contracts in 3.1
 
@@ -193,7 +327,7 @@ all browser suites, accessibility checks and design-kit creation. It additionall
 requires the .NET 10 SDK for Razor validation and the browser system libraries.
 `npm run site:publish` creates a local portable `dist-site/` bundle; it does not
 upload a site. The tracked sample behavior bundle and manifest are regenerated
-from the same 3.1.0 build.
+from the same 3.2.0 build.
 
 For an application that consumes the generated behavior package, create a local
 tarball with `npm pack ./dist-js`, then install that tarball in the application.
@@ -204,16 +338,19 @@ MCP deployment. A local build does not publish a registry package or Git tag.
 For Angular applications, keep the application's compiler/toolchain within the
 [official Angular compatibility matrix](https://angular.dev/reference/versions).
 The repository uses its own current TypeScript compiler for server and recipe
-checks; its Angular template checks are not a complete `ngc` application build.
+checks and an actual Angular SSR/hydration fixture; this is not a complete `ngc` build of every recipe.
 
 ## MCP migration discovery
 
 `get_migration_guide({ fromVersion: "2.x" })` returns the v2 path and baseline.
 `get_migration_guide({ fromVersion: "3.0.0" })` or `"3.0.x"` returns the v3.0 path
-and recorded v3.0.0 baseline. `componentId` remains an optional filter. Omitting
+and recorded v3.0.0 baseline. `"3.1.0"` or `"3.1.x"` returns the 3.1 path and
+recorded 3.1.0 baseline. `componentId` remains an optional filter. Omitting
 `fromVersion` preserves the complete guide and existing v2 baseline response.
 The existing `sekura://migration/v2-to-v3` resource remains available; new resource
-addresses are `sekura://migration/v3.1` and `sekura://migration/v3.0-to-v3.1`.
+addresses are `sekura://migration/v3.2`, `sekura://migration/v3.1-to-v3.2` and
+`sekura://migration/v3.0-to-v3.2`. The older v3.1 resource addresses remain
+compatibility aliases to the current guide; the response states its target version.
 
 Runtime metadata adds optional purposes, state ownership, conditional controller
 requirements, stable identity and supported capabilities. Keep unknown additive
@@ -222,7 +359,7 @@ the features actually present in sidebar markup and stable IDs in opted-in tree
 navigation. Declare an `onActivate` or activation-event outcome using
 `tree-view:sk:tree:activate` in `handledEvents`; declarations still need runtime tests.
 
-## Rollback from 3.1
+## Rollback from 3.2
 
 Restore the previous application build, its lockfile and its complete matching
 Sekura asset set together. Do not serve new controllers with old CSS or overwrite
@@ -246,7 +383,7 @@ No application records, routes, permissions, or stored documents need migration.
   preserves its public integration names.
 - The original v3.0.0 tag is `73d22913fa513d40926b5639096dd951d3d1fcbb`;
   `compatibility/v3.0-contract.json` preserves its public names as well.
-- The current target is 3.1.0, based on the reviewed v3.0.3 source.
+- The current target is 3.2.0, based on the reviewed 3.1.0 source.
 - `compatibility/v2-contract.json` records the public names from that baseline.
   `npm run test:compatibility` rejects removals. This is an API-name check, not a
   guarantee that every application-specific override still looks correct.
@@ -408,7 +545,7 @@ The multi-tree selection event adds `checked`; range sliders emit
 
 Review the advanced [workbench](sample/workbench.html) and
 [support contracts](sample/support.html). Search providers, file transport,
-command execution and persistence remain application-owned. All 71 components are marked stable. The current package version is 3.1.0.
+command execution and persistence remain application-owned. All 71 components are marked stable. The current package version is 3.2.0.
 Implementation completion and automated checks do not substitute for the
 application and screen-reader review documented in MANUAL-VALIDATION.md.
 

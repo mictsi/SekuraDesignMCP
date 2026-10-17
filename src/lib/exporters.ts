@@ -34,6 +34,8 @@ import {
   type ThemeName,
 } from '../data/tokens.js';
 import { legacyGeometryCss } from '../data/compatibility.js';
+import { densityEntries, scaleEntries } from './token-registry.js';
+import { parseColor } from './color.js';
 
 export const EXPORT_FORMATS = [
   'css',
@@ -53,13 +55,13 @@ export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 export const formatDescriptions: Record<ExportFormat, string> = {
   css: 'CSS custom properties for every theme and density. The canonical runtime artefact — everything else is generated for tooling that cannot consume CSS.',
   scss: 'Sass variables plus theme mixins, for pipelines that still compile Sass.',
-  dtcg: 'W3C Design Tokens Community Group JSON. The interchange format for design tools and token pipelines.',
-  'tailwind-v4': 'Tailwind CSS v4 @theme block mapping tokens to utility namespaces.',
+  dtcg: 'DTCG 2025.10 JSON: palette/alpha, four semantic themes, spacing, radius, typography and durations. Fluid typography uses its minimum size with original CSS preserved in extensions; other CSS-only scales are not represented.',
+  'tailwind-v4': 'Tailwind CSS v4 @theme inline block; utilities resolve tokens at the element, including nested theme roots.',
   'tailwind-v3': 'Tailwind CSS v3 JavaScript config object.',
   js: 'Plain ES module exporting a nested token object.',
   ts: 'TypeScript module with literal types, so token names are checked at compile time.',
-  swift: 'Swift extension with UIColor values resolved per theme, for iOS.',
-  android: 'Android colors.xml plus dimens.xml, with a values-night variant for dark.',
+  swift: 'UIKit token source: semantic colors (light/dark and increased contrast) and spacing at a 16-point rem baseline. No component or full typography parity; native compilation is consumer-verified.',
+  android: 'Android resource sections: all semantic colors including alpha, light/dark modes and spacing at a 16-dp rem baseline. Split into the named files. High-contrast modes, components and native compilation are consumer-owned.',
   figma: 'Tokens Studio for Figma JSON, with one token set per theme.',
   json: 'Flat resolved key/value JSON for one theme. The simplest thing to consume programmatically.',
 };
@@ -68,35 +70,6 @@ const PREFIX = 'sk';
 
 function cssVar(name: string): string {
   return `--${PREFIX}-${name}`;
-}
-
-/* ------------------------------------------------------------------ *
- * Non-colour token emission, shared by several exporters
- * ------------------------------------------------------------------ */
-
-function scaleEntries(): Array<[string, string]> {
-  const out: Array<[string, string]> = [];
-  for (const [k, v] of Object.entries(space)) out.push([`space-${k}`, v]);
-  for (const [k, v] of Object.entries(radius)) out.push([`radius-${k}`, v]);
-  for (const [k, v] of Object.entries(borderWidth)) out.push([`border-width-${k}`, v]);
-  for (const [k, v] of Object.entries(opacity)) out.push([`opacity-${k}`, v]);
-  for (const [k, v] of Object.entries(zIndex)) out.push([`z-${k}`, v]);
-  for (const [k, v] of Object.entries(duration)) out.push([`duration-${k}`, v]);
-  for (const [k, v] of Object.entries(easing)) out.push([`easing-${k}`, v]);
-  for (const [k, v] of Object.entries(fontFamily)) out.push([`font-family-${k}`, v]);
-  for (const [k, v] of Object.entries(fontWeight)) out.push([`font-weight-${k}`, v]);
-  for (const [k, v] of Object.entries(layout)) out.push([`layout-${k}`, v]);
-  for (const [k, v] of Object.entries(containerWidth)) out.push([`container-${k}`, v]);
-  for (const [k, v] of Object.entries(typeScale)) {
-    out.push([`font-size-${k}`, v.fontSize]);
-    out.push([`line-height-${k}`, v.lineHeight]);
-    out.push([`font-weight-${k}`, v.fontWeight]);
-    out.push([`letter-spacing-${k}`, v.letterSpacing]);
-  }
-  out.push(['focus-ring-width', focusRing.width!]);
-  out.push(['focus-ring-offset', focusRing.offset!]);
-  for (const [k, v] of Object.entries(breakpoints)) out.push([`breakpoint-${k}`, v.min]);
-  return out;
 }
 
 /* ------------------------------------------------------------------ *
@@ -147,15 +120,7 @@ export function exportCss(): string {
         : `[data-sk-density="${name}"]`;
     lines.push(`${selector} {`);
     lines.push(`  /* ${d.description} */`);
-    lines.push(`  ${cssVar('control-height-sm')}: ${d.controlHeightSm};`);
-    lines.push(`  ${cssVar('control-height-md')}: ${d.controlHeightMd};`);
-    lines.push(`  ${cssVar('control-height-lg')}: ${d.controlHeightLg};`);
-    lines.push(`  ${cssVar('control-padding-inline')}: ${d.controlPaddingInline};`);
-    lines.push(`  ${cssVar('control-padding-block')}: ${d.controlPaddingBlock};`);
-    lines.push(`  ${cssVar('row-padding-block')}: ${d.rowPaddingBlock};`);
-    lines.push(`  ${cssVar('cell-padding-inline')}: ${d.cellPaddingInline};`);
-    lines.push(`  ${cssVar('stack-gap')}: ${d.stackGap};`);
-    lines.push(`  ${cssVar('section-gap')}: ${d.sectionGap};`);
+    for (const [name, value] of densityEntries(d)) lines.push(`  ${cssVar(name)}: ${value};`);
     lines.push('}');
     lines.push('');
   }
@@ -279,9 +244,21 @@ export function exportScss(): string {
 
 interface DtcgNode {
   $type?: string;
-  $value?: string;
+  $value?: unknown;
   $description?: string;
   [key: string]: unknown;
+}
+
+function dtcgColor(value: string): { colorSpace: 'srgb'; components: number[]; alpha: number } {
+  const color = parseColor(value);
+  return { colorSpace: 'srgb', components: [color.r / 255, color.g / 255, color.b / 255], alpha: color.a };
+}
+
+function dtcgDimension(value: string): { value: number; unit: 'px' | 'rem' } {
+  if (value === '0') return { value: 0, unit: 'px' };
+  const match = /^(-?[\d.]+)(px|rem)$/.exec(value);
+  if (!match || !Number.isFinite(Number(match[1]))) throw new Error(`Cannot represent CSS dimension in DTCG: ${value}`);
+  return { value: Number(match[1]), unit: match[2] as 'px' | 'rem' };
 }
 
 export function exportDtcg(): string {
@@ -291,10 +268,11 @@ export function exportDtcg(): string {
   for (const [rampName, rampValues] of Object.entries(ramps)) {
     const group: Record<string, DtcgNode> = {};
     for (const [step, hex] of Object.entries(rampValues)) {
-      group[step] = { $type: 'color', $value: hex };
+      group[step] = { $type: 'color', $value: dtcgColor(hex) };
     }
     palette[rampName] = group;
   }
+  palette.alpha = Object.fromEntries(Object.entries(alpha).map(([name, value]) => [name, { $type: 'color', $value: dtcgColor(value) }]));
   root.palette = palette;
 
   // One group per theme, with references into the palette so the relationship
@@ -306,7 +284,7 @@ export function exportDtcg(): string {
       const isRef = raw.includes('.') && !raw.startsWith('#') && !raw.startsWith('rgb');
       group[token.name] = {
         $type: 'color',
-        $value: isRef ? `{palette.${raw.replace('.', '.')}}` : resolvePrimitive(raw),
+        $value: isRef ? `{palette.${raw}}` : dtcgColor(resolvePrimitive(raw)),
         $description: token.description,
       };
     }
@@ -314,34 +292,39 @@ export function exportDtcg(): string {
   }
 
   const dimension: Record<string, DtcgNode> = {};
-  for (const [k, v] of Object.entries(space)) dimension[`space-${k}`] = { $type: 'dimension', $value: v };
-  for (const [k, v] of Object.entries(radius)) dimension[`radius-${k}`] = { $type: 'dimension', $value: v };
+  for (const [k, v] of Object.entries(space)) dimension[`space-${k}`] = { $type: 'dimension', $value: dtcgDimension(v) };
+  for (const [k, v] of Object.entries(radius)) dimension[`radius-${k}`] = { $type: 'dimension', $value: dtcgDimension(v) };
   root.dimension = dimension;
 
   const typography: Record<string, DtcgNode> = {};
   for (const [k, v] of Object.entries(typeScale)) {
+    const minimum = /^clamp\(\s*([^,]+),/.exec(v.fontSize)?.[1]?.trim();
+    const fontSize = dtcgDimension(minimum ?? v.fontSize);
+    const trackingEm = /^(-?[\d.]+)em$/.exec(v.letterSpacing);
+    const letterSpacing = trackingEm ? { value: Number(trackingEm[1]) * fontSize.value, unit: fontSize.unit } : dtcgDimension(v.letterSpacing);
     typography[k] = {
       $type: 'typography',
       $value: {
-        fontFamily: v.fontFamily === 'mono' ? fontFamily.mono : fontFamily.sans,
-        fontSize: v.fontSize,
-        fontWeight: v.fontWeight,
-        lineHeight: v.lineHeight,
-        letterSpacing: v.letterSpacing,
-      } as unknown as string,
-      $description: v.description,
+        fontFamily: (v.fontFamily === 'mono' ? fontFamily.mono! : fontFamily.sans!).split(',').map(family => family.trim().replace(/^['"]|['"]$/g, '')),
+        fontSize,
+        fontWeight: Number(v.fontWeight),
+        lineHeight: Number(v.lineHeight),
+        letterSpacing,
+      },
+      $description: `${v.description}${minimum ? ' DTCG uses the minimum of the CSS fluid size; restore the CSS expression for responsive web typography.' : ''}`,
+      $extensions: { 'io.github.mictsi.sekura': { cssFontSize: v.fontSize, cssLetterSpacing: v.letterSpacing, projection: minimum ? 'fluid-minimum' : 'static' } },
     };
   }
   root.typography = typography;
 
   const durationGroup: Record<string, DtcgNode> = {};
-  for (const [k, v] of Object.entries(duration)) durationGroup[k] = { $type: 'duration', $value: v };
+  for (const [k, v] of Object.entries(duration)) durationGroup[k] = { $type: 'duration', $value: { value: parseFloat(v), unit: v.endsWith('ms') ? 'ms' : 's' } };
   root.duration = durationGroup;
 
   return JSON.stringify(
     {
       $description:
-        'Sekura Design System tokens in W3C Design Tokens Community Group format. Semantic groups are provided per theme; product code should consume a theme group, never the palette.',
+        'Sekura tokens in DTCG 2025.10 format. Coverage: palette including alpha, four semantic themes, spacing, radius, typography and durations. Fluid type is projected at its minimum and original CSS is preserved in extensions. Product code consumes a theme group, never the palette.',
       ...root,
     },
     null,
@@ -359,7 +342,7 @@ export function exportTailwindV4(): string {
     '/* Import the Sekura tokens stylesheet first; these map onto its custom */',
     '/* properties, so switching data-sk-theme also switches every utility.   */',
     '',
-    '@theme {',
+    '@theme inline {',
   ];
   for (const token of semanticTokens) {
     if (!token.name.startsWith('color-')) continue;
@@ -483,82 +466,52 @@ function camel(name: string): string {
 }
 
 export function exportSwift(): string {
+  const uiColor = (value: string): string => {
+    const { r, g, b, a } = parseColor(value);
+    return `UIColor(red: ${r / 255}, green: ${g / 255}, blue: ${b / 255}, alpha: ${a})`;
+  };
   const lines: string[] = [
-    '// Sekura Design System — iOS colours (generated)',
-    '//',
-    '// Each token resolves at runtime from the trait collection, so a system',
-    '// appearance change re-resolves every colour without any manual work.',
-    '',
-    'import UIKit',
-    '',
-    'public enum SekuraColor {',
+    '// Sekura UIKit tokens (generated). Requires iOS 13+ dynamic UIColor.',
+    '// All semantic colors, including alpha and increased-contrast variants.',
+    '// Spacing assumes 1rem = 16pt. Components/typography are not exported.',
+    '// This source has not been native-compiled by the web verification suite.',
+    'import UIKit', '', 'public enum SekuraColor {',
   ];
   for (const token of semanticTokens) {
-    const light = resolvePrimitive(token.values.light);
-    const dark = resolvePrimitive(token.values.dark);
-    if (!light.startsWith('#') || !dark.startsWith('#')) continue;
     lines.push(`    /// ${token.description}`);
     lines.push(`    public static let ${camel(token.name)} = UIColor { traits in`);
-    lines.push(`        traits.userInterfaceStyle == .dark`);
-    lines.push(`            ? UIColor(hex: "${dark}")`);
-    lines.push(`            : UIColor(hex: "${light}")`);
-    lines.push('    }');
-    lines.push('');
+    lines.push('        if traits.accessibilityContrast == .high {');
+    lines.push(`            return traits.userInterfaceStyle == .dark ? ${uiColor(resolvePrimitive(token.values['hc-dark']))} : ${uiColor(resolvePrimitive(token.values['hc-light']))}`);
+    lines.push('        }');
+    lines.push(`        return traits.userInterfaceStyle == .dark ? ${uiColor(resolvePrimitive(token.values.dark))} : ${uiColor(resolvePrimitive(token.values.light))}`);
+    lines.push('    }', '');
   }
-  lines.push('}');
-  lines.push('');
-  lines.push('public enum SekuraSpace {');
-  for (const [k, v] of Object.entries(space)) {
-    const pt = parseFloat(v) * (v.endsWith('rem') ? 16 : 1);
-    lines.push(`    public static let space${k}: CGFloat = ${pt}`);
-  }
+  lines.push('}', '', 'public enum SekuraSpace {');
+  for (const [key, value] of Object.entries(space)) lines.push(`    public static let space${key}: CGFloat = ${parseFloat(value) * (value.endsWith('rem') ? 16 : 1)}`);
   lines.push('}');
   return lines.join('\n');
 }
 
 export function exportAndroid(): string {
-  const light: string[] = [
-    '<?xml version="1.0" encoding="utf-8"?>',
-    '<!-- Sekura Design System — res/values/colors.xml (generated) -->',
-    '<resources>',
+  const argb = (value: string): string => {
+    const { r, g, b, a } = parseColor(value);
+    return `#${[a * 255, r, g, b].map(channel => Math.round(channel).toString(16).padStart(2, '0')).join('')}`;
+  };
+  const files: string[] = [
+    '<!-- Split each section into the named resource file. -->',
+    '<!-- Semantic colors include alpha. Modes: light and dark only. -->',
+    '<!-- Spacing assumes 1rem = 16dp. Native compilation, high-contrast modes -->',
+    '<!-- and component/typography parity remain consumer responsibilities. -->',
   ];
-  const dark: string[] = [
-    '<?xml version="1.0" encoding="utf-8"?>',
-    '<!-- Sekura Design System — res/values-night/colors.xml (generated) -->',
-    '<resources>',
-  ];
-  const snake = (n: string) => n.replace(/-/g, '_');
-  for (const token of semanticTokens) {
-    const l = resolvePrimitive(token.values.light);
-    const d = resolvePrimitive(token.values.dark);
-    if (!l.startsWith('#') || !d.startsWith('#')) continue;
-    light.push(`    <color name="sk_${snake(token.name)}">${l}</color>`);
-    dark.push(`    <color name="sk_${snake(token.name)}">${d}</color>`);
+  for (const [theme, directory] of [['light', 'values'], ['dark', 'values-night']] as const) {
+    files.push(`<!-- ===== res/${directory}/colors.xml ===== -->`, '<?xml version="1.0" encoding="utf-8"?>', '<resources>');
+    for (const token of semanticTokens) files.push(`    <color name="sk_${token.name.replace(/-/g, '_')}">${argb(resolvePrimitive(token.values[theme]))}</color>`);
+    files.push('</resources>', '');
   }
-  light.push('</resources>');
-  dark.push('</resources>');
-
-  const dimens: string[] = [
-    '<?xml version="1.0" encoding="utf-8"?>',
-    '<!-- Sekura Design System — res/values/dimens.xml (generated) -->',
-    '<resources>',
-  ];
-  for (const [k, v] of Object.entries(space)) {
-    const dp = parseFloat(v) * (v.endsWith('rem') ? 16 : 1);
-    dimens.push(`    <dimen name="sk_space_${k}">${dp}dp</dimen>`);
-  }
-  dimens.push('</resources>');
-
-  return [
-    '<!-- ===== res/values/colors.xml ===== -->',
-    light.join('\n'),
-    '',
-    '<!-- ===== res/values-night/colors.xml ===== -->',
-    dark.join('\n'),
-    '',
-    '<!-- ===== res/values/dimens.xml ===== -->',
-    dimens.join('\n'),
-  ].join('\n');
+  files.push('<!-- ===== res/values/dimens.xml ===== -->', '<?xml version="1.0" encoding="utf-8"?>', '<resources>');
+  for (const [key, value] of Object.entries(space)) files.push(`    <dimen name="sk_space_${key}">${parseFloat(value) * (value.endsWith('rem') ? 16 : 1)}dp</dimen>`);
+  files.push('</resources>');
+  return files.join('\n');
 }
 
 export function exportFigma(): string {
@@ -572,6 +525,7 @@ export function exportFigma(): string {
     }
     palette[rampName] = group;
   }
+  palette.alpha = Object.fromEntries(Object.entries(alpha).map(([name, value]) => [name, { value, type: 'color' }]));
   sets.palette = palette;
 
   for (const theme of THEMES) {

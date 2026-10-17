@@ -13,7 +13,7 @@
 import { components } from '../data/components/index.js';
 import { layouts } from '../data/layouts.js';
 import { proseCss, resetCss, utilitiesCss } from '../data/base-css.js';
-import { scales, semanticTokens } from '../data/tokens.js';
+import { componentVariableNames, tokenNames } from '../lib/token-registry.js';
 
 interface Issue {
   source: string;
@@ -22,19 +22,6 @@ interface Issue {
 }
 
 const issues: Issue[] = [];
-
-const knownTokens = new Set(semanticTokens.map((t) => t.name));
-// Dimensional scales and the handful of locally-scoped custom properties
-// components define for themselves.
-const scalePrefixes = [
-  'space', 'radius', 'border-width', 'opacity', 'z', 'duration', 'easing',
-  'font-family', 'font-weight', 'font-size', 'line-height', 'letter-spacing',
-  'container', 'elevation', 'control-height', 'control-padding', 'row-padding', 'cell-padding',
-  'stack-gap', 'section-gap', 'focus-ring', 'breakpoint', 'palette',
-  'layout', 'grid-min', 'grid-gap', 'cluster-gap', 'sidebar-width', 'content-min',
-  'slider-progress', 'slider-direction', 'control-size', 'dir-scale',
-];
-void scales;
 
 function lint(source: string, css: string): void {
   /* Balanced braces. */
@@ -71,11 +58,10 @@ function lint(source: string, css: string): void {
   }
 
   /* Every referenced token must exist. */
-  const varRe = /var\(\s*--sk-([a-z0-9-]+)/gi;
+  const varRe = /var\(\s*--sk-([a-zA-Z0-9-]+)/g;
   while ((m = varRe.exec(css)) !== null) {
     const name = m[1]!;
-    if (knownTokens.has(name)) continue;
-    if (scalePrefixes.some((p) => name === p || name.startsWith(`${p}-`))) continue;
+    if (tokenNames.has(name) || componentVariableNames.has(name)) continue;
     issues.push({ source, rule: 'unknown-token', detail: `--sk-${name}` });
   }
 

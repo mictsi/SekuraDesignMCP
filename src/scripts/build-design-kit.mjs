@@ -6,10 +6,11 @@ import { components } from '../../dist/data/components/index.js';
 const {version}=JSON.parse(readFileSync('package.json','utf8'));
 const browser=await chromium.launch(); const page=await browser.newPage();
 const items=[];
+const covered = components.filter(component => component.implementation.designKit);
 try {
   await page.setContent('<style>'+readFileSync('dist-css/sekura.css','utf8')+'</style><div id="preview"></div>');
-  for(const id of ['button','text-field','textarea','select','checkbox','switch']) {
-    const spec=components.find(c=>c.id===id);
+  for(const spec of covered) {
+    const id=spec.id;
     for(const theme of ['light','dark','hc-light','hc-dark']) for(const density of ['comfortable','compact','dense']) for(const state of (['checkbox','switch'].includes(id)?['rest','checked','disabled']:id==='button'?['rest','busy','disabled']:['rest','invalid','disabled'])) {
       const data=await page.evaluate(({id,theme,density,state})=>{
         document.documentElement.dataset.skTheme=theme; document.documentElement.dataset.skDensity=density;
@@ -30,10 +31,11 @@ try {
   }
 } finally {await browser.close();}
 mkdirSync('dist-design-kit',{recursive:true});
-const kit={schemaVersion:1,version,coverage:['button','text-field','textarea','select','checkbox','switch'],items};
+const kit={schemaVersion:1,version,coverage:covered.map(component=>component.id),fieldOrder:['label','hint','control','error'],verification:{source:'Resolved production CSS',figmaImport:'Manual acceptance required',guide:'DESIGN-HANDOFF.md'},items};
 writeFileSync('dist-design-kit/components.json',JSON.stringify(kit,null,2)+'\n');
 await build({entryPoints:['design-tools/figma/code.ts'],outfile:'dist-design-kit/code.js',bundle:true,format:'iife',target:'es2020',define:{__KIT__:JSON.stringify(kit)}});
 // Figma assigns an ID when a local plugin is created/published; do not invent an account ID.
 writeFileSync('dist-design-kit/manifest.json',JSON.stringify({name:`Sekura controls ${version}`,api:'1.0.0',main:'code.js',editorType:['figma'],documentAccess:'dynamic-page',networkAccess:{allowedDomains:['none']}},null,2)+'\n'); // version-check-ignore
 copyFileSync('design-tools/figma/README.md','dist-design-kit/README.md');
+copyFileSync('DESIGN-HANDOFF.md','dist-design-kit/DESIGN-HANDOFF.md');
 console.log(`Design kit: ${items.length} native variants across ${kit.coverage.length} component sets, 4 themes and 3 densities.`);

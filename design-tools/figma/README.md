@@ -6,6 +6,12 @@ The plugin creates a new page with **six editable component sets and 216 variant
 
 The builder reads computed styles from the actual distributed CSS in Chromium. Colors, borders, radii, control heights and spacing are regenerated on every build. Figma uses Inter as a portable starter font; review font metrics against the web platform's system font. CSS effects, focus/hover behavior, browser-native select popups, indeterminate checkboxes and full composite/overlay widgets are not reproduced. Button busy variants retain their label, as the web control does; prototype transitions are demonstrations, not network requests.
 
-This is a starter component library, not a claim that all 67 web components have production Figma equivalents. The complete web catalog remains available in the documentation and MCP. Import and visual review in Figma, then team-library publication, require a designer with access to the target workspace. The automated build and API typecheck do not establish Figma visual fidelity. Plugin runs append a new page so earlier design work is preserved. No network access is requested.
+This is a starter component library, not a claim that all 71 web components have production Figma equivalents. The complete web catalog remains available in the documentation and MCP. Import and visual review in Figma, then team-library publication, require a designer with access to the target workspace. The automated build and API typecheck do not establish Figma visual fidelity. Plugin runs append a new page so earlier design work is preserved. No network access is requested.
 
 API references: [component variants](https://developers.figma.com/docs/plugins/api/properties/figma-combineasvariants/), [plugin manifest](https://developers.figma.com/docs/plugins/manifest/).
+
+Use the release's `DESIGN-HANDOFF.md` for the comparison and acceptance matrix.
+Resting and invalid fields both use label → hint → control → error; the error
+slot appears only for invalid state. The build emits coverage and verification
+metadata with the component set rather than treating API stability as a design
+library approval. Reimport into a copy before replacing shared instances.

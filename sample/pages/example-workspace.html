@@ -1,17 +1,19 @@
 <header class="sk-content-header sk-content-header--sticky">
-  <nav class="sk-breadcrumbs sk-content-header__context" aria-label="Document location"><ol class="sk-breadcrumbs__list"><li class="sk-breadcrumbs__item"><a class="sk-link" href="example-dashboard.html">Workspace</a></li><li class="sk-breadcrumbs__item"><span aria-current="page">Working together</span></li></ol></nav>
+  <nav class="sk-breadcrumbs sk-content-header__context" aria-label="Document location"><ol class="sk-breadcrumbs__list"><li class="sk-breadcrumbs__item"><a class="sk-link" href="#page=engineering">Workspace</a></li><li class="sk-breadcrumbs__item"><span aria-current="page">Working together</span></li></ol></nav>
   <div class="sk-content-header__actions">
-    <button type="button" class="sk-button sk-button--secondary sk-button--sm" data-sk-drawer-open="workspace-pages" aria-controls="workspace-pages" aria-expanded="false">Pages</button>
+    <button type="button" class="sk-button sk-button--secondary sk-button--sm" data-sk-workspace-pages-toggle aria-controls="workspace-pages" aria-expanded="false">Pages</button>
+    <details class="docs-workspace-more" open><summary class="sk-button sk-button--secondary sk-button--sm" hidden>Document actions</summary><div class="docs-workspace-more__items">
     <button type="button" class="sk-button sk-button--ghost sk-button--sm" data-sk-workspace-star aria-pressed="false">Star document</button>
     <button type="button" class="sk-button sk-button--secondary sk-button--sm" data-sk-copy-link>Copy link</button>
     <button type="button" class="sk-button sk-button--secondary sk-button--sm" data-sk-drawer-open="workspace-details" aria-controls="workspace-details" aria-expanded="false">Details</button>
+    </div></details>
   </div>
 </header>
 <div class="docs-workspace">
-  <aside class="sk-drawer sk-drawer--inline sk-tree-panel" id="workspace-pages" data-sk-drawer data-sk-modal="(max-width: 79.999rem)" aria-labelledby="workspace-pages-title" hidden>
+  <aside class="sk-drawer sk-drawer--inline sk-tree-panel" id="workspace-pages" data-sk-custom-drawer aria-labelledby="workspace-pages-title" hidden>
     <header class="sk-drawer__header"><h2 class="sk-drawer__title" id="workspace-pages-title">Workspace pages</h2><button type="button" class="sk-icon-button sk-icon-button--sm" data-sk-drawer-close aria-label="Close workspace pages"><svg aria-hidden="true" width="16" height="16"><use href="#sk-icon-close"></use></svg></button></header>
     <div class="sk-drawer__body sk-stack sk-stack--gap-16">
-      <div class="sk-field"><label class="sk-field__label" for="workspace-page-filter">Find in pages</label><p class="sk-field__hint" id="workspace-page-filter-hint">Search this loaded hierarchy. Your expanded branches return when you clear the filter.</p><input class="sk-input" id="workspace-page-filter" type="search" aria-describedby="workspace-page-filter-hint" autocomplete="off"></div>
+      <div class="sk-field"><label class="sk-field__label" for="workspace-page-filter">Search workspace pages</label><p class="sk-field__hint" id="workspace-page-filter-hint">Search page titles in this workspace.</p><input class="sk-input" id="workspace-page-filter" type="search" aria-describedby="workspace-page-filter-hint" autocomplete="off"></div>
       <div class="sk-cluster sk-cluster--gap-8"><button type="button" class="sk-button sk-button--secondary sk-button--sm" id="workspace-reveal-current">Reveal current</button><button type="button" class="sk-button sk-button--ghost sk-button--sm" id="workspace-clear-filter" disabled>Clear filter</button></div>
       <p class="sk-field__hint" id="workspace-tree-status" role="status">9 pages loaded.</p>
       <nav aria-label="Workspace page hierarchy">

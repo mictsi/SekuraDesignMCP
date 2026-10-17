@@ -10,14 +10,15 @@
  * Everything is mounted on a Router attached at `SEKURA_BASE_PATH`, so the same
  * image serves at `/`, at `/design-system`, or at `/internal/ui/sekura` with no
  * rebuild. Generated links come from `SEKURA_EXTERNAL_URL` when set, and from
- * the forwarded headers otherwise — see `lib/urls.ts` for why those are two
+ * validated forwarded headers otherwise — see `lib/urls.ts` for why those are two
  * separate settings rather than one.
  */
 
 import { existsSync, readFileSync } from 'node:fs';
-import { resolve as resolvePath } from 'node:path';
+import { isAbsolute, resolve as resolvePath } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-import express, { type Request, type Response, type Router } from 'express';
+import express, { type Request, type Response, type Router, type ErrorRequestHandler } from 'express';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 
 import { components } from './data/components/index.js';
@@ -26,7 +27,7 @@ import { layouts } from './data/layouts.js';
 import { patterns } from './data/patterns.js';
 import { auditThemes, semanticTokens, THEMES } from './data/tokens.js';
 import { exportTokens } from './lib/exporters.js';
-import { publishedUrls, readUrlConfig } from './lib/urls.js';
+import { publishedUrls, readUrlConfig, requestBoundaryError, type RequestLike } from './lib/urls.js';
 import { createServer, SERVER_NAME, SERVER_VERSION } from './server.js';
 
 /*
@@ -35,7 +36,7 @@ import { createServer, SERVER_NAME, SERVER_VERSION } from './server.js';
  * lives and they cannot disagree.
  */
 const PORT = Number(process.env.PORT ?? 8080);
-const HOST = process.env.HOST ?? '0.0.0.0';
+const HOST = process.env.HOST ?? '127.0.0.1';
 
 /** Docker sets /.dockerenv; Podman sets /run/.containerenv. */
 function inContainer(): boolean {
@@ -78,22 +79,36 @@ function warnIfUnreachable(): void {
  * checkout they may not be built yet, so each is served only if it exists and
  * the index reports honestly either way.
  */
-const ROOTS = {
-  css: resolvePath(process.cwd(), 'dist-css'),
-  js: resolvePath(process.cwd(), 'dist-js'),
-  docs: resolvePath(process.cwd(), 'sample'),
-};
+export function readAssetRoots(env: NodeJS.ProcessEnv = process.env): { css: string; js: string; docs: string } {
+  const override = env.SEKURA_ASSET_ROOT;
+  if (override && !isAbsolute(override)) throw new Error('SEKURA_ASSET_ROOT must be an absolute path.');
+  const root = override || fileURLToPath(new URL('../', import.meta.url));
+  return { css: resolvePath(root, 'dist-css'), js: resolvePath(root, 'dist-js'), docs: resolvePath(root, 'sample') };
+}
 
-export async function startHttpServer(): Promise<void> {
-  const cfg = readUrlConfig();
+export function createHttpApp(env: NodeJS.ProcessEnv = process.env): express.Express {
+  const cfg = readUrlConfig(env);
+  const ROOTS = readAssetRoots(env);
   const app = express();
-
-  // Needed for req.protocol to reflect X-Forwarded-Proto behind a TLS-terminating
-  // proxy. Only enabled when we are configured to trust the proxy at all.
-  if (cfg.trustProxy) app.set('trust proxy', true);
-
-  // Specs are large; the default 100kb limit rejects validate_markup payloads.
-  app.use(express.json({ limit: '8mb' }));
+  app.disable('x-powered-by');
+  if (cfg.trustProxy) app.set('trust proxy', cfg.trustedProxies);
+  const requestContext = (req: Request): RequestLike => ({
+    protocol: req.protocol,
+    trustedProxy: cfg.trustProxy && !!(app.get('trust proxy fn') as (address: string, hop: number) => boolean)(req.socket.remoteAddress ?? '', 0),
+    get: name => req.get(name),
+  });
+  app.use((req, res, next) => {
+    const reason = requestBoundaryError(cfg, requestContext(req));
+    if (reason) {
+      process.stderr.write(`${JSON.stringify({ event: 'http_boundary_rejected', reason })}\n`);
+      res.status(403).json({ error: { code: 'FORBIDDEN_REQUEST', message: 'Request host, origin or forwarding headers are not allowed.' } });
+      return;
+    }
+    next();
+  });
+  // The transport envelope has its own limit. validate_markup additionally
+  // bounds parsed structure and naming work so small pathological HTML is safe.
+  app.use(express.json({ limit: '1mb' }));
 
   const api: Router = express.Router();
 
@@ -103,8 +118,13 @@ export async function startHttpServer(): Promise<void> {
   // reports unhealthy rather than serving it.
   api.get('/health', (req: Request, res: Response) => {
     const failures = auditThemes().filter((r) => !r.pass);
-    const healthy = failures.length === 0;
-    const urls = publishedUrls(cfg, req);
+    const artifacts = {
+      stylesheet: existsSync(resolvePath(ROOTS.css, 'sekura.css')),
+      behaviours: existsSync(resolvePath(ROOTS.js, 'sekura.iife.min.js')),
+      documentation: existsSync(resolvePath(ROOTS.docs, 'index.html')),
+    };
+    const healthy = failures.length === 0 && artifacts.stylesheet && artifacts.behaviours;
+    const urls = publishedUrls(cfg, requestContext(req));
     res.status(healthy ? 200 : 503).json({
       status: healthy ? 'ok' : 'degraded',
       server: SERVER_NAME,
@@ -121,8 +141,10 @@ export async function startHttpServer(): Promise<void> {
         semanticTokens: semanticTokens.length,
         themes: THEMES.length,
       },
+      artifacts,
+      requiredArtifacts: ['stylesheet', 'behaviours'],
       contrastAudit: {
-        passing: healthy,
+        passing: failures.length === 0,
         failures: failures.length,
         detail: failures.slice(0, 5).map((f) => `${f.theme}: ${f.foreground} on ${f.background} = ${f.display}`),
       },
@@ -136,7 +158,7 @@ export async function startHttpServer(): Promise<void> {
      actually reachable on. */
 
   api.get('/manifest.json', (req: Request, res: Response) => {
-    const urls = publishedUrls(cfg, req);
+    const urls = publishedUrls(cfg, requestContext(req));
     res.json({
       name: SERVER_NAME,
       version: SERVER_VERSION,
@@ -148,11 +170,11 @@ export async function startHttpServer(): Promise<void> {
       },
       artefacts: {
         tokensCss: { url: urls.tokensCss, type: 'text/css', available: true },
-        tokensJson: { url: urls.tokensJson, type: 'application/json', format: 'w3c-dtcg', available: true },
-        stylesheet: { url: `${urls.css}sekura.css`, type: 'text/css', available: existsSync(ROOTS.css) },
+        tokensJson: { url: urls.tokensJson, type: 'application/json', format: 'w3c-dtcg', formatVersion: '2025.10', available: true },
+        stylesheet: { url: `${urls.css}sekura.css`, type: 'text/css', available: existsSync(resolvePath(ROOTS.css, 'sekura.css')) },
         stylesheets: { url: urls.css, description: 'Per-component CSS and native exports', available: existsSync(ROOTS.css) },
-        behaviours: { url: `${urls.js}sekura.iife.min.js`, type: 'text/javascript', available: existsSync(ROOTS.js) },
-        documentation: { url: urls.docs, type: 'text/html', available: existsSync(ROOTS.docs) },
+        behaviours: { url: `${urls.js}sekura.iife.min.js`, type: 'text/javascript', available: existsSync(resolvePath(ROOTS.js, 'sekura.iife.min.js')) },
+        documentation: { url: urls.docs, type: 'text/html', available: existsSync(resolvePath(ROOTS.docs, 'index.html')) },
       },
       counts: {
         components: components.length,
@@ -170,32 +192,31 @@ export async function startHttpServer(): Promise<void> {
      a source checkout that has never run `emit:css`. */
 
   api.get('/tokens.css', (_req: Request, res: Response) => {
-    res.type('text/css').send(exportTokens('css'));
+    res.set('Cache-Control', 'public, max-age=0, must-revalidate').type('text/css').send(exportTokens('css'));
   });
 
   api.get('/tokens.json', (_req: Request, res: Response) => {
-    res.type('application/json').send(exportTokens('dtcg'));
+    res.set('Cache-Control', 'public, max-age=0, must-revalidate').type('application/json').send(exportTokens('dtcg'));
   });
 
   /* ---------------- Static artefacts ----------------
-     Immutable for a given image tag, so they are cached hard. The documentation
-     site is not: it is HTML a person reads, and a stale page after an upgrade is
-     worse than a revalidation. */
+     These paths are stable across upgrades and rollbacks. Revalidate them; an
+     image tag does not version a browser URL. ETags still avoid unchanged transfers. */
 
   if (existsSync(ROOTS.css)) {
-    api.use('/css', express.static(ROOTS.css, { maxAge: '1y', immutable: true }));
+    api.use('/css', express.static(ROOTS.css, { maxAge: 0, setHeaders: res => res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate') }));
   }
   if (existsSync(ROOTS.js)) {
-    api.use('/js', express.static(ROOTS.js, { maxAge: '1y', immutable: true }));
+    api.use('/js', express.static(ROOTS.js, { maxAge: 0, setHeaders: res => res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate') }));
   }
   if (existsSync(ROOTS.docs)) {
-    api.use('/docs', express.static(ROOTS.docs, { extensions: ['html'], maxAge: '5m' }));
+    api.use('/docs', express.static(ROOTS.docs, { extensions: ['html'], maxAge: 0, setHeaders: res => res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate') }));
   }
 
   /* ---------------- Index ---------------- */
 
   api.get('/', (req: Request, res: Response) => {
-    const u = publishedUrls(cfg, req);
+    const u = publishedUrls(cfg, requestContext(req));
     const row = (label: string, value: string, note = '') =>
       `${label.padEnd(22)} ${value}${note ? `   ${note}` : ''}`;
     res.type('text/plain').send(
@@ -223,7 +244,7 @@ export async function startHttpServer(): Promise<void> {
     // Stateless: a new server and transport per request. Nothing to leak, nothing
     // to lose on restart. The public URLs are passed in so tools hand out
     // fetchable links rather than paths the caller must guess a prefix for.
-    const server = createServer({ urls: publishedUrls(cfg, req) });
+    const server = createServer({ urls: publishedUrls(cfg, requestContext(req)) });
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
       enableJsonResponse: true,
@@ -238,7 +259,7 @@ export async function startHttpServer(): Promise<void> {
       await server.connect(transport);
       await transport.handleRequest(req, res, req.body);
     } catch (err) {
-      process.stderr.write(`MCP request failed: ${String(err)}\n`);
+      process.stderr.write(`${JSON.stringify({ event: 'mcp_request_failed', error: err instanceof Error ? err.name : 'unknown' })}\n`);
       if (!res.headersSent) {
         res.status(500).json({
           jsonrpc: '2.0',
@@ -272,7 +293,20 @@ export async function startHttpServer(): Promise<void> {
    */
   app.use(cfg.basePath || '/', api);
 
-  await new Promise<void>((done) => {
+  const errors: ErrorRequestHandler = (error, _req, res, _next) => {
+    const status = error?.type === 'entity.too.large' ? 413 : error instanceof SyntaxError ? 400 : 500;
+    process.stderr.write(`${JSON.stringify({ event: 'http_request_rejected', status })}\n`);
+    res.status(status).json({ error: { code: status === 413 ? 'PAYLOAD_TOO_LARGE' : status === 400 ? 'INVALID_JSON' : 'INTERNAL_ERROR', message: status === 500 ? 'Internal server error.' : 'Request body is invalid or exceeds the 1 MiB limit.' } });
+  };
+  app.use(errors);
+  return app;
+}
+
+export async function startHttpServer(): Promise<void> {
+  const cfg = readUrlConfig();
+  const app = createHttpApp();
+  if (!Number.isInteger(PORT) || PORT < 1 || PORT > 65535) throw new Error('PORT must be an integer from 1 to 65535.');
+  await new Promise<void>((done, reject) => {
     warnIfUnreachable();
     const httpServer = app.listen(PORT, HOST, () => {
       const u = publishedUrls(cfg);
@@ -284,6 +318,7 @@ export async function startHttpServer(): Promise<void> {
       done();
     });
 
+    httpServer.once('error', reject);
     const shutdown = (signal: string) => () => {
       process.stderr.write(`\nReceived ${signal}, shutting down.\n`);
       httpServer.close(() => process.exit(0));

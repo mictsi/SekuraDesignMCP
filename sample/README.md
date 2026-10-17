@@ -31,8 +31,8 @@ produces a self-contained bundle in `dist-site/` for any static host.
 ### Get started
 | Page | |
 |---|---|
-| `migration.html` | Separate v2 and v3.0.0 upgrade paths to 3.1, compatibility checks and rollback |
-| `index.html` | Overview — the two rules, live theme comparison, where to go next |
+| `migration.html` | Separate v2, v3.0.0 and v3.1.0 upgrade paths to 3.2, compatibility checks and rollback |
+| `index.html` | Task entry points for designers, framework developers, MCP clients and upgrades |
 | `structure.html` | The three token layers, naming, groups, themes, density |
 | `develop.html` | Install, the HTML scaffold, using tokens, frameworks, build gates |
 
@@ -50,10 +50,11 @@ the full narrative in a collapsible section.
 |---|---|
 | `tokens.html` | All 120 semantic tokens, filterable, with the value in each of the four themes |
 | `components.html` | 71 components grouped by category |
-| `component-*.html` | One page each: anatomy, variants, states, props, dark-mode note, full keyboard and ARIA contract, CSS |
+| `component-*.html` | Example first, theme/density preview, separate support axes, then usage, API and CSS |
 | `support.html` | Component root classes, dependencies, controller coverage and application responsibilities |
+| `form-lab.html` | Draft retention, explicit save boundaries, comparison after conflict and uncertain acknowledgment, local or HTTP simulator |
 | `workbench.html` | Sizes, densities, themes, long content, action failure/cancel/retry/undo and upload simulation |
-| `patterns.html` | 18 UX patterns, including hierarchical navigation, action submenus and navigation trees |
+| `patterns.html` | 19 UX patterns, including editing/commitment, hierarchical navigation, action submenus and navigation trees |
 | `recipes.html` | 9 page blueprints with markup |
 
 ### Examples
@@ -62,7 +63,7 @@ chosen because every designer has built one and none of it needs explaining.
 
 | Page | What it is for |
 |---|---|
-| `example-workspace.html` | Reading canvas, Pages tree with filter/reveal/current-route state, details, local notes and stars |
+| `example-workspace.html` | Dedicated app frame, fixed-width Pages tree and scoped search, mobile Document actions, local notes and stars |
 | `example-dashboard.html` | Stat tiles, a chart with a data-table alternative, an activity timeline |
 | `example-list.html` | Search, filters as removable chips, sorting, tri-state bulk selection, typed-confirmation delete |
 | `example-detail.html` | Breadcrumbs, tabs, Share → Export submenu with CSV/JSON downloads, an inspection drawer |
@@ -154,3 +155,20 @@ external SVG sprite references. A production build would serve a static `.svg`.
 
 All example data is fictional and uses reserved values (`example.com`,
 `192.0.2.10`). No credentials are collected or stored.
+
+## 3.2 verification and handoff
+
+The demo Workspace has one app navigation context. Its Pages button opens a
+modal on narrow screens and a docked panel on desktop; Document actions groups
+secondary mobile actions. The navigation width remains the system token with
+no width control or stored custom width. Search explicitly covers workspace pages.
+
+Component previews keep their displayed theme, density and native disabled state
+in the copyable example. API maturity does not imply native framework coverage
+or human accessibility acceptance. See `support.html#verification-scope` and
+`DESIGN-HANDOFF.md` in the source release for scope and designer checks.
+
+Theme changes apply for the current session even when storage is blocked; the
+settings page explains when a choice will not persist. Token filtering also
+filters the on-page contents and current-section marker. Sample toasts use the
+shared queued controller, including its hover/focus timing behavior.

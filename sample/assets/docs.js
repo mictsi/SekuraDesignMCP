@@ -38,16 +38,24 @@
 
     function highlight() {
       frame = 0;
+      var visibleTargets = targets.filter(function (target) { return !target.closest('[hidden]') && target.getClientRects().length > 0; });
+      links.forEach(function (link) {
+        var target = document.getElementById(link.getAttribute('href').slice(1));
+        var visible = !!target && visibleTargets.indexOf(target) >= 0;
+        var item = link.closest('li');
+        if (item) item.hidden = !visible;
+        if (!visible) link.removeAttribute('aria-current');
+      });
       // Match the 5rem section scroll margin with a small rounding allowance.
       // A percentage IntersectionObserver margin would be based on width,
       // making the observation band empty in a wide, short viewport.
       var top = (root ? root.getBoundingClientRect().top : 0) + 88;
-      var best = targets[0];
-      targets.forEach(function (t) {
+      var best = visibleTargets[0];
+      visibleTargets.forEach(function (t) {
         if (t.getBoundingClientRect().top <= top) best = t;
       });
       links.forEach(function (link) {
-        if (link === byId[best.id]) link.setAttribute('aria-current', 'location');
+        if (best && link === byId[best.id]) link.setAttribute('aria-current', 'location');
         else link.removeAttribute('aria-current');
       });
     }
@@ -55,6 +63,7 @@
     function schedule() { if (!frame) frame = requestAnimationFrame(highlight); }
     scrollTarget.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('resize', schedule, { passive: true });
+    document.addEventListener('sk:docs:filter', highlight);
     highlight();
   }
 
@@ -89,6 +98,32 @@
     });
   }
 
+  function initComponentPreview() {
+    var preview = $('[data-docs-component-preview]');
+    if (!preview) return;
+    var section = preview.closest('.docs-section');
+    var code = $('.docs-demo__code code', section);
+    var original = code ? code.textContent : '';
+    var controls = $$('input, button, textarea, select', preview);
+    var disabled = controls.map(function (control) { return control.disabled; });
+    function apply() {
+      var theme = $('[data-docs-preview-theme]', section).value;
+      var density = $('[data-docs-preview-density]', section).value;
+      var stateControl = $('[data-docs-preview-state]', section);
+      var isDisabled = stateControl && stateControl.value === 'disabled';
+      if (theme) preview.setAttribute('data-sk-theme', theme); else preview.removeAttribute('data-sk-theme');
+      preview.setAttribute('data-sk-density', density);
+      controls.forEach(function (control, index) { control.disabled = isDisabled || disabled[index]; });
+      if (code) {
+        var template = document.createElement('template'); template.innerHTML = original;
+        if (isDisabled) $$('input, button, textarea, select', template.content).forEach(function (control) { control.disabled = true; });
+        code.textContent = '<div' + (theme ? ' data-sk-theme="' + theme + '"' : '') + ' data-sk-density="' + density + '">\n' + template.innerHTML + '\n</div>';
+      }
+    }
+    $$('select', $('.docs-preview-controls', section)).forEach(function (control) { control.addEventListener('change', apply); });
+    apply();
+  }
+
   /* ================================================================== *
    * Token filter
    * ================================================================== */
@@ -109,6 +144,13 @@
         if (match) shown++;
       });
 
+      $$('[data-docs-token-group]').forEach(function (group) {
+        var rows = $$('.token-table tbody tr', group);
+        // A group can itself be the table wrapper.
+        if (group.classList.contains('token-table')) rows = $$('tbody tr', group);
+        group.hidden = rows.length > 0 && rows.every(function (row) { return row.hidden; });
+      });
+
       // Hide a whole section once every row in it is filtered out, so the page
       // does not become a list of empty headings.
       $$('.docs-section').forEach(function (section) {
@@ -116,6 +158,7 @@
         if (!rows.length) return;
         section.hidden = rows.every(function (r) { return r.hidden; });
       });
+      document.dispatchEvent(new CustomEvent('sk:docs:filter'));
 
       if (counter) {
         counter.textContent = q
@@ -136,6 +179,7 @@
         apply();
       }
     });
+    apply();
   }
 
   /* ================================================================== *
@@ -179,6 +223,7 @@
     if (nav) nav.addEventListener('sk:drawer:open', revealCurrent);
     initScrollSpy();
     initCodeCopy();
+    initComponentPreview();
     initTokenFilter();
     initMotionDemo();
   }

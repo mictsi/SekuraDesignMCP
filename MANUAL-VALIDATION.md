@@ -69,3 +69,33 @@ outstanding. Record browser, OS, assistive technology, reviewer and result.
 Inspect all six 4px leading accents in RTL and Windows forced colors. WebKit
 currently does not expose the same forced-color-adjust emulation as Chromium and
 Firefox; its geometry is covered, but it does not replace Windows review.
+
+## 3.2 reliability and product acceptance
+
+- Workspace: use Pages and Document actions at desktop and narrow widths. Resize
+  with focus in page search or a secondary action; focus must transfer to a
+  visible control. Search page titles, activate a destination, follow breadcrumbs
+  and reveal the current page. Check 320 CSS px and long RTL labels.
+- Numbers/dates: edit real locale formats, including comma decimals and non-Latin
+  digits. Leave malformed drafts, correct them, reset, and use an IME. Confirm
+  that the application commits only valid values and communicates each result once.
+- Keyboard suggestions: type into strict tag input, move among options and choose
+  without a pointer. Confirm the screen reader announces the active suggestion.
+- Nested calendar: open inside a dialog or drawer. Escape closes the calendar
+  first; removing its host restores background access and leaves useful focus.
+- Toast queue: focus an action, move the pointer away, then trigger more than the
+  visible limit. The focused message must remain available and be announced once.
+- Theme: block storage and change preference. The page and controls agree for the
+  session; the settings hint explains that the choice is not persisted.
+- Tokens and code: filter to one group and no results, then clear. On-page links
+  refer only to visible sections. Open a component markup deep link and compare
+  copied theme/density/disabled state with the preview. Browser-find revelation
+  uses `hidden=until-found` where supported; Show markup remains available.
+- Form lab: compare conflicting field values, choose a resolution explicitly and
+  confirm drafts are retained. For a lost acknowledgment, check the latest revision
+  before retrying; a confirmed matching write must not be sent twice.
+- Design handoff: compare the generated 3.2 kit with the matching web component
+  page using `DESIGN-HANDOFF.md`; record actual import results and field order.
+
+Automated tests cover representative versions of these tasks. Human acceptance
+remains **not performed** until a tester records actual results using the template.

@@ -127,7 +127,7 @@ await test('tooltip appears, describes its trigger and dismisses', async () => {
   assert.equal(await trigger.evaluate(el => el === document.activeElement), true);
 });
 await test('findable disclosure retains browser-search state', async () => {
-  await go('component-disclosure'); const panel = page.locator('[hidden="until-found"]');
+  await go('component-disclosure'); const panel = page.locator('[data-docs-component-preview] [hidden="until-found"]');
   assert.notEqual(await panel.evaluate(el => getComputedStyle(el).display), 'none');
   const id = await panel.getAttribute('id'); await panel.dispatchEvent('beforematch');
   assert.equal(await page.locator(`[aria-controls="${id}"]`).getAttribute('aria-expanded'), 'true');

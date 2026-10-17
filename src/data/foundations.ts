@@ -126,7 +126,7 @@ and a screen reader.
 ## 6. State the truth about system state
 
 An interface that says "Saved" when work is queued is lying. Sekura distinguishes
-requested, pending, applied, failed, conflicted and degraded, and shows the one
+requested, pending, applied, failed, conflicted, unknown-outcome and degraded, and shows the one
 that is actually true. A pending switch shows pending. A partial batch failure
 says which items failed. This is a design principle because the temptation to
 smooth it over is a design temptation.
@@ -874,7 +874,7 @@ with \`aria-label="Submit form"\` cannot be activated by a voice control user sa
 - \`role="status"\` / \`aria-live="polite"\` — announced at the next natural pause.
   Use for confirmations, result counts, loading completion. This is the default.
 - \`role="alert"\` / \`aria-live="assertive"\` — interrupts immediately. Reserve for
-  genuine failures. Overusing it makes a product hostile to screen reader users.
+  blocking or urgent failures. Ordinary field corrections and nonblocking failures are polite; follow the notifications urgency policy and avoid duplicate live/focus announcements.
 
 The live region container must exist in the DOM **before** the message is inserted.
 Adding the region and its content together announces nothing — this is the most

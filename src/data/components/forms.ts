@@ -802,8 +802,9 @@ input.sk-input { line-height: normal; }
   line-height: 1.25;
   appearance: none;
   cursor: pointer;
-  /* Makes the OS-rendered option list follow the theme instead of flashing white. */
-  color-scheme: light;
+  /* Theme token scopes also set color-scheme. Inherit the nearest scope so
+     nested previews and unpinned system themes keep native option surfaces aligned. */
+  color-scheme: inherit;
   background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
   background-repeat: no-repeat;
   background-position: right calc(var(--sk-space-12) + 0.3rem) center, right var(--sk-space-12) center;
@@ -811,12 +812,6 @@ input.sk-input { line-height: normal; }
 }
 
 .sk-select:dir(rtl) { background-position: left var(--sk-space-12) center, left calc(var(--sk-space-12) + 0.3rem) center; }
-
-/* Native option surfaces follow the theme; the chevron inherits currentColor. */
-[data-sk-theme="dark"] .sk-select,
-[data-sk-theme="hc-dark"] .sk-select {
-  color-scheme: dark;
-}
 
 .sk-select:hover:not(:disabled) { border-color: var(--sk-color-field-border-hover); }
 .sk-select:focus-visible {

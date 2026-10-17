@@ -34,7 +34,12 @@ async function main() {
       component.fills = paint(v.surface); component.description = `${id} · ${__KIT__.version}. CSS-derived starter control. Application owns validation, persistence and permissions. ${JSON.stringify(v.implementation)}`;
       component.setPluginData('sekura', JSON.stringify({ version: __KIT__.version, componentId: id, implementation: v.implementation }));
       const check = id === 'checkbox' || id === 'switch';
-      if (!check && id !== 'button') component.appendChild(label(id === 'text-field' ? 'Project name' : id === 'select' ? 'Team' : 'Notes', v.text));
+      if (!check && id !== 'button') {
+        const fieldLabel = label(id === 'text-field' ? 'Project name' : id === 'select' ? 'Team' : 'Notes', v.text);
+        fieldLabel.name = 'Label'; component.appendChild(fieldLabel);
+        const hint = label('Visible to your team.', v.secondary, 12);
+        hint.name = 'Hint'; component.appendChild(hint);
+      }
       const control = frame(); control.name = 'Control'; control.fills = paint(v.background); control.strokes = paint(v.border); control.strokeWeight = v.borderWidth; control.cornerRadius = v.radius;
       control.paddingLeft = v.paddingX; control.paddingRight = v.paddingX; control.paddingTop = v.paddingY; control.paddingBottom = v.paddingY;
       control.minHeight = v.height;
@@ -56,7 +61,10 @@ async function main() {
         if (id !== 'button') { control.primaryAxisSizingMode = 'FIXED'; control.resize(320, Math.max(v.height, 40)); text.layoutGrow = 1; text.textAutoResize = 'HEIGHT'; }
         if (id === 'select') control.appendChild(label('⌄', v.color));
         component.appendChild(control);
-        if (id !== 'button') { const hint = label(v.state === 'invalid' ? 'Enter a valid value.' : 'Visible to your team.', v.state === 'invalid' ? (v.error || v.text) : v.secondary, 12); component.appendChild(hint); }
+        if (id !== 'button' && v.state === 'invalid') {
+          const error = label('Enter a valid value.', v.error || v.text, 12);
+          error.name = 'Error'; component.appendChild(error);
+        }
       }
       component.x = (variants.length % 4) * 400; component.y = Math.floor(variants.length / 4) * 180;
       variants.push(component);

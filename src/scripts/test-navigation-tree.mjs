@@ -249,7 +249,19 @@ try {
     server = createDemoServer(); await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
     const base = 'http://127.0.0.1:' + server.address().port;
     await test('workspace routes, history and section links keep document and current page together', async page => {
-      await page.goto(base + '/example-workspace.html'); await page.getByRole('button', { name: 'Pages', exact: true }).click();
+      await page.goto(base + '/example-workspace.html');
+      const pages = page.getByRole('button', { name: 'Pages', exact: true });
+      const rail = page.locator('#workspace-pages');
+      assert.equal(await page.locator('body.docs-workspace-app').count(), 1, 'Workspace uses its own application frame');
+      assert.equal(await page.locator('#primary-nav').count(), 0, 'the document rail is the navigation for this frame');
+      assert.equal(await rail.isVisible(), true, 'desktop Pages starts open');
+      assert.equal(await pages.getAttribute('aria-expanded'), 'true');
+      assert.notEqual(await rail.getAttribute('aria-modal'), 'true');
+      assert.ok(Math.abs((await rail.boundingBox()).width - 272) < 1, 'document rail uses the fixed navigation token');
+      await pages.click();
+      assert.equal(await rail.isVisible(), false);
+      await pages.click();
+      assert.equal(await rail.isVisible(), true);
       await page.locator('[data-value="navigation-guidelines"] > .sk-tree__row > .sk-tree__label').click();
       assert.equal(await page.locator('#workspace-title').textContent(), 'Navigation guidelines');
       assert.equal(await page.locator('#workspace-tree [aria-current="page"]').getAttribute('data-value'), 'navigation-guidelines');

@@ -7,6 +7,78 @@ The version in `package.json` is the single source of truth — the server, the
 documentation site, the behaviours bundle and the container tag all derive from
 it, and `npm run check:version` fails the build if a literal drifts back in.
 
+## [3.2.0] — 2026-10-17
+
+### Reliability and interaction
+
+- Separate editable numeric/date drafts from valid committed values; parse locale
+  grouping, decimal separators and localized digits without silently committing
+  malformed text. Share date/range bounds across typed, calendar and programmatic
+  updates, render disabled-date reasons as text and deliver one change callback
+  per accepted calendar action.
+- Make strict tag suggestions keyboard-operable, reject disabled tabs/segments,
+  put calendar Escape and cleanup in the shared overlay stack, and preserve
+  focused/hovered toast content with a FIFO overflow queue and one paused timer.
+  The samples use the same toast controller as consuming applications.
+- Keep theme choices and controls synchronized when device storage is unavailable.
+  Filter token contents links and the current-section marker with visible content.
+- Bound markup validation input, tree and naming work; improve static accessible
+  name checks and return explicit incomplete-validation errors. Composite alpha
+  backgrounds over a disclosed backdrop for contrast checks.
+
+### Product, samples and design handoff
+
+- Give the Workspace a dedicated application frame, scoped page search, a fixed
+  desktop Pages rail and responsive modal navigation. Group secondary mobile
+  document actions and preserve visible focus when resizing. Navigation keeps
+  **no width controls**, handles, reset buttons or remembered user widths.
+- Lead component pages with examples and separate API maturity, implementation,
+  native framework support and design-kit coverage. Theme/density and applicable
+  disabled-state previews update copyable markup. Stable markup links,
+  find-in-page revelation where supported and print output expose the reference.
+- Add task entry points, product-focused Settings copy, an editing/commitment
+  pattern, consistent announcement urgency and permission-discoverability guidance.
+  Form lab compares conflicting drafts and checks uncertain save acknowledgments
+  before an explicit retry.
+- Add `DESIGN-HANDOFF.md`, generated design-kit coverage/field-order metadata and
+  the audit-to-implementation mapping in `SYSTEM-REVIEW-3.2.0.md`. Figma fields
+  keep label → hint → control → error in resting and invalid variants.
+
+### Developer and delivery contracts
+
+- Move Angular enhancement to `afterNextRender`; add real Angular SSR/hydration
+  and .NET Blazor Server lifecycle fixtures. Add `defineAutoEnhanceElement()` for
+  DOM-owned Blazor cleanup, and share complete ID-reference scoping across recipes
+  and runtime. Preserve the existing enhancement/disposal APIs.
+- Ship actual normal/minified CommonJS behavior bundles and correct normal/min
+  type declarations. Test the packed and installed artifact in ESM and CJS
+  consumers. Align the additional Angular test dependencies on the existing LTS
+  patch; retain the reviewed Node LTS and stable-package baseline.
+- Resolve release tags to one existing commit; reuse verified site/packages,
+  build the image from those artifacts, probe the exact multi-platform candidate
+  digest and promote it only after the image checks. Release policy fixtures are
+  local checks; live Actions and image publication remain release execution.
+- Distinguish Node type-package metadata from runtimes exercised in CI.
+
+### HTTP and export upgrade notes
+
+- Local HTTP now defaults to loopback. Proxy trust defaults off; explicit peer
+  lists, Host/Origin allowlists and external-URL configuration define the request
+  boundary. Docker keeps its explicit all-interface container binding. Read
+  `MIGRATION.md` and the updated `.env.example` before redeploying.
+- Resolve artifacts from the installed package or an explicit absolute root.
+  Stable asset URLs revalidate. Health returns 503 when required CSS/behavior
+  artifacts are absent or a declared contrast pair fails. Generated HTTP
+  scaffolds point at fetchable stylesheet and behavior paths.
+- Share exact emitted CSS scale names across discovery, exports, lint and docs;
+  correct the existing skip-link/loading-overlay token typos. Include missing
+  alpha primitives in DTCG/Figma exports. DTCG uses 2025.10 structured values and
+  explicitly projects minimum fluid type sizes with the original CSS retained.
+  Native exports state their partial/uncompiled scope.
+- Add v3.1.0/v3.1.x migration discovery and a recorded 3.1 public-name baseline;
+  retain v2 and v3.0 paths, earlier resource aliases and rollback guidance. The
+  source patch applies to GitHub main commit `115375177e0aff5e8dbadf39bdb55d0b10948f2c`.
+
 ## 3.1.0 — 2026-10-17
 
 ### Navigation and samples

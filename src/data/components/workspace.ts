@@ -76,7 +76,7 @@ export const workspaceComponents: ComponentSpec[] = [
     summary: 'Quiet, explicit feedback for pending, saving, acknowledged, local-only, failed and conflicting work. The application owns transitions.',
     anatomy: [{ part: 'Status', required: true, description: 'A persistent role=status node with explicit storage-boundary text.' }, { part: 'Indicator', required: false, description: 'Decorative; state must also appear in text.' }, { part: 'Recovery', required: false, description: 'Retry or review buttons adjacent to the status, outside its live region.' }],
     sizes: [{ name: 'Small', className: '', height: 'auto', typeStyle: 'body-sm', description: 'Wraps in narrow headers; never truncate the storage boundary.' }],
-    props: [{ name: 'state', type: "'pending' | 'saving' | 'saved' | 'local' | 'error' | 'conflict'", required: true, description: 'Set data-state and visible text together after an actual application transition.' }],
+    props: [{ name: 'state', type: "'pending' | 'saving' | 'saved' | 'local' | 'error' | 'conflict' | 'uncertain'", required: true, description: 'Set data-state and visible text together after an actual application transition.' }],
     states: [
       { name: 'Pending', description: 'Work has changed since the last acknowledgment.', trigger: 'data-state="pending"' },
       { name: 'Saving', description: 'A request is in flight; input remains usable.', trigger: 'data-state="saving"' },
@@ -84,12 +84,13 @@ export const workspaceComponents: ComponentSpec[] = [
       { name: 'Local', description: 'Saved on this device only; not synchronized.', trigger: 'data-state="local"' },
       { name: 'Error', description: 'Preserve input and offer Retry beside the status.', trigger: 'data-state="error"' },
       { name: 'Conflict', description: 'Preserve both revisions and offer review.', trigger: 'data-state="conflict"' },
+      { name: 'Unknown outcome', description: 'The acknowledgement was lost. Preserve the draft and check the current revision before retrying.', trigger: 'data-state="uncertain"' },
     ],
     html: `<p class="sk-save-state" data-state="local" role="status"><span class="sk-save-state__indicator" aria-hidden="true"></span>Saved on this device</p>`,
     css: `.sk-save-state { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--sk-space-6); margin: 0; color: var(--sk-color-text-secondary); font-size: var(--sk-font-size-body-sm); line-height: var(--sk-line-height-body-sm); }
 .sk-save-state__indicator { flex: 0 0 auto; inline-size: var(--sk-space-8); block-size: var(--sk-space-8); border-radius: var(--sk-radius-full); background: currentColor; }
 .sk-save-state[data-state="error"] { color: var(--sk-color-status-danger-text); }
-.sk-save-state[data-state="conflict"] { color: var(--sk-color-status-warning-text); }
+.sk-save-state[data-state="conflict"], .sk-save-state[data-state="uncertain"] { color: var(--sk-color-status-warning-text); }
 .sk-save-state[data-state="saving"] .sk-save-state__indicator { background: transparent; border: var(--sk-border-width-thick) solid currentColor; }
 .sk-save-state[data-state="pending"] .sk-save-state__indicator { background: transparent; border: var(--sk-border-width-hairline) solid currentColor; }
 .sk-save-state[data-state="local"] .sk-save-state__indicator { border-radius: var(--sk-radius-xs); }

@@ -33,6 +33,8 @@ import { layouts } from '../data/layouts.js';
 import { contrastRatio, evaluateContrast } from '../lib/color.js';
 import { escapeHtml, slugify } from '../lib/markdown.js';
 import { Page, callout, demo, doDont, icon, themeCompare } from './shell.js';
+import { VERSION } from '../lib/version.js';
+import { scaleEntries, densityEntries } from '../lib/token-registry.js';
 
 const md = (id: string) => getFoundation(id)?.body ?? '';
 const summaryOf = (id: string) => getFoundation(id)?.summary ?? '';
@@ -193,16 +195,15 @@ export function overviewPage(): Page {
     title: 'Sekura Design System',
     eyebrow: 'Overview',
     lead:
-      'A design and UX specification for building accessible, dark-mode-first product interfaces — ' +
-      'with every colour promise verified by machine rather than by eye.',
+      'Design, build and evaluate product interfaces with shared tokens, components, interaction contracts and worked examples.',
   });
 
-  p.section('Version 3', `<p>A neutral workspace canvas, clear blue actions, compact chrome and
-    readable documents. Existing component names and application behavior contracts remain available.</p>
-    <div class="sk-cluster">
-      <a class="sk-button sk-button--primary" href="example-workspace.html">Explore the workspace</a>
-      <a class="sk-button sk-button--secondary" href="migration.html">Upgrade from v2</a>
-    </div>`);
+  p.section('Start with your task', `<div class="docs-cardgrid">
+    <a class="docs-card" href="workbench.html"><span class="docs-card__title">Design a screen</span><span class="docs-card__body">Compare states, themes and control sizes, then explore the document workspace.</span></a>
+    <a class="docs-card" href="support.html"><span class="docs-card__title">Build with a framework</span><span class="docs-card__body">Choose a native package or editable recipe and check its integration responsibilities.</span></a>
+    <a class="docs-card" href="develop.html"><span class="docs-card__title">Connect MCP</span><span class="docs-card__body">Set up the server, discover components and retrieve implementation guidance.</span></a>
+    <a class="docs-card" href="migration.html"><span class="docs-card__title">Upgrade to ${VERSION}</span><span class="docs-card__body">Choose the path from v2, v3.0 or v3.1. Install a matching set of artifacts.</span></a>
+    </div><p class="docs-para"><a class="sk-link" href="example-workspace.html">Explore the workspace example</a> or <a class="sk-link" href="components.html">browse the component catalog</a>.</p>`);
 
   const stats = [
     { value: String(components.length), label: 'components' },
@@ -262,7 +263,7 @@ export function overviewPage(): Page {
   p.section(
     'See it for yourself',
     `<p class="docs-para">
-      Use the theme control in the header. The card below is the same markup rendered under both
+      Use the theme controls in navigation preferences. The card below is the same markup rendered under both
       themes at once — note that in dark mode it becomes <em>lighter</em> than its page, and the
       border rather than the shadow is what separates it.
     </p>
@@ -1833,7 +1834,7 @@ export function accessibilityPage(): Page {
         <thead><tr><th scope="col">Role</th><th scope="col">Behaviour</th><th scope="col">Use for</th></tr></thead>
         <tbody>
           <tr><th scope="row"><code class="sk-code">role="status"</code></th><td>Announced at the next natural pause</td><td>Confirmations, result counts, loading completion. <strong>The default.</strong></td></tr>
-          <tr><th scope="row"><code class="sk-code">role="alert"</code></th><td>Interrupts immediately</td><td>Genuine failures only. Overusing it makes a product hostile with a screen reader.</td></tr>
+          <tr><th scope="row"><code class="sk-code">role="alert"</code></th><td>Interrupts immediately</td><td>Urgent blocking conditions. Ordinary validation stays local and polite; avoid duplicating an error summary that already receives focus.</td></tr>
         </tbody>
       </table>
     </div>
@@ -1862,11 +1863,19 @@ export function foundationPage(id: string, file: string, title: string): Page {
  * ================================================================== */
 
 export function tokensPage(): Page {
+  const dimensions = scaleEntries();
+  const densityNames = densityEntries(densities.comfortable!).map(([name]) => name);
+  const count = semanticTokens.length + dimensions.length + densityNames.length;
+  // Retain the earlier group fragment addresses while displaying exact names.
+  const scaleAnchors = new Map(Object.entries(scales).map(([name, scale]) => {
+    const prefix = name === 'zIndex' ? 'z' : name === 'containerWidth' ? 'container' : name.replace(/([A-Z])/g, '-$1').toLowerCase();
+    return [`${prefix}-${Object.keys(scale)[0]}`, `scale-${name}`];
+  }));
   const p = new Page({
     file: 'tokens.html',
     title: 'All tokens',
     eyebrow: 'Reference',
-    lead: `Every one of the ${semanticTokens.length} semantic tokens, with the value it resolves to in each of the four themes.`,
+    lead: `${semanticTokens.length} semantic tokens across four themes, plus exact dimensional and density tokens. Search every displayed token by name or role.`,
   });
 
   p.add(
@@ -1877,7 +1886,7 @@ export function tokensPage(): Page {
         <input class="sk-search__input" id="token-search" type="search" autocomplete="off"
                placeholder="Filter by name or role" data-sk-token-filter />
       </div>
-      <p class="docs-muted" role="status" data-sk-token-count>${semanticTokens.length} tokens</p>
+      <p class="docs-muted" role="status" data-sk-token-count>${count} tokens</p>
     </div>`
   );
 
@@ -1892,24 +1901,16 @@ export function tokensPage(): Page {
 
   p.section(
     'Dimensional scales',
-    Object.entries(scales)
-      .map(([name, scale]) => {
-        const prefix =
-          name === 'zIndex' ? 'z' : name.replace(/([A-Z])/g, '-$1').toLowerCase();
-        return `<h3 id="scale-${name}">${escapeHtml(name)}</h3>
-        <div class="sk-table" role="region" aria-label="${escapeHtml(name)} scale" tabindex="0">
-          <table>
-            <thead><tr><th scope="col">Token</th><th scope="col">Value</th></tr></thead>
-            <tbody>${Object.entries(scale)
-              .map(
-                ([k, v]) =>
-                  `<tr><th scope="row"><code class="sk-code">--sk-${prefix}-${escapeHtml(k)}</code></th><td><code>${escapeHtml(String(v))}</code></td></tr>`
-              )
-              .join('')}</tbody>
-          </table>
-        </div>`;
-      })
-      .join(''),
+    `<p class="docs-para">Exact names emitted by the stylesheet, including typography, focus and breakpoints. Density overrides follow in their own table.</p>
+    <div class="sk-table token-table" data-docs-token-group role="region" aria-label="Dimensional scales" tabindex="0"><table>
+      <thead><tr><th scope="col">Token</th><th scope="col">Value</th></tr></thead>
+      <tbody>${dimensions.map(([name, value]) => `<tr${scaleAnchors.has(name) ? ` id="${scaleAnchors.get(name)}"` : ''}><th scope="row"><code class="sk-code">--sk-${escapeHtml(name)}</code></th><td><code>${escapeHtml(value)}</code></td></tr>`).join('')}</tbody>
+    </table></div>
+    <div data-docs-token-group><h3>Density overrides</h3>
+    <div class="sk-table token-table" role="region" aria-label="Density token values" tabindex="0"><table>
+      <thead><tr><th scope="col">Token</th>${Object.keys(densities).map(name => `<th scope="col">${escapeHtml(name)}</th>`).join('')}</tr></thead>
+      <tbody>${densityNames.map(name => `<tr><th scope="row"><code class="sk-code">--sk-${escapeHtml(name)}</code></th>${Object.values(densities).map(density => `<td><code>${escapeHtml(new Map(densityEntries(density)).get(name)!)}</code></td>`).join('')}</tr>`).join('')}</tbody>
+    </table></div></div>`,
     'scales'
   );
 
@@ -1963,9 +1964,38 @@ export function componentPage(id: string): Page {
 
   p.add(
     `<div class="docs-chiprow">
-      <span class="sk-badge sk-badge--${c.status === 'stable' ? 'success' : 'warning'}">${c.status}</span>
+      <span class="sk-badge sk-badge--${c.status === 'stable' ? 'neutral' : 'warning'}">API: ${c.status}</span>
       <code class="sk-code">.${escapeHtml(c.implementation!.rootClass)}</code>
     </div>`
+  );
+
+  p.add(`<dl class="docs-capabilities" aria-label="Component availability">
+    <div><dt>API maturity</dt><dd>${escapeHtml(c.status)}</dd></div>
+    <div><dt>Web implementation</dt><dd>CSS + ${escapeHtml(c.implementation!.controller ?? c.implementation!.behavior)}</dd></div>
+    <div><dt>Framework delivery</dt><dd>${c.implementation!.nativeReactExport ? `Native React ${escapeHtml(c.implementation!.nativeReactExport)}; editable recipes for other frameworks` : 'Editable reference recipes; no native React component'}</dd></div>
+    <div><dt>Design kit</dt><dd>${c.implementation!.designKit ? 'Included in the Figma starter' : 'Not included in the Figma starter'}</dd></div>
+  </dl><p class="docs-para"><a class="sk-link" href="support.html#verification-scope">Review verification scope</a> and <a class="sk-link" href="workbench.html">composed state examples</a>. Application code owns data, permissions and action outcomes.</p>`);
+  // Some examples are whole-page scaffolds — app shell, skip link, side
+  // navigation, page header, command palette. Rendering those live inside a
+  // page that already has <main>, an <h1> and a nav would duplicate ids and
+  // landmarks, so they are shown as code only.
+  const isScaffold =
+    /<(html|body|main)\b/i.test(c.html) ||
+    /\bid="(main|primary-nav|cp-results|cp-input)"/.test(c.html) ||
+    /<h1\b/i.test(c.html) ||
+    c.html.includes('<script');
+  p.section(
+    'Example',
+    (isScaffold ? '' : `<div class="docs-preview-controls sk-cluster">
+      <label>Preview theme <select class="sk-select" data-docs-preview-theme><option value="">Page theme</option>${THEMES.map(theme => `<option value="${theme}">${escapeHtml(themeInfo[theme].label)}</option>`).join('')}</select></label>
+      <label>Preview density <select class="sk-select" data-docs-preview-density><option value="comfortable">Comfortable</option><option value="compact">Compact</option><option value="dense">Dense</option></select></label>
+      ${c.implementation!.nativeReactExport ? '<label>Preview state <select class="sk-select" data-docs-preview-state><option value="rest">Rest</option><option value="disabled">Disabled</option></select></label>' : ''}
+    </div>`) + demo(isScaffold ? '' : `<div data-docs-component-preview>${c.html}</div>`, c.html, {
+      id: `component-${c.id}-example`,
+      expanded: isScaffold,
+      lang: 'html',
+      label: isScaffold ? 'Page-level structure — shown as markup rather than rendered inline' : undefined,
+    })
   );
 
   p.section(
@@ -1983,23 +2013,6 @@ export function componentPage(id: string): Page {
   );
 
   p.section('Implementation', `<div class="sk-prose"><p><strong>Behavior:</strong> ${c.implementation!.controller ?? c.implementation!.behavior}. <strong>CSS dependencies:</strong> ${c.implementation!.cssDependencies.join(', ') || 'base styles'}.</p><p>Framework output: editable reference recipe. Application code owns data and action outcomes. <a class="sk-link" href="support.html">Read the integration contract</a> and <a class="sk-link" href="workbench.html">compare states and sizes</a>.</p></div>`);
-
-  // Some examples are whole-page scaffolds — app shell, skip link, side
-  // navigation, page header, command palette. Rendering those live inside a
-  // page that already has <main>, an <h1> and a nav would duplicate ids and
-  // landmarks, so they are shown as code only.
-  const isScaffold =
-    /<(html|body|main)\b/i.test(c.html) ||
-    /\bid="(main|primary-nav|cp-results|cp-input)"/.test(c.html) ||
-    /<h1\b/i.test(c.html) ||
-    c.html.includes('<script');
-  p.section(
-    'Example',
-    demo(isScaffold ? '' : c.html, c.html, {
-      lang: 'html',
-      label: isScaffold ? 'Page-level structure — shown as markup rather than rendered inline' : undefined,
-    })
-  );
 
   p.section(
     'Anatomy',

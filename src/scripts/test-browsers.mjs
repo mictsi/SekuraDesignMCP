@@ -44,12 +44,17 @@ for (const [name, engine] of Object.entries({ chromium, firefox, webkit })) {
       await page.locator('#lab-outcome').selectOption('failure'); await page.locator('#lab-save').click();
       await text('lab-errors','unavailable'); assert.equal(await page.locator('#lab-summary').evaluate(el=>el===document.activeElement),true); assert.equal(await page.locator('#lab-name').inputValue(),'New project');
       await page.locator('#lab-outcome').selectOption('conflict'); await page.locator('#lab-save').click(); await text('lab-errors','Another editor'); assert.equal(await page.locator('#lab-save').isDisabled(),true);
-      await page.locator('#lab-reload').click(); await text('lab-result','loaded'); await page.locator('#lab-save').click(); await text('lab-result','Project saved.');
+      await page.locator('#lab-reload').click(); await text('lab-result','loaded');
+      assert.equal(await page.locator('#lab-comparison').isVisible(), true);
+      assert.equal(await page.locator('#lab-save').isDisabled(), true);
+      await page.locator('#lab-keep-draft').click(); await page.locator('#lab-save').click(); await text('lab-result','Project saved.');
       const state = await (await fetch(base+'/demo-api/version')).json(); assert.equal(state.project.owner,'Jordan'); assert.equal(state.project.name,'New project');
     });
     await test('cancellation and revoked permission preserve the draft', async () => {
       await page.goto(base+'/form-lab.html'); await page.locator('#lab-name').fill('Preserved'); await page.locator('#lab-save').click(); await page.locator('#lab-cancel').click(); await text('lab-result','canceled'); assert.equal(await page.locator('#lab-name').inputValue(),'Preserved');
-      await page.locator('#lab-reload').click(); await text('lab-result','loaded'); await page.locator('#lab-save').click(); await page.locator('#lab-permission').uncheck();
+      await page.locator('#lab-reload').click(); await text('lab-result','loaded');
+      if (await page.locator('#lab-comparison').isVisible()) await page.locator('#lab-keep-draft').click();
+      await page.locator('#lab-save').click(); await page.locator('#lab-permission').uncheck();
       await text('lab-permission-status','removed'); assert.equal(await page.locator('#lab-name').isDisabled(),true); assert.equal(await page.locator('#lab-name').inputValue(),'Preserved');
       await page.locator('#lab-permission').check(); assert.equal(await page.locator('#lab-name').isEnabled(),true);
     });

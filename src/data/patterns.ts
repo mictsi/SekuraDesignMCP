@@ -154,6 +154,17 @@ than protecting against the click.`,
   },
 
   {
+    id: 'editing-and-commit', name: 'Editing and committed values',
+    summary: 'Preserve draft text, commit valid values once, and make correction predictable.',
+    problem: 'Formatting, validation and host callbacks can disagree about whether an edit is valid or saved.',
+    solution: `Keep draft text separate from the last valid committed value. Parsing uses the configured locale; formatting must round-trip without changing the value. Validate typed, selected and programmatic values through the same restrictions. An invalid draft stays editable with an associated error while getters retain the last valid value. A valid commit owns exactly one public value callback; documented native events remain available. Reset, cancel, overlay dismissal and unmount must release their owned state and restore appropriate focus.`,
+    rules: ['Never replace invalid draft text with an empty value or an unrelated parsed number.', 'Define commit timing, reset behavior and event ownership in the controller API.', 'Retain widget-specific keyboard models; consistency does not make a tag list a menu or a tree a combobox.', 'Treat client validity as feedback; the server validates the submitted value.'],
+    components: ['number-input', 'date-picker', 'date-range-picker', 'tag-input', 'combobox', 'form-field'],
+    accessibility: ['Associate hint and error with the input, and keep aria-invalid consistent with the displayed draft.', 'Use polite correction feedback; move focus only for a blocking task transition.', 'Keep the active keyboard item, focus indicator and committed choice synchronized.'],
+    antiPatterns: ['A value changes on blur without an edit.', 'A calendar click and typed date obey different limits.', 'One selection triggers duplicate saves.', 'Removing a parent leaves an open child focus trap.'],
+  },
+
+  {
     id: 'form-validation',
     name: 'Form validation',
     summary: 'Validate at the right moment, say how to fix it, and never lose the user’s work.',
@@ -182,10 +193,10 @@ than protecting against the click.`,
     ],
     components: ['form-field', 'alert', 'text-field', 'inline-message', 'button'],
     accessibility: [
-      'The error summary is role="alert" with tabindex="-1" so focus can land on it.',
+      'A blocking error summary has tabindex="-1" for deliberate focus. Use assertive announcement only when needed and avoid announcing the same error twice.',
       'aria-describedby lists hint then error, in that order — order determines reading order.',
       'Remove aria-invalid when the error is resolved. A stale aria-invalid is worse than none.',
-      'Blur-time errors are announced politely; submit-time errors assertively.',
+      'Follow the notifications urgency policy: blur corrections are polite; a blocking failed submit may interrupt and move focus to its summary.',
       'Never rely on the browser’s native validation bubbles — they are inconsistent and time out.',
     ],
     antiPatterns: [
@@ -200,7 +211,7 @@ than protecting against the click.`,
   {
     id: 'loading-states',
     name: 'Loading and empty states',
-    summary: 'Four distinct situations that are routinely collapsed into one generic message.',
+    summary: 'Distinct situations that need different explanations and recovery actions.',
     problem:
       'Loading, first-use, no-results, no-access and error are five different facts about the world. Showing "No data" for all of them leaves the user unable to tell whether something is broken, whether they need permission, or whether they simply need to start.',
     solution: `**Loading** — under 300ms show nothing. 300ms to about 1s, a skeleton matching
@@ -213,8 +224,7 @@ the only empty state where a warm tone and a primary action belong.
 **No results** — name the filters that caused it and offer to clear them. That is
 almost always what the user wants.
 
-**No access** — say how to request access without revealing what exists. A message
-that leaks the existence of a resource is an enumeration vulnerability.
+**No access** — conceal confidential resource identities. For an intentionally discoverable feature, explain the restriction and provide a real request-access or contact-owner path. The host decides which policy applies; server authorization is authoritative.
 
 **Error** — say what failed, offer retry, include a correlation ID.`,
     rules: [
@@ -316,20 +326,31 @@ selection. Destructive bulk actions name the count in the button label.`,
   {
     id: 'saving',
     name: 'Saving and unsaved changes',
-    summary: 'One save model per surface, honest about state, and never losing work silently.',
+    summary: 'One save model per clearly labeled transaction, explicit durability, and recoverable drafts.',
     problem:
       'Mixing auto-save and explicit save in one view leaves users unsure whether their work is safe. Optimistic UI that reports success before the server confirms is a lie the user discovers later.',
-    solution: `Pick one model per surface and stick to it:
+    solution: `A save boundary is one clearly labeled transaction or section. Pick one model within that boundary:
 
 - **Explicit save** — a Save button, a dirty indicator, and a warning before
   navigating away. Use Checkbox for booleans, never Switch.
 - **Auto-save** — changes persist as they are made, with a visible "Saving…" then
   "Saved" indicator. Use Switch for booleans, never Checkbox.
 
-Never both on one screen. If the server has not confirmed, show pending — do not
-show success.`,
+Independent sections may use different models when their boundaries and feedback are clear. If the server has not acknowledged a durable save, show pending rather than success.
+
+| State | Meaning and next action |
+|---|---|
+| Draft | Edits exist locally and may be lost on leaving. |
+| Saving | The request is awaiting acknowledgement. |
+| Saved locally | A device checkpoint exists; it is not a server save. |
+| Saved | The named durable boundary has acknowledged this revision. |
+| Failed | The operation is known to have failed; retain edits and offer safe recovery. |
+| Conflict | Keep the draft, load the newer server revision, compare, then explicitly reapply or use the latest values. |
+| Unknown outcome | A timeout, cancellation or unreadable acknowledgement cannot establish success or failure. Check the current revision before retrying a write. |
+
+The form composition lab demonstrates retained drafts and explicit conflict recovery. Persistence, concurrency checks and merge policy remain application-owned.`,
     rules: [
-      'Never mix auto-save and explicit save on one surface.',
+      'Use one save model per labeled transaction or section; describe each boundary clearly.',
       'Show a pending state while the server has not confirmed.',
       'Warn before discarding unsaved changes, and name what will be lost.',
       'Preserve input across failed saves.',
@@ -337,7 +358,7 @@ show success.`,
     ],
     components: ['button', 'switch', 'checkbox', 'toast', 'dialog', 'alert', 'inline-message'],
     accessibility: [
-      'Announce save state changes politely: "Saving", then "Saved".',
+      'Announce save state changes politely and name their actual boundary: awaiting acknowledgement, saved on this device, or saved to the server.',
       'aria-busy on the button while in flight, keeping it focusable.',
       'The unsaved-changes dialog names what would be lost.',
       'The dirty indicator is text plus icon, not a coloured dot alone.',
@@ -360,17 +381,18 @@ show success.`,
 |---|---|---|
 | Confirmation of a user action | Toast | \`role="status"\`, polite |
 | Persistent page condition | Alert | no role if present on load; \`role="status"\` if inserted |
-| Failure needing action | Alert | \`role="alert"\`, assertive |
+| Blocking failure needing immediate attention | Alert or focused error summary | \`role="alert"\` when an interruption is needed; avoid duplicate announcements |
+| Nonblocking failure | Inline message | \`role="status"\`, polite |
 | Field-level problem | Form field error | \`aria-describedby\` + \`aria-invalid\` |
 | Background event | Notification centre | polite, batched |
 
 The live region container must exist in the DOM before the message is inserted.`,
     rules: [
-      'role="alert" is for failures only.',
+      'Reserve assertive announcements for blocking or urgent failures; ordinary field corrections and nonblocking failures are polite.',
       'The live region must pre-exist the message.',
       'Toasts never carry information the user might need later.',
       'Auto-dismiss pauses on hover and focus, and a manual close is always available.',
-      'Never stack more than three toasts.',
+      'Show at most three toasts and queue overflow; never evict a focused or hovered notification.',
     ],
     components: ['toast', 'alert', 'inline-message', 'badge'],
     accessibility: [
@@ -391,19 +413,16 @@ The live region container must exist in the DOM before the message is inserted.`
   {
     id: 'permissions',
     name: 'Permission-aware interfaces',
-    summary: 'Render only what the user may reach. Never render and hide.',
+    summary: 'Conceal confidential resources and explain intentionally discoverable restricted features.',
     problem:
       'Client-side hiding of unauthorised actions leaks the existence of resources and the shape of the permission model, and it is trivially bypassed. Meanwhile, disabling everything with no explanation leaves users stuck with no idea why.',
-    solution: `Filter on the server. The client renders what it is given and never makes
-authorisation decisions.
+    solution: `The server supplies authorized content and classifies discoverability. The client never grants access.
 
-When a user genuinely lacks permission for something they can see:
+- **Confidential resources:** omit their identities, actions and counts. Use a consistent not-found/forbidden policy that prevents enumeration.
+- **Intentionally discoverable features:** show an explanatory locked destination or an unavailable action with a stated reason. Offer Request access or Contact owner only if the application supports that action.
+- **Lost access during a task:** preserve permitted draft information, explain the change without leaking confidential data, and give a real recovery path.
 
-- Prefer omitting the action entirely.
-- Where its absence would be confusing, disable it **with a stated reason** and
-  \`aria-describedby\` pointing at that reason.
-- For a whole page, show a no-access empty state explaining how to request access —
-  without confirming what exists.`,
+The host application chooses the policy for each feature/resource. Visibility and disabled styling are not authorization`,
     rules: [
       'The server decides; the client renders.',
       'Never render an action the user cannot perform without explaining why.',
@@ -414,9 +433,9 @@ When a user genuinely lacks permission for something they can see:
     components: ['side-nav', 'button', 'empty-state', 'inline-message', 'alert'],
     accessibility: [
       'A disabled control needs aria-describedby pointing at the reason.',
-      'Prefer aria-disabled over the disabled attribute so the control stays focusable and the reason is discoverable.',
-      'Never render navigation to a destination that will reject the user.',
-      'No-access messages must not enumerate what exists.',
+      'Make the restriction reason reachable. If aria-disabled keeps an action focusable, prevent activation through every input method.',
+      'Hide confidential destinations. A deliberately discoverable locked destination must explain its restriction and supported recovery.',
+      'No-access messages must not disclose confidential identities; discoverable capability names follow the host policy.',
     ],
     antiPatterns: [
       'Rendering everything and hiding with CSS.',
@@ -622,7 +641,7 @@ stack traces or internal hostnames.`,
     ],
     components: ['alert', 'empty-state', 'button', 'code-block', 'timeline'],
     accessibility: [
-      'Errors use role="alert" and are announced immediately.',
+      'Follow the notifications urgency policy: ordinary field and nonblocking errors are polite; blocking or urgent failures may use role="alert".',
       'Focus moves to the error when it blocks the current task.',
       'Retry is a real button, adjacent to the error.',
       'Technical detail lives in a disclosure so it does not overwhelm the message.',

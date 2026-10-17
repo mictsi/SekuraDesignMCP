@@ -26,7 +26,6 @@ import {
   densities,
   elevation,
   getToken,
-  opaqueValue,
   ramps,
   resolvePrimitive,
   scales,
@@ -41,10 +40,11 @@ import { evaluateContrast } from './lib/color.js';
 import { FRAMEWORKS, frameworkDescriptions, generateCode, type Framework } from './lib/codegen.js';
 import { EXPORT_FORMATS, exportTokens, formatDescriptions, type ExportFormat } from './lib/exporters.js';
 import { search, type ResultKind } from './lib/search.js';
-import { safeForegroundsOn, suggestTokens } from './lib/suggest.js';
+import { suggestTokens } from './lib/suggest.js';
 import { emptyResult, invalidArgument, unknownValue } from './lib/errors.js';
 import type { PublishedUrls } from './lib/urls.js';
-import { summariseFindings, validateMarkup } from './lib/validate.js';
+import { MARKUP_CHECK_SCOPE, MARKUP_LIMITS, summariseFindings, validateMarkup } from './lib/validate.js';
+import { densityEntries, scaleEntries } from './lib/token-registry.js';
 
 import { behaviorReference, behaviorSchema, migrationReference, migrationSchema, mcpReference } from './lib/mcp-reference.js';
 import { MIGRATION_SOURCES } from './data/migration.js';
@@ -55,6 +55,12 @@ export const SERVER_NAME = 'sekura-design';
 export const SERVER_VERSION = VERSION;
 
 const themeEnum = z.enum(THEMES as unknown as [ThemeName, ...ThemeName[]]);
+
+function migrationSource(version: string) {
+  const source = MIGRATION_SOURCES.find(candidate => String(candidate) === version);
+  if (!source) throw new Error(`Migration source is not registered: ${version}`);
+  return source;
+}
 
 function text(body: string) {
   return { content: [{ type: 'text' as const, text: body }] };
@@ -678,12 +684,12 @@ ${framework !== 'css' ? `\nThe CSS for this component is a separate call: \`get_
       }
 
       if (includeScales) {
-        for (const [name, scale] of Object.entries(scales)) {
-          const rows = Object.entries(scale)
-            .map(([k, v]) => `| \`--sk-${name === 'zIndex' ? 'z' : name.replace(/([A-Z])/g, '-$1').toLowerCase()}-${k}\` | \`${v}\` |`)
-            .join('\n');
-          sections.push(`### ${name}\n\n| Token | Value |\n|---|---|\n${rows}`);
-        }
+        const scaleRows = scaleEntries().filter(([name]) => !filter || name.toLowerCase().includes(filter.toLowerCase().replace(/^--sk-/, '')))
+          .map(([name, value]) => `| \`--sk-${name}\` | \`${value}\` |`).join('\n');
+        sections.push(`### Dimensional scales\n\n| Token | Value |\n|---|---|\n${scaleRows || '| (no matching scales) | |'}`);
+        const densityRows = densityEntries(densities.comfortable!).filter(([name]) => !filter || name.includes(filter.toLowerCase().replace(/^--sk-/, '')))
+          .map(([name]) => `| \`--sk-${name}\` | ${Object.values(densities).map(density => `\`${densityEntries(density).find(([key]) => key === name)![1]}\``).join(' | ')} |`).join('\n');
+        sections.push(`### Density tokens\n\n| Token | ${Object.keys(densities).join(' | ')} |\n|---|${Object.keys(densities).map(() => '---|').join('')}\n${densityRows}`);
         const typeRows = Object.entries(typeScale)
           .map(([k, v]) => `| \`${k}\` | \`${v.fontSize}\` | \`${v.lineHeight}\` | \`${v.fontWeight}\` | \`${v.letterSpacing}\` | ${v.description} |`)
           .join('\n');
@@ -711,7 +717,7 @@ ${framework !== 'css' ? `\nThe CSS for this component is a separate call: \`get_
     {
       title: 'Export tokens in a build format',
       description:
-        'Emit the full token set in a consumable format. Everything is generated from one source, so a primitive change propagates to every output.',
+        'Emit tokens in a consumable format. Each format documents its supported scopes, projections and consumer verification obligations; CSS is the complete runtime token artifact.',
       inputSchema: {
         format: z
           .enum(EXPORT_FORMATS as unknown as [ExportFormat, ...ExportFormat[]])
@@ -751,7 +757,7 @@ ${framework !== 'css' ? `\nThe CSS for this component is a separate call: \`get_
     },
     async ({ ramp }) => {
       const entries = ramp ? { [ramp]: ramps[ramp] } : ramps;
-      if (ramp && !ramps[ramp]) {
+      if (ramp && !Object.hasOwn(ramps, ramp)) {
         return unknownValue('colour ramp', ramp, Object.keys(ramps));
       }
       const sections = Object.entries(entries)
@@ -822,10 +828,11 @@ ${sections}`);
     {
       title: 'Check a colour pair against WCAG',
       description:
-        'WCAG 2.2 contrast ratio and pass/fail verdict for a foreground/background pair. Accepts hex values or Sekura token names — passing tokens resolves them for the chosen theme, including compositing translucent values over the page.',
+        'WCAG 2.2 contrast for the rendered foreground/background pair. Supports hex, transparent, modern rgb() and token names. Composites background over an explicit opaque backdrop, or the disclosed theme base when omitted, then foreground over that background.',
       inputSchema: {
         foreground: z.string().describe('Hex value, or a token name like "color-text-primary".'),
-        background: z.string().describe('Hex value, or a token name.'),
+        background: z.string().describe('Hex/CSS colour, or a token name.'),
+        backdrop: z.string().optional().describe('Opaque hex/CSS colour or token beneath the background. Defaults to the selected theme base, disclosed in the result.'),
         use: z
           .enum(['body-text', 'large-text', 'ui-component', 'decorative'])
           .optional()
@@ -834,33 +841,23 @@ ${sections}`);
       },
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
-    async ({ foreground, background, use, theme }) => {
+    async ({ foreground, background, backdrop, use, theme }) => {
       const th = (theme ?? 'light') as ThemeName;
 
       const resolve = (input: string): { value: string; note: string } => {
-        if (input.startsWith('#')) return { value: input, note: 'literal' };
         const cleaned = input.replace(/^--sk-/, '');
-        const tk = getToken(cleaned);
-        if (!tk) return { value: input, note: 'literal' };
-        const v = opaqueValue(cleaned, th);
-        return {
-          value: v ?? resolvePrimitive(tk.values[th]),
-          note: `token \`--sk-${cleaned}\` in ${th}${v && !resolvePrimitive(tk.values[th]).startsWith('#') ? ', composited over the page' : ''}`,
-        };
+        const token = getToken(cleaned);
+        return token ? { value: resolvePrimitive(token.values[th]), note: `token \`--sk-${cleaned}\` in ${th}` } : { value: input, note: 'literal' };
       };
-
       const fg = resolve(foreground);
       const bg = resolve(background);
-
+      const base = resolve(backdrop ?? 'color-surface-base');
       let verdict;
       try {
-        verdict = evaluateContrast(fg.value, bg.value, use ?? 'body-text');
+        verdict = evaluateContrast(fg.value, bg.value, use ?? 'body-text', base.value);
       } catch (err) {
-        return invalidArgument('foreground or background', (err as Error).message, {
-          next: [
-            'Pass a hex colour such as "#1a2b3c", or a semantic token name such as "color-text-primary".',
-            'Call `get_tokens` to list every semantic token name.',
-          ],
+        return invalidArgument('foreground, background or backdrop', (err as Error).message, {
+          next: ['Pass a supported colour or a semantic token name.', 'Use an opaque backdrop matching the actual surface beneath the background.', 'Call `get_tokens` to list semantic token names.'],
         });
       }
 
@@ -868,6 +865,8 @@ ${sections}`);
 
 **Foreground** \`${fg.value}\` (${fg.note})
 **Background** \`${bg.value}\` (${bg.note})
+**Backdrop** \`${base.value}\` (${base.note}; ${backdrop === undefined ? 'assumed theme base because backdrop was omitted' : 'explicitly supplied'})
+**Rendered pair** \`${verdict.renderedForeground}\` on \`${verdict.renderedBackground}\` (hex display rounded; ratio uses full precision)
 **Use** ${verdict.use}
 
 ## Verdict: ${verdict.grade === 'fail' ? '❌ FAIL' : verdict.grade === 'AAA' ? '✅ AAA' : '✅ AA'}
@@ -883,7 +882,11 @@ ${verdict.advice}
 | Non-text (1.4.11) | 3:1 | ${verdict.passes.aaNonText ? '✅ pass' : '❌ fail'} |
 
 ${verdict.grade === 'fail' ? `\n## What to use instead\n\n${(() => {
-        const safe = safeForegroundsOn(background.replace(/^--sk-/, ''), th);
+        const safe = semanticTokens.filter(token => token.name.includes('text') && !token.contrastExempt).flatMap(token => {
+          const value = resolvePrimitive(token.values[th]);
+          const result = evaluateContrast(value, bg.value, use ?? 'body-text', base.value);
+          return result.grade === 'fail' ? [] : [{ token: token.name, value, ratio: result.display, raw: result.ratio }];
+        }).sort((a, b) => b.raw - a.raw);
         return safe.length
           ? safe.slice(0, 5).map((s) => `- \`--sk-${s.token}\` (\`${s.value}\`) — ${s.ratio}`).join('\n')
           : 'Move the foreground two steps further from the background on its ramp, then re-check.';
@@ -963,15 +966,21 @@ Wire this into CI: \`npm run audit:contrast\` exits non-zero on any failure.`);
       description:
         'Checks HTML or CSS for the accessibility and design-system failures that actually ship: missing accessible names, unlabelled inputs, hard-coded colours that break in dark mode, flex containers that will overflow, positive tabindex, removed focus outlines, and misused live regions. Advisory — a clean result is not a certificate of accessibility.',
       inputSchema: {
-        markup: z.string().min(1).describe('HTML and/or CSS to check.'),
+        markup: z.string().min(1).describe(`HTML and/or CSS to check; maximum ${MARKUP_LIMITS.codeUnits} UTF-16 code units. Parsed structure and accessible-name work are also bounded.`),
         componentId: z.string().optional().describe('Check against a specific component spec as well.'),
       },
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
     async ({ markup, componentId }) => {
       const findings = validateMarkup(markup, componentId);
+      const limited = findings.find(finding => finding.rule === 'validation-limit');
+      if (limited) {
+        process.stderr.write(`${JSON.stringify({ event: 'markup_validation_rejected', reason: 'limit', codeUnits: markup.length })}\n`);
+        return { ...invalidArgument('markup', limited.message, { code: 'VALIDATION_LIMIT', next: [limited.fix] }) };
+      }
+      const scope = `## Check scope\n\nChecked: ${MARKUP_CHECK_SCOPE.checked.join('; ')}.\n\nNot checked: ${MARKUP_CHECK_SCOPE.skipped.join('; ')}.`;
       if (findings.length === 0) {
-        return text(`# No issues found\n\n${summariseFindings(findings)}`);
+        return { ...text(`# No issues found in checked patterns\n\n${summariseFindings(findings)}\n\n${scope}`), structuredContent: { status: 'completed', findings, scope: MARKUP_CHECK_SCOPE } };
       }
       const icon = { error: '❌', warning: '⚠️', info: 'ℹ️' } as const;
       const body = findings
@@ -980,7 +989,7 @@ Wire this into CI: \`npm run audit:contrast\` exits non-zero on any failure.`);
             `### ${icon[f.severity]} ${f.rule}\n${f.message}\n${f.snippet ? `\n\`\`\`\n${f.snippet}\n\`\`\`\n` : ''}\n**Fix:** ${f.fix}${f.wcag ? `\n\n**WCAG:** ${f.wcag}` : ''}`
         )
         .join('\n\n');
-      return text(`# Validation: ${summariseFindings(findings)}\n\n${body}\n\n---\nAutomated checks catch roughly a third of real barriers. Keyboard and screen-reader testing is still required.`);
+      return { ...text(`# Validation: ${summariseFindings(findings)}\n\n${body}\n\n${scope}`), structuredContent: { status: 'completed', findings, scope: MARKUP_CHECK_SCOPE } };
     }
   );
 
@@ -1003,6 +1012,9 @@ Wire this into CI: \`npm run audit:contrast\` exits non-zero on any failure.`);
     async ({ part }) => {
       const p = part ?? 'all';
       const parts: string[] = [];
+      const attribute = (value: string): string => value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+      const stylesheet = urls ? `${urls.css}sekura.css` : '/assets/sekura.css';
+      const behaviours = urls ? `${urls.js}sekura.iife.min.js` : '/assets/sekura.iife.min.js';
 
       if (p === 'all' || p === 'scaffold') {
         parts.push(`## HTML scaffold
@@ -1019,10 +1031,9 @@ Wire this into CI: \`npm run audit:contrast\` exits non-zero on any failure.`);
   <!-- 1. Theme script FIRST, inline and synchronous, before any stylesheet. -->
   ${themeScript.split('\n').slice(2).join('\n  ')}
 
-  <!-- 2. Tokens, then reset, then components. -->
-  <link rel="stylesheet" href="/sekura/tokens.css" />
-  <link rel="stylesheet" href="/sekura/base.css" />
-  <link rel="stylesheet" href="/sekura/components.css" />
+  <!-- 2. Combined stylesheet includes tokens, reset, utilities and components. -->
+  <link rel="stylesheet" href="${attribute(stylesheet)}" />
+  <script src="${attribute(behaviours)}" defer></script>
 </head>
 <body class="sk-app-shell">
   <a class="sk-skip-link" href="#main">Skip to main content</a>
@@ -1060,7 +1071,9 @@ and produces a flash of the wrong theme on every page load.
 ${parts.join('\n\n')}
 
 ---
-Get the token stylesheet with \`export_tokens({ format: "css" })\`, and per-component CSS with \`get_component_code({ id, framework: "css" })\`.`);
+${urls ? `The scaffold uses this instance's published paths, including its prefix. Check availability with \`get_endpoints\` or the manifest at \`${urls.manifest}\`.` : 'Stdio serves no HTTP assets. Save the CSS returned by `get_stylesheet` as `/assets/sekura.css` in your application public directory, and copy `dist-js/sekura.iife.min.js` from the installed/built Sekura package to `/assets/sekura.iife.min.js`. These are application-local paths, not URLs on the MCP process.'}
+
+Use \`export_tokens({ format: "css" })\` and per-component CSS only when assembling a custom bundle.`);
     }
   );
 
@@ -1181,7 +1194,10 @@ which artefacts are actually present in this deployment.`);
   for (const [name, uri, description, read] of [
     ['behaviors', 'sekura://behaviors', 'All public runtime APIs, supporting types and lifecycle contracts.', () => JSON.stringify(behaviorReference(), null, 2)],
     ['migration', 'sekura://migration/v2-to-v3', 'Full migration plan, behavior changes, compatibility baseline and bridge CSS.', () => JSON.stringify(migrationReference(), null, 2)],
-    ['migration-current', 'sekura://migration/v3.1', 'Current migration guide with v2 and v3.0 upgrade paths.', () => JSON.stringify(migrationReference(), null, 2)],
+    ['migration-3.1-alias', 'sekura://migration/v3.1', 'Compatibility alias for the current migration guide.', () => JSON.stringify(migrationReference(), null, 2)],
+    ['migration-current', 'sekura://migration/v3.2', 'Current migration guide with v2, v3.0 and v3.1 upgrade paths.', () => JSON.stringify(migrationReference(), null, 2)],
+    ['migration-v3.0-current', 'sekura://migration/v3.0-to-v3.2', 'Upgrade to the current version from v3.0.', () => JSON.stringify(migrationReference(undefined, migrationSource('3.0.0')), null, 2)], // version-check-ignore: historical migration source, not the current product version.
+    ['migration-v3.1-current', 'sekura://migration/v3.1-to-v3.2', 'Upgrade to the current version from v3.1.', () => JSON.stringify(migrationReference(undefined, migrationSource('3.1.0')), null, 2)], // version-check-ignore: historical migration source, not the current product version.
     ['migration-v3', 'sekura://migration/v3.0-to-v3.1', 'Upgrade path and compatibility baseline for v3.0 consumers.', () => JSON.stringify(migrationReference(undefined, MIGRATION_SOURCES[1]), null, 2)],
     ['components', 'sekura://components', 'Complete component specifications and implementation contracts.', () => JSON.stringify({ schemaVersion: 1, version: VERSION, components }, null, 2)],
   ] as const) server.registerResource(name, uri, { description, mimeType: 'application/json' }, async url => ({ contents: [{ uri: url.href, mimeType: 'application/json', text: read() }] }));

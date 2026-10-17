@@ -43,6 +43,20 @@ export function parseHex(input: string): Rgb & { a: number } {
   return { r, g, b, a };
 }
 
+/** Supported literal syntax also covers the alpha primitives emitted by Sekura. */
+export function parseColor(input: string): Rgb & { a: number } {
+  const value = input.trim().toLowerCase();
+  if (value === 'transparent') return { r: 0, g: 0, b: 0, a: 0 };
+  if (HEX_RE.test(value)) return parseHex(value);
+  const match = /^rgb\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s*\/\s*([\d.]+)(%)?)?\s*\)$/.exec(value);
+  if (match) {
+    const [r, g, b] = match.slice(1, 4).map(Number) as [number, number, number];
+    const a = match[4] === undefined ? 1 : Number(match[4]) / (match[5] ? 100 : 1);
+    if ([r, g, b, a].every(Number.isFinite) && [r, g, b].every(channel => channel >= 0 && channel <= 255) && a >= 0 && a <= 1) return { r, g, b, a };
+  }
+  throw new Error('Expected a hex colour, transparent, or rgb(r g b / alpha).');
+}
+
 export function toHex({ r, g, b }: Rgb): string {
   const part = (n: number) =>
     Math.max(0, Math.min(255, Math.round(n)))
@@ -76,13 +90,18 @@ export function contrastRatio(a: string | Rgb, b: string | Rgb): number {
 
 /** Composite a translucent foreground over an opaque backdrop. */
 export function flatten(foreground: string, backdrop: string): string {
-  const f = parseHex(foreground);
-  const b = parseHex(backdrop);
-  return toHex({
+  const f = parseColor(foreground);
+  const b = parseColor(backdrop);
+  if (b.a < 1) throw new Error('The compositing backdrop must be opaque.');
+  return toHex(composite(f, b));
+}
+
+function composite(f: Rgb & { a: number }, b: Rgb): Rgb {
+  return {
     r: f.r * f.a + b.r * (1 - f.a),
     g: f.g * f.a + b.g * (1 - f.a),
     b: f.b * f.a + b.b * (1 - f.a),
-  });
+  };
 }
 
 export type ContrastUse =
@@ -94,6 +113,11 @@ export type ContrastUse =
 export interface ContrastVerdict {
   foreground: string;
   background: string;
+  /** The colours actually measured after compositing; hex display is rounded. */
+  renderedForeground: string;
+  renderedBackground: string;
+  /** Required when the background has alpha. */
+  backdrop?: string;
   ratio: number;
   /** The rounded value humans quote, e.g. "7.13:1". */
   display: string;
@@ -121,11 +145,17 @@ const THRESHOLDS = {
 export function evaluateContrast(
   foreground: string,
   background: string,
-  use: ContrastUse = 'body-text'
+  use: ContrastUse = 'body-text',
+  backdrop?: string
 ): ContrastVerdict {
-  const bg = background;
-  // A translucent foreground must be judged as rendered, not as authored.
-  const fg = parseHex(foreground).a < 1 ? flatten(foreground, bg) : foreground;
+  const authoredBackground = parseColor(background);
+  const base = backdrop === undefined ? undefined : parseColor(backdrop);
+  if (base && base.a < 1) throw new Error('The backdrop must be opaque.');
+  if (authoredBackground.a < 1 && !base) throw new Error('A translucent background needs an explicit opaque backdrop.');
+  const bg = authoredBackground.a < 1 ? composite(authoredBackground, base!) : authoredBackground;
+  // Composite in paint order: backdrop, background, then foreground. Measure
+  // full-precision channels; rounding is only for the displayed hex values.
+  const fg = composite(parseColor(foreground), bg);
   const ratio = contrastRatio(fg, bg);
   const passes = {
     aaBodyText: ratio >= THRESHOLDS.aaBodyText,
@@ -165,7 +195,10 @@ export function evaluateContrast(
 
   return {
     foreground,
-    background: bg,
+    background,
+    renderedForeground: toHex(fg),
+    renderedBackground: toHex(bg),
+    ...(backdrop === undefined ? {} : { backdrop }),
     ratio,
     display: `${ratio.toFixed(2)}:1`,
     passes,
