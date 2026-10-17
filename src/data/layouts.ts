@@ -494,16 +494,17 @@ export const layouts: LayoutRecipe[] = [
     summary: 'A navigable settings area: section navigation beside grouped controls that apply immediately.',
     whenToUse: ['Account, workspace and application preferences.', 'Anywhere with more than about ten settings.'],
     regions: [
-      { name: 'Section navigation', description: 'Links to settings sections.', responsive: 'Sidebar above roughly 48rem; a horizontal scrolling tab strip below it.' },
+      { name: 'Section navigation', description: 'Ordinary links to settings sections.', responsive: 'Sidebar when the container has room; a wrapping link strip below 48rem.' },
       { name: 'Section content', description: 'Grouped settings rows.', responsive: 'Single column, capped at 48rem.' },
     ],
     components: ['sidebar-layout', 'side-nav', 'switch', 'fieldset', 'divider', 'button', 'stack'],
-    responsive: 'A Sidebar layout with a 14rem rail. It wraps to stacked on container width, and the rail becomes a scrolling tab strip when stacked.',
+    responsive: 'A Sidebar layout with a 14rem rail. The sk-settings-layout container changes its local sk-settings-nav into a wrapping link strip below 48rem. Omit sk-side-nav--drawer here: these links stay in flow.',
     accessibility: [
       'Settings that apply immediately use Switch; settings behind a Save button use Checkbox. Mixing the two models in one section is confusing.',
       'Announce the result of an immediate change politely — a switch that moves silently gives no confirmation it worked.',
       'Show a pending state rather than optimistically reporting success.',
       'Each section is a labelled region with a heading.',
+      'Use aria-current=location for the visible section and keep links in the native Tab sequence. These links navigate within one page; they are not tabs or a menu.',
       'Destructive settings live in a clearly separated danger zone at the end.',
     ],
     darkMode: 'Divided settings rows use border-subtle and go darker on dark. The danger zone uses the status-danger tinted surface, which is the 950 step rather than a darkened 50.',
@@ -511,17 +512,16 @@ export const layouts: LayoutRecipe[] = [
   <div class="sk-app-shell__content">
     <header class="sk-page-header"><h1 class="sk-page-header__title">Settings</h1></header>
 
-    <div class="sk-sidebar-layout sk-sidebar-layout--narrow">
-      <nav class="sk-sidebar-layout__sidebar sk-side-nav" aria-label="Settings sections">
+    <div class="sk-sidebar-layout sk-sidebar-layout--narrow sk-settings-layout">
+      <nav class="sk-sidebar-layout__sidebar sk-side-nav sk-settings-nav" aria-label="Settings sections">
         <ul class="sk-side-nav__list">
-          <li><a class="sk-side-nav__item" href="#profile" aria-current="page"><span class="sk-side-nav__label">Profile</span></a></li>
-          <li><a class="sk-side-nav__item" href="#notifications"><span class="sk-side-nav__label">Notifications</span></a></li>
-          <li><a class="sk-side-nav__item" href="#appearance"><span class="sk-side-nav__label">Appearance</span></a></li>
+          <li><a class="sk-side-nav__item" href="#appearance" aria-current="location"><span class="sk-side-nav__label">Appearance</span></a></li>
+          <li><a class="sk-side-nav__item" href="#account"><span class="sk-side-nav__label">Account</span></a></li>
         </ul>
       </nav>
 
       <div class="sk-sidebar-layout__content sk-stack sk-stack--gap-32">
-        <section aria-labelledby="appearance-h">
+        <section id="appearance" aria-labelledby="appearance-h" tabindex="-1">
           <h2 class="sk-fieldset__legend" id="appearance-h">Appearance</h2>
           <ul class="sk-stack sk-stack--divided sk-stack--gap-0" role="list">
             <li class="sk-switch">
@@ -535,7 +535,7 @@ export const layouts: LayoutRecipe[] = [
           </ul>
         </section>
 
-        <section class="sk-danger-zone" aria-labelledby="danger-h">
+        <section class="sk-danger-zone" id="account" aria-labelledby="danger-h" tabindex="-1">
           <h2 class="sk-fieldset__legend" id="danger-h">Delete account</h2>
           <p>Permanently removes your account and every project you own. This cannot be undone.</p>
           <button type="button" class="sk-button sk-button--danger">Delete account</button>
@@ -545,7 +545,14 @@ export const layouts: LayoutRecipe[] = [
   </div>
   <p class="sk-visually-hidden" role="status" id="settings-status"></p>
 </main>`,
-    css: `.sk-danger-zone {
+    css: `.sk-settings-layout { container-type: inline-size; }
+.sk-settings-nav { background: transparent; border: 0; padding: 0; }
+@container (max-width: 48rem) {
+  .sk-settings-nav { flex-basis: 100%; border-block-end: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle); padding-block-end: var(--sk-space-8); }
+  .sk-settings-nav .sk-side-nav__list { flex-direction: row; flex-wrap: wrap; gap: var(--sk-space-4); }
+  .sk-settings-nav .sk-side-nav__item { min-block-size: var(--sk-layout-touch-target); }
+}
+.sk-danger-zone {
   display: flex;
   flex-direction: column;
   gap: var(--sk-space-12);
@@ -732,7 +739,7 @@ export const layouts: LayoutRecipe[] = [
     ],
     darkMode: 'Syntax highlighting maps onto the audited chart palette so it inherits verified per-theme contrast. Comments use text-tertiary, which is still held to 4.5:1 despite being low-emphasis by design.',
     html: `<div class="sk-app-shell__body">
-  <nav class="sk-side-nav" aria-label="Documentation sections"> ... </nav>
+  <nav class="sk-side-nav sk-side-nav--drawer" aria-label="Documentation sections"> ... </nav>
 
   <main class="sk-app-shell__main" id="main" tabindex="-1">
     <div class="sk-app-shell__content">
@@ -748,7 +755,7 @@ export const layouts: LayoutRecipe[] = [
         <nav class="sk-sidebar-layout__sidebar" aria-label="On this page">
           <h2 class="sk-side-nav__group-label">On this page</h2>
           <ul class="sk-side-nav__list">
-            <li><a class="sk-side-nav__item" href="#record-types" aria-current="true"><span class="sk-side-nav__label">Record types</span></a></li>
+            <li><a class="sk-side-nav__item" href="#record-types" aria-current="location"><span class="sk-side-nav__label">Record types</span></a></li>
             <li><a class="sk-side-nav__item" href="#reminder"><span class="sk-side-nav__label">Reminders</span></a></li>
           </ul>
         </nav>

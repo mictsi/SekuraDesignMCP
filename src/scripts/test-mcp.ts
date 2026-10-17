@@ -9,9 +9,12 @@ import { components } from '../data/components/index.js';
 import { FRAMEWORKS } from '../lib/codegen.js';
 import { recipeSchema } from '../lib/integration.js';
 import { behaviorSchema, migrationSchema, mcpReference } from '../lib/mcp-reference.js';
+import { MIGRATION_SOURCES } from '../data/migration.js';
+import { VERSION } from '../lib/version.js';
 
 const migration = readFileSync('MIGRATION.md', 'utf8');
 const baseline = JSON.parse(readFileSync('compatibility/v2-contract.json', 'utf8'));
+const v3Baseline = JSON.parse(readFileSync('compatibility/v3.0-contract.json', 'utf8'));
 const originalCwd = process.cwd();
 process.chdir(tmpdir()); // Packaged resources must not depend on a source checkout cwd.
 const server = createServer();
@@ -34,6 +37,7 @@ try {
     const result = await client.callTool({ name: 'get_behavior', arguments: { id: component.id } });
     const behavior = behaviorSchema.parse(result.structuredContent);
     assert.deepEqual(behavior.events, component.implementation!.events);
+    assert.deepEqual(behavior.runtime, component.implementation!.runtime);
     for (const factory of component.implementation!.runtime.controllers) assert.ok(behavior.api.some(a => a.name === factory && a.runtime), `${component.id}: ${factory}`);
   }
   for (const api of mcpReference().api.filter(api => api.exported)) {
@@ -51,13 +55,27 @@ try {
   const filtered = migrationSchema.parse((await client.callTool({ name: 'get_migration_guide', arguments: { componentId: 'combobox' } })).structuredContent);
   assert.ok(filtered.changes.some(c => c.components.includes('combobox')));
   assert.ok(filtered.changes.every(c => !c.components.length || c.components.includes('combobox')));
+  for (const fromVersion of MIGRATION_SOURCES) {
+    const result = migrationSchema.parse((await client.callTool({ name: 'get_migration_guide', arguments: { fromVersion } })).structuredContent);
+    assert.equal(result.fromVersion, fromVersion);
+    assert.equal(result.upgradePaths?.length, 1);
+    assert.equal(result.upgradePaths?.[0]?.toVersion, VERSION);
+    assert.deepEqual(result.compatibility.baseline, fromVersion.startsWith('3.') ? v3Baseline : baseline);
+    assert.ok(result.changes.some(c => c.id === 'tree-navigation-mode'));
+    if (fromVersion.startsWith('3.')) assert.ok(!result.changes.some(c => c.id === 'shared-geometry'));
+  }
+  for (const id of ['hierarchical-navigation', 'action-submenus', 'navigation-tree']) {
+    const result = await client.callTool({ name: 'get_pattern', arguments: { id } });
+    assert.ok(!result.isError, id);
+    assert.ok(JSON.stringify(result.content).includes(id), id);
+  }
   for (const [name, args] of [['get_behavior', { id: 'missing' }], ['get_migration_guide', { componentId: 'missing' }]] as const) assert.equal((await client.callTool({ name, arguments: args })).isError, true);
   for (const [query, kind, expected] of [['createRangeSlider', 'behavior', 'get_behavior'], ['migration', 'migration', 'get_migration_guide']]) {
     const result = await client.callTool({ name: 'search', arguments: { query, kinds: [kind] } });
     assert.ok(JSON.stringify(result.content).includes(expected!));
   }
   const resources = await client.listResources();
-  for (const uri of ['sekura://components', 'sekura://behaviors', 'sekura://migration/v2-to-v3']) {
+  for (const uri of ['sekura://components', 'sekura://behaviors', 'sekura://migration/v2-to-v3', 'sekura://migration/v3.1', 'sekura://migration/v3.0-to-v3.1']) {
     assert.ok(resources.resources.some(r => r.uri === uri));
     const resource = await client.readResource({ uri });
     const content = resource.contents[0]!;
@@ -66,6 +84,7 @@ try {
     if (uri.endsWith('components')) assert.deepEqual(data.components, components);
     if (uri.endsWith('behaviors')) assert.deepEqual(behaviorSchema.parse(data).api, mcpReference().api);
     if (uri.endsWith('v2-to-v3')) assert.deepEqual(migrationSchema.parse(data), full);
+    if (uri.endsWith('v3.0-to-v3.1')) assert.equal(migrationSchema.parse(data).fromVersion, MIGRATION_SOURCES[1]);
   }
   console.log(`MCP coverage: ${components.length} stable specs, ${components.length * FRAMEWORKS.length} recipes, ${mcpReference().api.filter(a => a.exported).length} public APIs, migration/filter/errors/search/resources passed outside checkout cwd.`);
 } finally { process.chdir(originalCwd); await client.close(); await server.close(); }

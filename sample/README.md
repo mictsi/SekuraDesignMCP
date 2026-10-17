@@ -1,6 +1,6 @@
 # Sekura documentation site
 
-An 100-page documentation site for the Sekura Design System — explanations, a
+A generated documentation site for the Sekura Design System — explanations, a
 full colour guide, a type specimen, live demos, a complete component reference,
 and ten worked examples.
 
@@ -31,7 +31,7 @@ produces a self-contained bundle in `dist-site/` for any static host.
 ### Get started
 | Page | |
 |---|---|
-| `migration.html` | Staged v2-to-v3 adoption, compatibility bridge and rollback |
+| `migration.html` | Separate v2 and v3.0.0 upgrade paths to 3.1, compatibility checks and rollback |
 | `index.html` | Overview — the two rules, live theme comparison, where to go next |
 | `structure.html` | The three token layers, naming, groups, themes, density |
 | `develop.html` | Install, the HTML scaffold, using tokens, frameworks, build gates |
@@ -53,7 +53,7 @@ the full narrative in a collapsible section.
 | `component-*.html` | One page each: anatomy, variants, states, props, dark-mode note, full keyboard and ARIA contract, CSS |
 | `support.html` | Component root classes, dependencies, controller coverage and application responsibilities |
 | `workbench.html` | Sizes, densities, themes, long content, action failure/cancel/retry/undo and upload simulation |
-| `patterns.html` | 15 UX patterns with their anti-patterns |
+| `patterns.html` | 18 UX patterns, including hierarchical navigation, action submenus and navigation trees |
 | `recipes.html` | 9 page blueprints with markup |
 
 ### Examples
@@ -62,10 +62,10 @@ chosen because every designer has built one and none of it needs explaining.
 
 | Page | What it is for |
 |---|---|
-| `example-workspace.html` | Reading canvas, docked or modal details, truthful local notes and stars |
+| `example-workspace.html` | Reading canvas, Pages tree with filter/reveal/current-route state, details, local notes and stars |
 | `example-dashboard.html` | Stat tiles, a chart with a data-table alternative, an activity timeline |
 | `example-list.html` | Search, filters as removable chips, sorting, tri-state bulk selection, typed-confirmation delete |
-| `example-detail.html` | Breadcrumbs, tabs, a split button, an inspection drawer |
+| `example-detail.html` | Breadcrumbs, tabs, Share → Export submenu with CSV/JSON downloads, an inspection drawer |
 | `example-form.html` | Validation on blur and on submit, with a focus-managed error summary |
 | `example-states.html` | Loading, empty, error and forbidden — the four states nobody designs until production |
 | `example-onboarding.html` | A stepper, a skippable step, and nothing committed until the end |

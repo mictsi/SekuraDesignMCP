@@ -11,6 +11,11 @@ const base = `http://127.0.0.1:${server.address().port}`;
 mkdirSync('.run/review', { recursive: true });
 let passed = 0;
 const failures = [];
+const fail = (label, error) => {
+  const message = `${label}: ${error.stack ?? error.message ?? error}`;
+  failures.push(message);
+  console.error(`FAIL ${message}`);
+};
 try {
   for (const [name, engine] of Object.entries({ chromium, firefox, webkit })) {
     const browser = await engine.launch();
@@ -18,7 +23,15 @@ try {
     page.setDefaultTimeout(5000);
     const errors = [];
     page.on('pageerror', e => errors.push(e.message));
-    const test = async (label, run) => { try { await page.setViewportSize({ width: 1440, height: 1000 }); await run(); passed++; console.log(`PASS ${name}: ${label}`); } catch (e) { failures.push(`${name}: ${label}: ${e.message}`); } };
+    const test = async (label, run) => {
+      try {
+        await page.setViewportSize({ width: 1440, height: 1000 });
+        await page.emulateMedia({ forcedColors: 'none' });
+        await run();
+        passed++;
+        console.log(`PASS ${name}: ${label}`);
+      } catch (error) { fail(`${name}: ${label}`, error); }
+    };
     try {
       await test('project search, dates and filters share border alignment in every density', async () => {
         await page.goto(base + '/example-list.html');
@@ -148,7 +161,7 @@ try {
         await page.goto(base + '/component-button.html');
         const nav = page.locator('#primary-nav');
         const toggle = nav.getByRole('button', { name: 'Components pages', exact: true });
-        const children = nav.locator('#nav-components-children');
+        const children = nav.locator('#' + await toggle.getAttribute('aria-controls'));
         assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
         assert.equal(await nav.locator('[aria-current="page"]').count(), 1);
         assert.equal(await nav.locator('[aria-current="page"]').getAttribute('href'), 'component-button.html');
@@ -172,10 +185,15 @@ try {
         await toggle.focus(); await page.keyboard.press('Enter');
         assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
         await children.waitFor({ state: 'visible' });
+        const formsToggle = nav.getByRole('button', { name: 'Forms pages', exact: true });
+        assert.equal(await formsToggle.getAttribute('aria-expanded'), 'false');
+        await formsToggle.click();
+        assert.equal(await formsToggle.getAttribute('aria-expanded'), 'true');
         await nav.getByRole('link', { name: 'Checkbox', exact: true }).click();
         assert.ok(page.url().endsWith('/component-checkbox.html'));
         assert.equal(await nav.locator('[aria-current="page"]').getAttribute('href'), 'component-checkbox.html');
         assert.equal(await nav.getByRole('button', { name: 'Components pages', exact: true }).getAttribute('aria-expanded'), 'true');
+        assert.equal(await nav.getByRole('button', { name: 'Forms pages', exact: true }).getAttribute('aria-expanded'), 'true');
         await page.screenshot({ animations: 'disabled', path: `.run/review/${name}-sidebar-hierarchy.png` });
       });
       await test('standalone sidebar recipe matches docs chevrons, guide lines and active rails', async () => {
@@ -198,6 +216,16 @@ try {
               currentColor: getComputedStyle(current).color, currentCount: nav.querySelectorAll('[aria-current="page"]').length,
               ancestorCurrent: nav.querySelector('[data-active-ancestor]').getAttribute('aria-current') };
           };
+          const assertParity = (actual, expected, label) => {
+            // Recursive documentation categories use a tighter indent than the
+            // shallow public recipe. Their guides, current rails and disclosure
+            // states share the same component behavior and visual contract.
+            const { indent: recipeIndent, padding: recipePadding, ...recipe } = actual;
+            const { indent: docsIndent, padding: docsPadding, ...docs } = expected;
+            assert.deepEqual(recipe, docs, label);
+            assert.equal(recipeIndent, '16px'); assert.equal(recipePadding, '12px');
+            assert.equal(docsIndent, '8px'); assert.equal(docsPadding, '8px');
+          };
           for (const theme of ['light', 'dark', 'hc-light', 'hc-dark']) for (const dir of ['ltr', 'rtl']) {
             for (const target of [page, standalone]) {
               await target.evaluate(({ theme, dir }) => { document.documentElement.dataset.skTheme = theme; document.documentElement.dir = dir; }, { theme, dir });
@@ -207,14 +235,14 @@ try {
               for (const target of [page, standalone]) await target.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
               const expected = await page.locator('#primary-nav').evaluate(inspect);
               const actual = await standalone.locator('#primary-nav').evaluate(inspect);
-              assert.deepEqual(actual, expected, `${theme}/${dir}/${expanded}`);
+              assertParity(actual, expected, `${theme}/${dir}/${expanded}`);
               assert.equal(actual.expanded, String(expanded));
               assert.equal(actual.guideWidth, '1px'); assert.equal(actual.railWidth, '4px');
               assert.equal(actual.railStart, '0px'); assert.equal(actual.currentCount, 1); assert.equal(actual.ancestorCurrent, null);
               assert.equal(actual.display, expanded ? 'flex' : 'none');
               assert.equal(actual.arrowRotation, expanded ? '0deg' : dir === 'rtl' ? '90deg' : '-90deg');
               for (const target of [page, standalone]) {
-                const toggle = target.locator('#primary-nav .sk-side-nav__toggle');
+                const toggle = target.locator('#primary-nav .sk-side-nav__toggle').first();
                 await toggle.focus(); await target.keyboard.press(expanded ? 'Space' : 'Enter');
                 if (expanded) {
                   await target.keyboard.press('Tab');
@@ -225,7 +253,7 @@ try {
           }
           for (const target of [page, standalone]) await target.emulateMedia({ forcedColors: 'active' });
           for (const target of [page, standalone]) await target.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-          assert.deepEqual(await standalone.locator('#primary-nav').evaluate(inspect), await page.locator('#primary-nav').evaluate(inspect), 'forced colors');
+          assertParity(await standalone.locator('#primary-nav').evaluate(inspect), await page.locator('#primary-nav').evaluate(inspect), 'forced colors');
           await page.emulateMedia({ forcedColors: 'none' });
           assert.equal(await standalone.evaluate(() => events.length), 16);
           await standalone.evaluate(() => fixture.destroy());
@@ -291,18 +319,19 @@ try {
         assert.equal(await page.locator('#workspace-note').inputValue(), 'Keep this unsaved text.');
         assert.equal(await page.locator('[data-sk-workspace-save]').getAttribute('data-state'), 'error');
       });
-      await test('desktop navigation supports persisted collapse and keyboard resizing', async () => {
+      await test('desktop navigation has a fixed width, ignores old sizing preferences and retains collapse', async () => {
         await page.goto(base + '/example-workspace.html');
-        await page.locator('.docs-nav-preferences summary').click();
-        await page.locator('#nav-width').focus(); await page.keyboard.press('End');
-        assert.equal(Math.round((await page.locator('#primary-nav').boundingBox()).width), 400);
-        await page.locator('[data-sk-nav-reset]').click();
+        await page.evaluate(() => localStorage.setItem('sk-nav-width', '400'));
+        await page.reload();
+        assert.equal(await page.locator('#nav-width, [data-sk-nav-width], [data-sk-nav-reset]').count(), 0);
         assert.equal(Math.round((await page.locator('#primary-nav').boundingBox()).width), 272);
+        assert.equal(await page.locator('#primary-nav').evaluate(el => el.style.getPropertyValue('--sk-layout-nav-width')), '');
         await page.locator('.sk-top-bar__nav-trigger').click();
         assert.equal(await page.locator('#primary-nav').isVisible(), false);
         await page.reload(); assert.equal(await page.locator('#primary-nav').isVisible(), false);
         await page.locator('.sk-top-bar__nav-trigger').click();
         assert.equal(await page.locator('#primary-nav').isVisible(), true);
+        await page.evaluate(() => localStorage.removeItem('sk-nav-width'));
       });
       await test('details dock on desktop and become a real modal on mobile', async () => {
         await page.goto(base + '/example-workspace.html');
@@ -379,6 +408,10 @@ try {
       });
     } finally { await browser.close(); }
   }
-} finally { server.close(); }
-console.log(`Redesign acceptance: ${passed} passed, ${failures.length} failed`);
-if (failures.length) { console.error(failures.join('\n')); process.exitCode = 1; }
+} catch (error) {
+  fail('Redesign acceptance aborted', error);
+} finally {
+  server.close();
+  console.log(`Redesign acceptance: ${passed} passed, ${failures.length} failed`);
+  if (failures.length) process.exitCode = 1;
+}

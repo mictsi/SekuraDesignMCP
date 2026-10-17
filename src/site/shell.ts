@@ -8,7 +8,7 @@
 
 import { renderMarkdown, escapeHtml, slugify } from '../lib/markdown.js';
 
-import { components } from '../data/components/index.js';
+import { components, componentCategories, type ComponentCategory } from '../data/components/index.js';
 import { VERSION } from '../lib/version.js';
 
 export const SITE_NAME = 'Sekura Design System';
@@ -30,12 +30,17 @@ export interface NavGroup {
   items: NavItem[];
 }
 
+const CATEGORY_LABELS: Record<ComponentCategory, string> = {
+  layout: 'Layout', action: 'Actions', form: 'Forms', navigation: 'Navigation',
+  feedback: 'Feedback', 'data-display': 'Data display', overlay: 'Overlays',
+};
+
 export const NAV: NavGroup[] = [
   {
     label: 'Get started',
     items: [
       { file: 'index.html', label: 'Overview' },
-      { file: 'migration.html', label: 'Upgrade to v3' },
+      { file: 'migration.html', label: 'Upgrade to v3.1' },
       { file: 'structure.html', label: 'How it is structured' },
       { file: 'develop.html', label: 'For developers' },
       { file: 'behaviours.html', label: 'Behaviours package' },
@@ -63,7 +68,12 @@ export const NAV: NavGroup[] = [
     label: 'Reference',
     items: [
       { file: 'tokens.html', label: 'All tokens' },
-      { file: 'components.html', label: 'Components', children: components.map(c => ({ file: `component-${c.id}.html`, label: c.name })).sort((a, b) => a.label.localeCompare(b.label)) },
+      { file: 'components.html', label: 'Components', children: componentCategories.map(category => {
+        const children = components.filter(component => component.category === category)
+          .map(component => ({ file: `component-${component.id}.html`, label: component.name }))
+          .sort((a, b) => a.label.localeCompare(b.label));
+        return { file: `components.html#${category}`, label: CATEGORY_LABELS[category], meta: String(children.length), children };
+      }) },
       { file: 'support.html', label: 'Implementation support' },
       { file: 'patterns.html', label: 'Patterns' },
       { file: 'recipes.html', label: 'Layout recipes' },
@@ -329,31 +339,56 @@ const THEME_SCRIPT = `<script>
 })();
 </script>`;
 
+function navPath(file: string): string[] {
+  function find(items: NavItem[], path: string[]): string[] | undefined {
+    for (const item of items) {
+      if (item.file === file) return path;
+      const found = item.children && find(item.children, [...path, item.label]);
+      if (found) return found;
+    }
+    return undefined;
+  }
+  for (const group of NAV) {
+    const found = find(group.items, [group.label]);
+    if (found) return found;
+  }
+  return [];
+}
+
 function renderNav(current: string, section = current): string {
-  return `<details class="docs-nav-preferences"><summary>Navigation width</summary><label for="nav-width">Width in pixels</label><input id="nav-width" type="range" min="208" max="400" step="16" value="272" data-sk-nav-width /><button class="sk-button sk-button--ghost sk-button--sm" type="button" data-sk-nav-reset>Reset width</button></details>` + NAV.map((group) => {
+  const containsCurrent = (item: NavItem): boolean => item.file === current ||
+    (item.children?.some(containsCurrent) ?? false);
+  function itemsMarkup(items: NavItem[], path: string[]): string {
+    return items.map(item => {
+      const isCurrent = item.file === current;
+      const ancestor = !isCurrent && (item.file === section || (item.children?.some(containsCurrent) ?? false));
+      const childId = `nav-${slugify([...path, item.label].join('-'))}-children`;
+      const expanded = isCurrent || ancestor;
+      const link = `<a class="sk-side-nav__item" href="${escapeHtml(item.file)}" data-docs-nav-file="${escapeHtml(item.file)}"${isCurrent ? ' aria-current="page"' : ancestor ? ' data-active-ancestor' : ''}>
+        <span class="sk-side-nav__label">${escapeHtml(item.label)}</span>
+        ${item.meta ? `<span class="sk-side-nav__count">${escapeHtml(item.meta)}</span>` : ''}
+      </a>`;
+      if (!item.children?.length) return `<li>${link}</li>`;
+      return `<li><div class="sk-side-nav__branch-row">${link}<button class="sk-side-nav__toggle" type="button" data-sk-disclosure="${childId}" aria-controls="${childId}" aria-expanded="${expanded}" aria-label="${escapeHtml(item.label)} pages">${icon('chevron-down', 16)}</button></div>
+        <ul class="sk-side-nav__children" id="${childId}" aria-label="${escapeHtml(item.label)} pages"${expanded ? '' : ' hidden'}>${itemsMarkup(item.children, [...path, item.label])}</ul></li>`;
+    }).join('\n');
+  }
+  const groups = NAV.map(group => {
     const id = `nav-${slugify(group.label)}`;
-    const items = group.items
-      .map((item) => {
-        const isCurrent = item.file === current;
-        const activeChild = (!isCurrent && item.file === section) || (item.children?.some(child => child.file === current) ?? false);
-        const childId = `nav-${slugify(item.label)}-children`;
-        const expanded = isCurrent || activeChild;
-        const link = `<a class="sk-side-nav__item" href="${item.file}"${isCurrent ? ' aria-current="page"' : activeChild ? ' data-active-ancestor' : ''}>
-          <span class="sk-side-nav__label">${escapeHtml(item.label)}</span>
-          ${item.meta ? `<span class="sk-side-nav__count">${escapeHtml(item.meta)}</span>` : ''}
-        </a>`;
-        if (!item.children?.length) return `<li>${link}</li>`;
-        return `<li><div class="sk-side-nav__branch-row">${link}<button class="sk-side-nav__toggle" type="button" data-sk-disclosure="${childId}" aria-controls="${childId}" aria-expanded="${expanded}" aria-label="${escapeHtml(item.label)} pages">${icon('chevron-down', 16)}</button></div>
-          <ul class="sk-side-nav__children" id="${childId}" aria-label="${escapeHtml(item.label)} pages"${expanded ? '' : ' hidden'}>
-            ${item.children.map(child => `<li><a class="sk-side-nav__item" href="${child.file}"${child.file === current ? ' aria-current="page"' : ''}><span class="sk-side-nav__label">${escapeHtml(child.label)}</span></a></li>`).join('')}
-          </ul></li>`;
-      })
-      .join('\n');
-    return `    <h2 class="sk-side-nav__group-label" id="${id}">${escapeHtml(group.label)}</h2>
-    <ul class="sk-side-nav__list" aria-labelledby="${id}">
-${items}
-    </ul>`;
+    return `<h2 class="sk-side-nav__group-label" id="${id}">${escapeHtml(group.label)}</h2>
+      <ul class="sk-side-nav__list" aria-labelledby="${id}">${itemsMarkup(group.items, [group.label])}</ul>`;
   }).join('\n');
+  return `<div class="docs-nav__header"><h2 data-sk-drawer-title>Documentation</h2><button class="sk-icon-button" type="button" data-docs-nav-close aria-label="Close navigation">${icon('close')}</button></div>
+    <div class="docs-nav__scroll" data-docs-nav-scroll>${groups}</div>
+    <details class="docs-nav-preferences"><summary>${icon('settings', 16)}<span>Preferences</span></summary>
+      <fieldset class="docs-nav-preferences__theme"><legend>Colour theme</legend>
+        <div class="sk-button-group sk-button-group--segmented" role="radiogroup" aria-label="Colour theme">
+          <button class="sk-button-group__segment" type="button" role="radio" data-sk-theme-option="system">${icon('monitor', 16)}<span>System</span></button>
+          <button class="sk-button-group__segment" type="button" role="radio" data-sk-theme-option="light">${icon('sun', 16)}<span>Light</span></button>
+          <button class="sk-button-group__segment" type="button" role="radio" data-sk-theme-option="dark">${icon('moon', 16)}<span>Dark</span></button>
+        </div>
+      </fieldset>
+    </details>`;
 }
 
 function renderToc(toc: Array<{ id: string; text: string }>): string {
@@ -397,36 +432,20 @@ function topBar(): string {
   </a>
   <span class="sk-badge sk-badge--neutral docs-topbar__version">v${SITE_VERSION}</span>
 
-  <button type="button" class="sk-search sk-search--sm sk-search--as-button docs-topbar__search" data-sk-palette-open>
+  <button type="button" class="sk-search sk-search--sm sk-search--as-button docs-topbar__search" data-sk-palette-open aria-label="Search the design system Ctrl K" aria-keyshortcuts="Control+k Meta+k">
     ${icon('search', 16, 'sk-search__icon')}
     <span class="sk-search__input sk-search__placeholder">Search the design system</span>
+    <span class="docs-topbar__search-short" aria-hidden="true">Search</span>
     <kbd class="sk-kbd">Ctrl K</kbd>
   </button>
-
-  <div class="sk-top-bar__utilities">
-    <!-- Three options, not two. System must exist and must be the default, or
-         the first touch of a toggle silently overrides the user's OS setting
-         with no way back. -->
-    <div class="sk-button-group sk-button-group--segmented docs-theme-switch"
-         role="radiogroup" aria-label="Colour theme">
-      <button type="button" class="sk-button-group__segment" role="radio" data-sk-theme-option="system"
-              data-sk-tooltip="Follow your operating system">
-        ${icon('monitor', 16)}<span class="docs-theme-switch__label">System</span>
-      </button>
-      <button type="button" class="sk-button-group__segment" role="radio" data-sk-theme-option="light"
-              data-sk-tooltip="Always light">
-        ${icon('sun', 16)}<span class="docs-theme-switch__label">Light</span>
-      </button>
-      <button type="button" class="sk-button-group__segment" role="radio" data-sk-theme-option="dark"
-              data-sk-tooltip="Always dark">
-        ${icon('moon', 16)}<span class="docs-theme-switch__label">Dark</span>
-      </button>
-    </div>
-  </div>
 </header>`;
 }
 
 function commandPalette(entries: Array<{ file: string; label: string; group: string; context?: string }>): string {
+  entries = entries.map(entry => {
+    const path = navPath(entry.file);
+    return { ...entry, context: path.length ? path.join(' / ') : entry.context || entry.group };
+  });
   const groups = [...new Set(entries.map((e) => e.group))];
   const body = groups
     .map((g) => {
@@ -490,7 +509,7 @@ ${head(page.title, page.lead.replace(/<[^>]+>/g, '').slice(0, 160))}
 ${topBar()}
 
 <div class="sk-app-shell__body">
-  <nav class="sk-side-nav docs-nav" id="primary-nav" aria-label="Primary">
+  <nav class="sk-side-nav sk-side-nav--drawer docs-nav" id="primary-nav" aria-label="Primary">
 ${renderNav(page.file, page.navFile)}
   </nav>
 
@@ -587,7 +606,7 @@ ${banner}
 ${topBar()}
 
 <div class="sk-app-shell__body">
-  <nav class="sk-side-nav docs-nav" id="primary-nav" aria-label="Primary">
+  <nav class="sk-side-nav sk-side-nav--drawer docs-nav" id="primary-nav" aria-label="Primary">
 ${renderNav(opts.file)}
   </nav>
 
@@ -607,6 +626,7 @@ ${commandPalette(ctx.palette)}
 <script src="assets/examples.js"></script>
 <script src="assets/workspace.js"></script>
 <script type="module" src="assets/form-lab.js"></script>
+<script src="assets/docs.js"></script>
 </body>
 </html>
 `;

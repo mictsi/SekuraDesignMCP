@@ -14,13 +14,13 @@
   /* ================================================================== *
    * On-page contents scroll-spy
    *
-   * Uses IntersectionObserver rather than a scroll listener, so it costs
-   * nothing while the user is not scrolling.
+   * Follow the actual content scroll root and batch its updates per frame.
+   * The current section persists while the reader is between headings.
    * ================================================================== */
 
   function initScrollSpy() {
     var links = $$('.docs-toc__link');
-    if (!links.length || !('IntersectionObserver' in window)) return;
+    if (!links.length) return;
 
     var byId = {};
     links.forEach(function (link) {
@@ -32,34 +32,30 @@
       .filter(Boolean);
     if (!targets.length) return;
 
-    var visible = new Set();
+    var root = $('.sk-app-shell__main');
+    var scrollTarget = root || window;
+    var frame = 0;
 
     function highlight() {
-      // The topmost visible section wins, which matches what the reader is
-      // actually looking at.
-      var best = null;
+      frame = 0;
+      // Match the 5rem section scroll margin with a small rounding allowance.
+      // A percentage IntersectionObserver margin would be based on width,
+      // making the observation band empty in a wide, short viewport.
+      var top = (root ? root.getBoundingClientRect().top : 0) + 88;
+      var best = targets[0];
       targets.forEach(function (t) {
-        if (!visible.has(t.id)) return;
-        if (!best || t.getBoundingClientRect().top < best.getBoundingClientRect().top) best = t;
+        if (t.getBoundingClientRect().top <= top) best = t;
       });
-      links.forEach(function (l) { l.removeAttribute('aria-current'); });
-      if (best && byId[best.id]) byId[best.id].setAttribute('aria-current', 'true');
+      links.forEach(function (link) {
+        if (link === byId[best.id]) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+      });
     }
 
-    var observer = new IntersectionObserver(
-      function (entries) {
-        entries.forEach(function (e) {
-          if (e.isIntersecting) visible.add(e.target.id);
-          else visible.delete(e.target.id);
-        });
-        highlight();
-      },
-      // Bias the band toward the top of the viewport, allowing for the sticky
-      // header.
-      { rootMargin: '-88px 0px -70% 0px', threshold: 0 }
-    );
-
-    targets.forEach(function (t) { observer.observe(t); });
+    function schedule() { if (!frame) frame = requestAnimationFrame(highlight); }
+    scrollTarget.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule, { passive: true });
+    highlight();
   }
 
   /* ================================================================== *
@@ -168,13 +164,19 @@
     // Keep the exact destination visible when its expanded branch is long.
     // Scroll only the navigation; never move the document or steal focus.
     var nav = $('#primary-nav');
-    var current = nav && $('[aria-current="page"]', nav);
-    if (current) requestAnimationFrame(function () {
-      var bounds = nav.getBoundingClientRect();
-      var item = current.getBoundingClientRect();
-      if (item.bottom > bounds.bottom) nav.scrollTop += item.bottom - bounds.bottom + 8;
-      else if (item.top < bounds.top) nav.scrollTop -= bounds.top - item.top + 8;
-    });
+    var scroll = nav && $('[data-docs-nav-scroll]', nav);
+    function revealCurrent() {
+      var current = nav && $('[aria-current="page"]', nav);
+      if (!current || !scroll || nav.hidden) return;
+      requestAnimationFrame(function () {
+        var bounds = scroll.getBoundingClientRect();
+        var item = current.getBoundingClientRect();
+        if (item.bottom > bounds.bottom) scroll.scrollTop += item.bottom - bounds.bottom + 8;
+        else if (item.top < bounds.top) scroll.scrollTop -= bounds.top - item.top + 8;
+      });
+    }
+    revealCurrent();
+    if (nav) nav.addEventListener('sk:drawer:open', revealCurrent);
     initScrollSpy();
     initCodeCopy();
     initTokenFilter();

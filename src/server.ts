@@ -47,6 +47,7 @@ import type { PublishedUrls } from './lib/urls.js';
 import { summariseFindings, validateMarkup } from './lib/validate.js';
 
 import { behaviorReference, behaviorSchema, migrationReference, migrationSchema, mcpReference } from './lib/mcp-reference.js';
+import { MIGRATION_SOURCES } from './data/migration.js';
 import { VERSION } from './lib/version.js';
 import { componentRecipe, recipeSchema, integrationInput, integrationResultSchema, validateIntegration } from './lib/integration.js';
 
@@ -293,7 +294,7 @@ Start with \`get_overview\` for the map. Then:
 - \`get_foundation\` — the reasoning (colour, dark mode, responsive layout, accessibility, …)
 - \`get_component\` / \`get_component_code\` — ${components.length} components with reference recipes in ${FRAMEWORKS.length} formats
 - \`get_behavior\` — complete runtime signatures, supporting types, events and lifecycle ownership
-- \`get_migration_guide\` — complete v2-to-v3 plan, behavior changes and compatibility bridge
+- \`get_migration_guide\` — v2 and v3.0 upgrade paths, behavior changes and compatibility baselines
 - \`get_layout\` — full page blueprints
 - \`get_pattern\` — recurring UX problems and their answers
 - \`export_tokens\` — CSS, Tailwind, W3C DTCG, Swift, Android
@@ -441,11 +442,11 @@ dark mode — it lists the nine things that break silently.`);
   });
   server.registerTool('get_migration_guide', {
     title: 'Get migration plan and behavior changes',
-    description: 'Full canonical v2-to-v3 migration plan, rollout/rollback guidance, behavior changes, compatibility baseline and optional legacy geometry CSS. componentId filters behavior changes while preserving global migration requirements.',
-    inputSchema: { componentId: z.string().min(1).optional() }, outputSchema: migrationSchema,
+    description: 'Upgrade to the current release from v2 or v3.0: full canonical plan, source-specific steps, rollout/rollback guidance, behavior changes, compatibility baseline and optional legacy geometry CSS. componentId filters behavior changes; fromVersion selects the upgrade source while preserving the complete guide.',
+    inputSchema: { componentId: z.string().min(1).optional(), fromVersion: z.enum(MIGRATION_SOURCES).optional() }, outputSchema: migrationSchema,
     annotations: { readOnlyHint: true, openWorldHint: false },
-  }, async ({ componentId }) => {
-    const result = migrationReference(componentId);
+  }, async ({ componentId, fromVersion }) => {
+    const result = migrationReference(componentId, fromVersion);
     return result ? { ...text(JSON.stringify(result, null, 2)), structuredContent: result }
       : { ...unknownValue('component', componentId!, components.map(c => c.id), 'list_components') };
   });
@@ -1180,6 +1181,8 @@ which artefacts are actually present in this deployment.`);
   for (const [name, uri, description, read] of [
     ['behaviors', 'sekura://behaviors', 'All public runtime APIs, supporting types and lifecycle contracts.', () => JSON.stringify(behaviorReference(), null, 2)],
     ['migration', 'sekura://migration/v2-to-v3', 'Full migration plan, behavior changes, compatibility baseline and bridge CSS.', () => JSON.stringify(migrationReference(), null, 2)],
+    ['migration-current', 'sekura://migration/v3.1', 'Current migration guide with v2 and v3.0 upgrade paths.', () => JSON.stringify(migrationReference(), null, 2)],
+    ['migration-v3', 'sekura://migration/v3.0-to-v3.1', 'Upgrade path and compatibility baseline for v3.0 consumers.', () => JSON.stringify(migrationReference(undefined, MIGRATION_SOURCES[1]), null, 2)],
     ['components', 'sekura://components', 'Complete component specifications and implementation contracts.', () => JSON.stringify({ schemaVersion: 1, version: VERSION, components }, null, 2)],
   ] as const) server.registerResource(name, uri, { description, mimeType: 'application/json' }, async url => ({ contents: [{ uri: url.href, mimeType: 'application/json', text: read() }] }));
 
@@ -1269,7 +1272,7 @@ Work in this order:
 6. \`validate_integration\` with the selected components, markup, stylesheets, initialization and handled events; then compile, mount and exercise application outcomes.
 
 Hard requirements:
-- Reuse the design system’s navigation styling and behavior without copying docs-site UI. Navigation width controls, width/collapse preferences, Workspace labels and workspace switchers are optional product features, not requirements. Include them only when the application requires them; use application-specific names and preserve intentional existing features during upgrades.
+- Use the fixed system layout width for navigation. Do not render navigation width inputs, resize handles or remembered width preferences. Keep mobile drawer and open/close navigation controls. Use application-specific labels; Workspace terminology and workspace switchers are not requirements of the design system.
 - Semantic tokens only. No hex values, no primitive tokens, no arbitrary spacing.
 - Flex-first: horizontal groups wrap, text-bearing flex children get \`min-inline-size: 0\`, widths are \`flex-basis\` not \`width\`.
 - Align peer control borders with matching size/density. For labeled rows use sk-field-row: label, sk-field__hint, sk-field__control, sk-field__support. Put explanatory hints below labels and ABOVE controls; put errors/counters below controls and action-only cells in sk-field-row__actions inside that same row, with multiple actions in one sk-field-row__action-group. Keep chips and view controls separate. Top-align header title/description columns with action groups; header forms use sk-page-header__controls sk-field-row. Centre only unlabeled peers. Keep dropdown indicators visible at rest. No positional alignment patches.

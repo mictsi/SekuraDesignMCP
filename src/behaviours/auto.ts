@@ -187,7 +187,7 @@ export function enhance(root: ParentNode = document): EnhanceResult {
   each<HTMLElement>('[data-sk-segmented]:not([data-sk-theme-control])', (group) => createSegmented(group).destroy, 'segmented');
 
   /* ---- Menu ---- */
-  each<HTMLElement>('[data-sk-menu-trigger]', (trigger) => {
+  each<HTMLElement>('[data-sk-menu-trigger]:not([data-sk-submenu])', (trigger) => {
     const menu = resolve(
       trigger.dataset.skMenuTrigger || trigger.getAttribute('aria-controls'),
       trigger

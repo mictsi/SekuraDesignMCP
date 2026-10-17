@@ -35,7 +35,7 @@ Badges and tag tokens use compact rectangles with 4px corners, not capsules. Dar
 ## Application boundary
 The reference contains a complete knowledge-workspace product. Sekura adopts its visual language and reusable interaction contracts, not its database, ACLs, publication state machine or collaborative editor. Save state describes acknowledged work at an explicit boundary. Local-only state must say so.
 
-Reuse navigation styling and behavior without copying docs-site features or example identity. Navigation width controls and remembered width/collapse preferences are optional; using the navigation width token does not require a resizing UI. Workspace is example terminology, not a required label, menu destination, product name or workspace switcher. Add these features only when the product requires them, and use application-specific names. Preserve intentional existing application features during migration.
+Reuse navigation styling and behavior without copying example identity. Navigation uses the fixed system layout width token; the UI has no navigation width input, resize handle or remembered user width. Preserve the mobile drawer and navigation open/close controls. Workspace is example terminology, not a required label, menu destination, product name or workspace switcher; use application-specific names and preserve intentional workspace features during migration.
 
 ## Acceptance
 Review every example at mobile and desktop widths, light/dark and high-contrast themes, RTL, increased text and keyboard focus. Preserve input on failure and never report a failed action as successful.`,

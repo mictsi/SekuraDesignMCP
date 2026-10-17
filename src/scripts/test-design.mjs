@@ -119,10 +119,12 @@ await test('busy buttons suppress pointer and keyboard activation', async () => 
   assert.equal(await page.evaluate(() => window.activations), 0);
 });
 await test('tooltip appears, describes its trigger and dismisses', async () => {
-  await go('index'); const trigger = page.locator('[data-sk-tooltip]').first(); await trigger.focus();
+  await go('component-tooltip'); const trigger = page.getByRole('button', { name: 'Copy record ID', exact: true }); await trigger.focus();
   const id = await trigger.getAttribute('aria-describedby'); assert.ok(id);
+  assert.equal(await page.locator(`[id="${id}"]`).getAttribute('role'), 'tooltip');
   assert.equal(await page.locator('[role=tooltip]:visible').count(), 1);
   await trigger.press('Escape'); assert.equal(await page.locator('[role=tooltip]:visible').count(), 0);
+  assert.equal(await trigger.evaluate(el => el === document.activeElement), true);
 });
 await test('findable disclosure retains browser-search state', async () => {
   await go('component-disclosure'); const panel = page.locator('[hidden="until-found"]');

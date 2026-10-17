@@ -10,7 +10,7 @@
  *
  *  2. **Supported Node LTS lines only.** The explicit window below is reviewed
  *     when Node changes release phase. Node 25 never entered LTS; Node 26 is
- *     still Current in 2 October 2026. The release policy changes with Node 27,
+ *     still Current on 17 October 2026. The release policy changes with Node 27,
  *     so odd/even arithmetic is not a timeless substitute for the window.
  *
  * It also checks that every place the project names a Node version agrees —
@@ -26,13 +26,14 @@ import { join, resolve } from 'node:path';
 const ROOT = process.cwd();
 
 /**
- * The supported Node LTS majors for 2 October 2026.
+ * The supported Node LTS majors reviewed on 17 October 2026.
+ * Source: https://nodejs.org/en/about/previous-releases
  *
  * The window needs a deliberate review in either direction:
  *
  *  - **Floor.** Node 20 (Iron) left maintenance in 2026, so a build still
  *    sitting on it is running unsupported.
- *  - **Ceiling.** Node 26 is Current in 2 October 2026, and
+ *  - **Ceiling.** Node 26 is Current on 17 October 2026, and
  *    `@types/node@26` is already on npm. A floor-only check would wave it
  *    through before the project supports that runtime.
  *

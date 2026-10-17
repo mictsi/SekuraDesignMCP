@@ -1,10 +1,10 @@
 # syntax=docker/dockerfile:1
 
 # ---------- Build ----------
-# Node 24 "Krypton" is the newest LTS line as of 2 October 2026.
+# Node 24 "Krypton" is the newest LTS line as of 17 October 2026.
 # Review the official release schedule before changing major versions;
 # `npm run check:deps` enforces the supported window.
-FROM node:24.21.0-alpine AS build
+FROM node:24.22.0-alpine AS build
 
 WORKDIR /app
 
@@ -43,7 +43,7 @@ RUN npm prune --omit=dev
 
 
 # ---------- Runtime ----------
-FROM node:24.21.0-alpine AS runtime
+FROM node:24.22.0-alpine AS runtime
 
 # dumb-init gives us correct signal forwarding, so SIGTERM reaches Node and the
 # graceful shutdown handler actually runs.
@@ -86,7 +86,7 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
 # One image, both transports. HTTP is the default so the container is useful with
 # `docker run -p`; clients that spawn the server directly override the env var:
 #
-#   docker run -i --rm -e SEKURA_MCP_TRANSPORT=stdio sekura-design-mcp:1.0.0
+#   docker run -i --rm -e SEKURA_MCP_TRANSPORT=stdio sekura-design-mcp:3.1.0
 #
 # `runtime` is deliberately the final stage, so a bare `docker build` produces the
 # servable image rather than a variant.

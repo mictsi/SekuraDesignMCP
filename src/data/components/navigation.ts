@@ -283,7 +283,7 @@ export const navigationComponents: ComponentSpec[] = [
     category: 'navigation',
     status: 'stable',
     summary:
-      'The primary navigation rail. Persistent on desktop, a focus-trapped drawer below the lg breakpoint. Shows only destinations the user is actually allowed to reach.',
+      'Grouped destination links with a persistent current-page marker. Use the explicit drawer variant for a primary rail that becomes modal below lg; local section navigation stays in flow.',
     whenToUse: ['Applications with more than about five top-level destinations.', 'Anywhere a persistent sense of location matters.'],
     whenNotToUse: ['Fewer than five destinations — put them in the top bar.', 'Marketing sites.'],
     anatomy: [
@@ -291,14 +291,14 @@ export const navigationComponents: ComponentSpec[] = [
       { part: 'Groups', required: false, description: 'Labelled sections. Group labels are headings, not clickable.' },
       { part: 'Items', required: true, description: 'Links with an icon and a visible text label.' },
       { part: 'Current marker', required: true, description: 'aria-current="page" plus a 4px leading bar. Two signals, not one.' },
-      { part: 'Nested items', required: false, description: 'One indented child list with a subtle guide. Parent links navigate; a separate named chevron button toggles children. Expand the active child’s parent on route changes.' },
+      { part: 'Nested items', required: false, description: 'Recursive indented child lists with subtle guides. Parent links navigate; separate named chevron buttons toggle children. Expand every ancestor of the current route.' },
       { part: 'Open items', required: false, description: 'A separately labeled section after a divider, not more submenu children. The application owns the set of open documents and any close actions.' },
-      { part: 'Collapse toggle', required: false, description: 'Shrinks the rail to icons. Persisted per user.' },
+      { part: 'Expand control', required: false, description: 'Required when a hierarchical rail is collapsed: a visible, named button expands it before users enter child destinations. The shell owns the state and focus transfer.' },
     ],
     variants: [
       { name: 'Expanded', className: 'sk-side-nav', description: 'Icons and labels.', use: 'Default.' },
-      { name: 'Collapsed', className: 'sk-side-nav--collapsed', description: 'Icons only, with tooltips.', use: 'Users who want maximum content width. Never the default for a new user.' },
-      { name: 'Drawer', className: 'sk-side-nav--drawer', description: 'Overlay drawer with focus trapping.', use: 'Below the lg breakpoint.' },
+      { name: 'Collapsed', className: 'sk-side-nav--collapsed', description: 'Icons and accessible labels, plus a visible expand control for child access.', use: 'Users who want maximum content width. Never the default for a new user.' },
+      { name: 'Drawer', className: 'sk-side-nav--drawer', description: 'Explicit overlay positioning below lg; initialize createDrawer with the matching media query for focus, inertness and dismissal.', use: 'Primary app navigation. Omit this modifier on local settings or document-section links.' },
     ],
     sizes: [
       { name: 'Standard', className: '', height: '17rem wide', typeStyle: 'body-sm', description: 'Default rail width.' },
@@ -307,7 +307,7 @@ export const navigationComponents: ComponentSpec[] = [
     states: [
       { name: 'Rest', description: 'Items at text-secondary.', trigger: 'default' },
       { name: 'Hover', description: 'Subtle wash, text goes primary.', trigger: ':hover' },
-      { name: 'Current', description: 'Selected surface, brand text, 4px leading bar, aria-current="page".', trigger: '[aria-current="page"]' },
+      { name: 'Current', description: 'Selected surface, brand text and a 4px leading bar. Use aria-current="page" for routes and "location" for local section links.', trigger: '[aria-current="page"], [aria-current="location"]' },
       { name: 'Focus visible', description: 'Inset focus ring so it is not clipped by the rail edge.', trigger: ':focus-visible' },
       { name: 'Expanded group', description: 'Disclosure open, aria-expanded="true".', trigger: '[aria-expanded="true"]' },
     ],
@@ -329,13 +329,14 @@ export const navigationComponents: ComponentSpec[] = [
       ],
       aria: [
         'aria-label on the nav, because a page usually has several nav landmarks.',
-        'aria-current="page" on exactly one item.',
+        'aria-current="page" on exactly one destination. A separately named local section navigation uses aria-current="location" instead.',
         'Group headings are real headings or aria-labelledby on a nested list — not styled divs.',
         'Disclosure toggles are real buttons with aria-expanded and aria-controls, separate from destination links. Their accessible name includes the parent label.',
         'Open the active route’s ancestor on initial render and route changes. Mark only the exact destination aria-current=page; ancestor emphasis is separate from the current-page marker.',
         'Page sections use a separately named On this page navigation with aria-current=location, not aria-current=page. Open documents live in an Open items section.',
         'In drawer mode: role="dialog", aria-modal="true", focus trapped, focus restored on close.',
         'Collapsed mode requires tooltips *and* visually hidden labels; a tooltip is not an accessible name.',
+        'Collapsed hierarchical rails include an always-visible sk-side-nav__expand control. Its application handler removes sk-side-nav--collapsed, reveals current ancestors and focuses an available destination.',
       ],
       wcag: ['1.3.1 Info and Relationships.', '2.1.2 No Keyboard Trap — the drawer traps deliberately and Escape always exits.', '2.4.1 Bypass Blocks.', '2.4.8 Location.', '3.2.3 Consistent Navigation.'],
       screenReader: 'Announced as "Primary, navigation, list, N items". The current item adds "current page".',
@@ -353,17 +354,21 @@ export const navigationComponents: ComponentSpec[] = [
       'Keep child destinations indented under their parent; use sk-side-nav__branch-row, sk-side-nav__toggle and sk-side-nav__children.',
       'Use the same hierarchy as the docs sidebar: the chevron indicates expansion, the 1px neutral leading guide groups visible children, and only the exact current destination has the separate 4px leading accent.',
       'Own route matching, current-item scrolling and responsive drawer initialization in the application shell. enhance() wires submenu disclosures, not those shell behaviors. See the runtime contract for createDrawer setup.',
-      'Treat Navigation width controls and remembered width/collapse preferences as optional product features. The sidebar width token does not require a resizing control.',
+      'Use the fixed layout-nav-width token. Keep width controls, resize handles and persisted user width settings out of the navigation UI.',
       'Separate application-owned open items with sk-side-nav__open-items and a visible heading; use document icons so they do not look like another menu group.',
     ],
     donts: [
       'Do not render links the user cannot follow.',
-      'Do not nest more than one level.',
+      'Keep destination lists shallow: at most two child levels. Use Tree view for deeper structures that need tree keyboard navigation.',
       'Do not use colour alone for the current item.',
       'Do not default new users into collapsed mode.',
-      'Do not add Navigation width controls, Workspace labels or a workspace switcher just because the docs or examples contain them. Include them only when the product requires them; use the application’s own names.',
+      'Do not expose navigation width controls. Do not add Workspace labels or a workspace switcher just because an example contains them; use the application’s own names.',
     ],
     html: `<nav class="sk-side-nav" aria-label="Primary" id="primary-nav">
+  <!-- Shell-owned: reveal the rail before offering its child destinations. -->
+  <button class="sk-side-nav__expand" type="button" data-sk-nav-expand aria-expanded="true" aria-controls="primary-nav" aria-label="Expand primary navigation">
+    <svg aria-hidden="true" focusable="false" width="20" height="20"><use href="#sk-icon-menu" /></svg>
+  </button>
   <ul class="sk-side-nav__list">
     <li>
       <a class="sk-side-nav__item" href="/dashboard">
@@ -439,7 +444,11 @@ export const navigationComponents: ComponentSpec[] = [
 .sk-side-nav__item[data-active-ancestor] { color: var(--sk-color-text-primary); font-weight: var(--sk-font-weight-semibold); }
 .sk-side-nav__open-items { margin-block-start: var(--sk-space-16); padding-block-start: var(--sk-space-8); border-block-start: var(--sk-border-width-hairline) solid var(--sk-color-border-default); }
 .sk-side-nav--collapsed .sk-side-nav__children, .sk-side-nav--collapsed .sk-side-nav__toggle, .sk-side-nav--collapsed .sk-side-nav__open-items { display: none; }
-@media (pointer: coarse) { .sk-side-nav__toggle { min-inline-size: 2.75rem; min-block-size: 2.75rem; } }
+.sk-side-nav__expand { display: none; align-items: center; justify-content: center; flex: 0 0 auto; min-block-size: 2rem; padding: var(--sk-space-4); border: 0; border-radius: var(--sk-radius-sm); background: transparent; color: var(--sk-color-text-primary); cursor: pointer; }
+.sk-side-nav--collapsed .sk-side-nav__expand { display: inline-flex; }
+.sk-side-nav__expand:hover { background: var(--sk-color-surface-hover); }
+.sk-side-nav__expand:focus-visible { outline: var(--sk-focus-ring-width) solid var(--sk-color-focus-ring); outline-offset: -2px; }
+@media (pointer: coarse) { .sk-side-nav__toggle, .sk-side-nav__expand { min-inline-size: 2.75rem; min-block-size: 2.75rem; } .sk-side-nav__item { min-block-size: 2.75rem; } }
 @media (forced-colors: active) { .sk-side-nav__children, .sk-side-nav__open-items { border-color: CanvasText; } .sk-side-nav__toggle { color: ButtonText; } }
 
 .sk-side-nav__group-label {
@@ -480,7 +489,7 @@ export const navigationComponents: ComponentSpec[] = [
 
 .sk-side-nav__item:hover { background-color: var(--sk-color-surface-hover); color: var(--sk-color-text-primary); }
 
-.sk-side-nav__item[aria-current="page"] {
+.sk-side-nav__item:is([aria-current="page"], [aria-current="location"]) {
   background-color: var(--sk-color-surface-selected);
   color: var(--sk-color-text-brand);
   font-weight: var(--sk-font-weight-medium);
@@ -488,7 +497,7 @@ export const navigationComponents: ComponentSpec[] = [
 
 /* In dark mode the selected tint is nearly invisible, so this bar — not the tint —
    is what actually communicates "you are here". It is required, not decorative. */
-.sk-side-nav__item[aria-current="page"]::before {
+.sk-side-nav__item:is([aria-current="page"], [aria-current="location"])::before {
   content: "";
   position: absolute;
   inset-inline-start: 0;
@@ -513,7 +522,7 @@ export const navigationComponents: ComponentSpec[] = [
 
 /* --- Drawer, below lg --- */
 @media (max-width: 63.999rem) {
-  .sk-side-nav {
+  .sk-side-nav--drawer {
     position: fixed;
     inset-block: 0;
     inset-inline-start: 0;
@@ -523,9 +532,9 @@ export const navigationComponents: ComponentSpec[] = [
     translate: -100% 0;
     transition: translate var(--sk-duration-slow) var(--sk-easing-entrance);
   }
-  .sk-side-nav[data-open] { translate: 0 0; }
-  [dir="rtl"] .sk-side-nav { translate: 100% 0; }
-  [dir="rtl"] .sk-side-nav[data-open] { translate: 0 0; }
+  .sk-side-nav--drawer[data-open] { translate: 0 0; }
+  [dir="rtl"] .sk-side-nav--drawer { translate: 100% 0; }
+  [dir="rtl"] .sk-side-nav--drawer[data-open] { translate: 0 0; }
 }
 
 @media (prefers-reduced-motion: reduce) { .sk-side-nav { transition: none; } }
@@ -536,8 +545,8 @@ export const navigationComponents: ComponentSpec[] = [
    out against Canvas. */
 @media (forced-colors: active) {
   .sk-side-nav { border-inline-end: 1px solid CanvasText; }
-  .sk-side-nav__item[aria-current="page"] { background-color: Highlight; color: HighlightText; }
-  .sk-side-nav__item[aria-current="page"]::before { background-color: HighlightText; forced-color-adjust: none; }
+  .sk-side-nav__item:is([aria-current="page"], [aria-current="location"]) { background-color: Highlight; color: HighlightText; }
+  .sk-side-nav__item:is([aria-current="page"], [aria-current="location"])::before { background-color: HighlightText; forced-color-adjust: none; }
   .sk-side-nav__item:focus-visible { outline-color: Highlight; }
 }
 `,
@@ -559,21 +568,21 @@ export const navigationComponents: ComponentSpec[] = [
       { part: 'Ancestor links', required: true, description: 'Each level up.' },
       { part: 'Current page', required: true, description: 'Not a link, marked aria-current="page".' },
       { part: 'Separator', required: true, description: 'A CSS ::after, so screen readers never read "slash" between every item.' },
-      { part: 'Overflow', required: false, description: 'A menu replacing middle items when the trail is too long.' },
+      { part: 'Overflow', required: false, description: 'A native details disclosure containing an ordered list of ordinary ancestor links. Navigation destinations do not acquire menu or menuitem roles.' },
     ],
     variants: [
       { name: 'Default', className: 'sk-breadcrumbs', description: 'Full trail.', use: 'Most cases.' },
-      { name: 'Collapsed', className: 'sk-breadcrumbs--collapsed', description: 'First, an overflow menu, then the last two.', use: 'Deep hierarchies or narrow viewports.' },
+      { name: 'Collapsed', className: 'sk-breadcrumbs--collapsed', description: 'First, an ancestor-link disclosure, then the parent and current page.', use: 'Deep hierarchies or narrow viewports.' },
     ],
     sizes: [{ name: 'Small', className: '', height: 'auto', typeStyle: 'body-sm', description: 'The only size. Breadcrumbs are supporting information.' }],
     states: [
       { name: 'Rest', description: 'Links at text-secondary, current at text-primary.', trigger: 'default' },
       { name: 'Hover', description: 'Link underlines.', trigger: ':hover' },
-      { name: 'Overflowing', description: 'Middle items collapse into a menu.', trigger: '[data-collapsed]' },
+      { name: 'Overflowing', description: 'An authored disclosure groups middle ancestors while every destination remains a link.', trigger: '.sk-breadcrumbs--collapsed' },
     ],
     props: [
       { name: 'items', type: 'Array<{label, href?}>', required: true, description: 'Trail, root first. The last item has no href.' },
-      { name: 'maxItems', type: 'number', default: '4', description: 'Collapse threshold.' },
+      { name: 'maxItems', type: 'number', default: '4', description: 'Application rendering threshold; group excess ancestors in the authored details recipe. CSS does not remove links automatically.' },
     ],
     tokensUsed: ['color-text-secondary', 'color-text-primary', 'color-text-tertiary', 'color-text-link', 'space-8'],
     darkMode: 'Separators use text-tertiary, which is audited at 4.5:1 in both themes even though a separator is arguably decorative. Holding it to text contrast rather than the 3:1 graphical minimum keeps the trail scannable on dark, where thin glyphs disappear first.',
@@ -585,6 +594,7 @@ export const navigationComponents: ComponentSpec[] = [
         'aria-current="page" on the final item.',
         'Separators must be CSS-generated or aria-hidden. A literal "/" character in the DOM is read aloud between every item.',
         'The final item is plain text, not a link to the current page.',
+        'Overflow is a native summary disclosure followed by normal links; Tab moves through the open ancestor links and Enter follows them. Do not apply the ARIA menu keyboard model to these destinations.',
       ],
       wcag: ['1.3.1 Info and Relationships.', '2.4.8 Location — this is the criterion breadcrumbs satisfy.', '2.4.4 Link Purpose.'],
       screenReader: 'Announced as "Breadcrumb, navigation, list, 4 items", then each item, with the last as "current page".',
@@ -592,7 +602,7 @@ export const navigationComponents: ComponentSpec[] = [
     },
     content: [
       'Use the same label as the destination page title.',
-      'Truncate long middle items with an ellipsis, keeping the full text in a title attribute and in the accessible name.',
+      'Preserve full ancestor labels in the overflow disclosure. Let the current page wrap; if an ancestor is truncated, expose its full label through the standard tooltip as well as its accessible name.',
       'The root is the application home or the top-level section, not "Home" if that page does not exist.',
     ],
     dos: ['Use an ordered list.', 'Generate separators in CSS.', 'Mark the current page with aria-current.'],
@@ -601,6 +611,23 @@ export const navigationComponents: ComponentSpec[] = [
   <ol class="sk-breadcrumbs__list">
     <li class="sk-breadcrumbs__item"><a class="sk-link sk-link--quiet" href="/projects">Projects</a></li>
     <li class="sk-breadcrumbs__item"><a class="sk-link sk-link--quiet" href="/projects/website-redesign">Website redesign</a></li>
+    <li class="sk-breadcrumbs__item"><a class="sk-link sk-link--quiet" href="/projects/website-redesign/tasks">Records</a></li>
+    <li class="sk-breadcrumbs__item"><span aria-current="page">www A record</span></li>
+  </ol>
+</nav>
+
+<nav class="sk-breadcrumbs sk-breadcrumbs--collapsed" aria-label="Condensed breadcrumb">
+  <ol class="sk-breadcrumbs__list">
+    <li class="sk-breadcrumbs__item"><a class="sk-link sk-link--quiet" href="/projects">Projects</a></li>
+    <li class="sk-breadcrumbs__item">
+      <details class="sk-breadcrumbs__overflow" data-sk-breadcrumb-overflow>
+        <summary aria-label="Show two ancestor levels">…</summary>
+        <ol class="sk-breadcrumbs__ancestors" aria-label="Ancestor pages">
+          <li><a class="sk-link sk-link--quiet" href="/projects/engineering">Engineering</a></li>
+          <li><a class="sk-link sk-link--quiet" href="/projects/engineering/website-redesign">Website redesign</a></li>
+        </ol>
+      </details>
+    </li>
     <li class="sk-breadcrumbs__item"><a class="sk-link sk-link--quiet" href="/projects/website-redesign/tasks">Records</a></li>
     <li class="sk-breadcrumbs__item"><span aria-current="page">www A record</span></li>
   </ol>
@@ -648,7 +675,19 @@ export const navigationComponents: ComponentSpec[] = [
 .sk-breadcrumbs__item [aria-current="page"] {
   color: var(--sk-color-text-primary);
   font-weight: var(--sk-font-weight-medium);
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
+
+.sk-breadcrumbs--collapsed { position: relative; }
+.sk-breadcrumbs__overflow > summary { display: inline-flex; align-items: center; justify-content: center; min-inline-size: 2rem; min-block-size: 2rem; padding-inline: var(--sk-space-8); border: var(--sk-border-width-hairline) solid var(--sk-color-border-default); border-radius: var(--sk-radius-sm); color: var(--sk-color-text-primary); cursor: pointer; list-style: none; }
+.sk-breadcrumbs__overflow > summary::-webkit-details-marker { display: none; }
+.sk-breadcrumbs__overflow > summary:hover { background: var(--sk-color-surface-hover); }
+.sk-breadcrumbs__overflow > summary:focus-visible { outline: var(--sk-focus-ring-width) solid var(--sk-color-focus-ring); outline-offset: var(--sk-focus-ring-offset); }
+.sk-breadcrumbs__ancestors { position: absolute; inset-block-start: calc(100% + var(--sk-space-4)); inset-inline-start: 0; z-index: var(--sk-z-popover); inline-size: min(18rem, 100%); margin: 0; padding: var(--sk-space-4); list-style: none; background: var(--sk-color-surface-overlay); border: var(--sk-border-width-hairline) solid var(--sk-color-border-default); border-radius: var(--sk-radius-md); box-shadow: var(--sk-elevation-3); }
+.sk-breadcrumbs__ancestors a { display: block; min-block-size: 2rem; padding: var(--sk-space-6) var(--sk-space-8); white-space: normal; overflow-wrap: anywhere; border-radius: var(--sk-radius-sm); }
+.sk-breadcrumbs__ancestors a:hover { background: var(--sk-color-surface-hover); }
+@media (pointer: coarse) { .sk-breadcrumbs__overflow > summary, .sk-breadcrumbs__ancestors a { min-block-size: 2.75rem; } }
 
 /* forced-colors: nothing to repair — text and links only — HCM forces LinkText and CanvasText correctly, and the separator is a character rather than a drawn line. */
 `,
@@ -1257,10 +1296,13 @@ a.sk-stepper__link:focus-visible {
       { part: 'Groups', required: false, description: 'role="group" with aria-label, separated by dividers.' },
       { part: 'Shortcuts', required: false, description: 'Keyboard hints shown right-aligned.' },
       { part: 'Destructive section', required: false, description: 'Destructive items last, after a divider.' },
+      { part: 'Submenu owner', required: false, description: 'A menuitem button with data-sk-submenu, aria-haspopup="menu", aria-expanded and aria-controls. It opens a child menu, never fires a command itself.' },
+      { part: 'Submenu back action', required: false, description: 'A named data-sk-menu-back menuitem in the child panel. Visible in drilldown mode so touch users can return to the parent.' },
     ],
     variants: [
       { name: 'Actions', className: 'sk-menu', description: 'Plain commands.', use: 'Default.' },
       { name: 'Selectable', className: 'sk-menu--selectable', description: 'Checkable items.', use: 'View options, column visibility, sort direction.' },
+      { name: 'Submenu', className: 'sk-menu', description: 'One level of related actions; cascades with collision handling on wide screens and uses one panel with Back on narrow screens.', use: 'A compact set of export formats or other closely related commands.' },
       { name: 'Context', className: 'sk-menu--context', description: 'Opened by right-click or a keyboard context key.', use: 'Data grids. Must duplicate an always-visible path.' },
     ],
     sizes: [
@@ -1278,6 +1320,8 @@ a.sk-stepper__link:focus-visible {
       { name: 'items', type: 'MenuItem[]', required: true, description: 'Actions, groups and separators.' },
       { name: 'placement', type: "'bottom-start' | 'bottom-end' | 'top-start' | 'top-end'", default: "'bottom-start'", description: 'Preferred anchor position; flips automatically.' },
       { name: 'closeOnSelect', type: 'boolean', default: 'true', description: 'False for checkable menus, where several toggles in a row is the point.' },
+      { name: 'submenuMode', type: "'auto' | 'cascade' | 'drilldown'", default: "'auto'", description: 'Auto switches between adjacent panels and a single panel with a Back item according to submenuMediaQuery.' },
+      { name: 'submenuMediaQuery', type: 'string', default: "'(max-width: 40rem)'", description: 'The narrow-screen condition used by auto submenu mode.' },
     ],
     tokensUsed: ['color-surface-overlay', 'color-border-default', 'color-surface-hover', 'color-status-danger-text', 'elevation-3', 'z-popover', 'radius-md'],
     darkMode:
@@ -1290,8 +1334,9 @@ a.sk-stepper__link:focus-visible {
         { keys: 'Arrow Up / Down', action: 'Move between items, wrapping at the ends.' },
         { keys: 'Home / End', action: 'First or last item.' },
         { keys: 'A–Z', action: 'Type-ahead to the first matching item.' },
-        { keys: 'Escape', action: 'Close and restore focus to the trigger.' },
-        { keys: 'Tab', action: 'Close and move on. A menu never traps Tab.' },
+        { keys: 'Arrow Right / Left', action: 'Open the focused submenu or return to its owner; logical directions reverse in RTL.' },
+        { keys: 'Escape', action: 'Close only the innermost open submenu and focus its owner. Escape at the root closes the menu and restores the root trigger.' },
+        { keys: 'Tab / Shift+Tab', action: 'Close the complete menu chain and continue from the root trigger in the requested direction. A menu never traps Tab.' },
       ],
       aria: [
         'The trigger carries aria-haspopup="menu", aria-expanded and aria-controls.',
@@ -1299,6 +1344,8 @@ a.sk-stepper__link:focus-visible {
         'Focus must return to the trigger on close, including when closing by selecting an item.',
         'Checkable items use menuitemcheckbox or menuitemradio with aria-checked.',
         'Separators are role="separator".',
+        'Each submenu is a separate role=menu labelled by its owner. Keep its menuitems out of the parent’s arrow-key sequence; owner activation changes panels without dispatching a selection event.',
+        'Click and tap open submenus. Hover is optional, never the only route. On narrow screens expose a named Back action in the active panel.',
         'Do not put links inside role="menu" unless they are genuinely commands; a nav in a menu should be a nav.',
       ],
       wcag: ['2.1.1 Keyboard.', '2.1.2 No Keyboard Trap.', '2.4.3 Focus Order.', '2.4.11 Focus Not Obscured.', '4.1.2 Name, Role, Value.'],
@@ -1321,26 +1368,41 @@ a.sk-stepper__link:focus-visible {
       'Do not nest submenus more than one level.',
       'Do not use a menu as the only route to an action — context menus need a visible alternative.',
     ],
-    html: `<button type="button" class="sk-icon-button" id="row-actions-trigger"
+    html: `<button type="button" class="sk-button sk-button--secondary" id="row-actions-trigger"
         aria-haspopup="menu" aria-expanded="false" aria-controls="row-actions">
   <svg aria-hidden="true" focusable="false" width="20" height="20"><use href="#sk-icon-more" /></svg>
-  <span class="sk-visually-hidden">Actions for Website redesign</span>
+  <span>Project actions</span>
 </button>
 
 <div class="sk-menu" id="row-actions" role="menu" aria-labelledby="row-actions-trigger" hidden>
-  <button type="button" class="sk-menu__item" role="menuitem">
-    <svg class="sk-menu__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-edit" /></svg>
-    <span class="sk-menu__label">Edit project</span>
-    <kbd class="sk-menu__shortcut">E</kbd>
-  </button>
-  <button type="button" class="sk-menu__item" role="menuitem">
-    <svg class="sk-menu__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-copy" /></svg>
-    <span class="sk-menu__label">Duplicate project</span>
-  </button>
-
+  <div role="group" aria-label="Organize project">
+    <button type="button" class="sk-menu__item" role="menuitem" data-value="edit-project">
+      <svg class="sk-menu__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-edit" /></svg>
+      <span class="sk-menu__label">Edit project</span>
+    </button>
+    <button type="button" class="sk-menu__item" role="menuitem" data-value="duplicate-project">
+      <svg class="sk-menu__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-copy" /></svg>
+      <span class="sk-menu__label">Duplicate project</span>
+    </button>
+  </div>
   <hr class="sk-menu__separator" role="separator" />
-
-  <button type="button" class="sk-menu__item sk-menu__item--danger" role="menuitem">
+  <button type="button" class="sk-menu__item" id="row-export-trigger" role="menuitem" data-sk-submenu aria-haspopup="menu" aria-expanded="false" aria-controls="row-export-actions">
+    <svg class="sk-menu__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-download" /></svg>
+    <span class="sk-menu__label">Export</span>
+    <svg class="sk-menu__submenu-indicator" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-chevron-right" /></svg>
+  </button>
+  <div class="sk-menu" id="row-export-actions" role="menu" aria-labelledby="row-export-trigger" hidden>
+    <button type="button" class="sk-menu__item sk-menu__back" role="menuitem" data-sk-menu-back>
+      <svg class="sk-menu__back-icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-arrow-left" /></svg>
+      <span class="sk-menu__label">Back to project actions</span>
+    </button>
+    <div role="group" aria-label="Export format">
+      <button type="button" class="sk-menu__item" role="menuitem" data-value="export-csv"><span class="sk-menu__label">Export as CSV</span></button>
+      <button type="button" class="sk-menu__item" role="menuitem" data-value="export-json"><span class="sk-menu__label">Export as JSON</span></button>
+    </div>
+  </div>
+  <hr class="sk-menu__separator" role="separator" />
+  <button type="button" class="sk-menu__item sk-menu__item--danger" role="menuitem" data-value="delete-project">
     <svg class="sk-menu__icon" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-trash" /></svg>
     <span class="sk-menu__label">Delete project</span>
   </button>
@@ -1383,7 +1445,13 @@ a.sk-stepper__link:focus-visible {
 }
 
 .sk-menu__icon { flex: 0 0 auto; fill: currentColor; color: var(--sk-color-text-secondary); }
-.sk-menu__label { flex: 1 1 auto; min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sk-menu__label { flex: 1 1 auto; min-inline-size: 0; white-space: normal; overflow-wrap: anywhere; }
+.sk-menu__submenu-indicator { flex: 0 0 auto; margin-inline-start: auto; color: var(--sk-color-text-secondary); }
+.sk-menu__submenu-indicator:dir(rtl), .sk-menu__back-icon:dir(rtl) { transform: scaleX(-1); }
+.sk-menu__item[data-sk-submenu][aria-expanded="true"] { background: var(--sk-color-surface-hover); }
+.sk-menu__back { margin-block-end: var(--sk-space-4); border-block-end: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle); border-radius: 0; }
+.sk-menu__back[hidden] { display: none; }
+.sk-menu[data-sk-menu-mode="drilldown"] { min-inline-size: min(16rem, calc(100vw - var(--sk-space-32))); max-inline-size: calc(100vw - var(--sk-space-32)); }
 .sk-menu__shortcut {
   flex: 0 0 auto;
   font-family: var(--sk-font-family-mono);
@@ -1425,6 +1493,7 @@ a.sk-stepper__link:focus-visible {
 }
 
 .sk-menu__group-label {
+  margin: 0;
   padding: var(--sk-space-6) var(--sk-space-10) var(--sk-space-2);
   font-size: var(--sk-font-size-overline);
   letter-spacing: var(--sk-letter-spacing-overline);
@@ -1433,11 +1502,14 @@ a.sk-stepper__link:focus-visible {
 }
 
 .sk-menu--sm .sk-menu__item { min-block-size: 2rem; }
+@media (pointer: coarse) { .sk-menu .sk-menu__item { min-block-size: var(--sk-layout-touch-target); } }
 
 @media (prefers-reduced-motion: no-preference) {
   .sk-menu { animation: sk-menu-in var(--sk-duration-fast) var(--sk-easing-entrance); }
 }
-@keyframes sk-menu-in { from { opacity: 0; translate: 0 -4px; scale: 0.98; } }
+/* Transforming a parent menu creates a containing block for its fixed submenu.
+   Fade only, so rapid keyboard disclosure keeps viewport positioning stable. */
+@keyframes sk-menu-in { from { opacity: 0; } }
 
 /* A floating menu with no shadow merges into whatever is behind it, so it needs
    a real border. The check mark on a checked item is a ::before background,
@@ -1590,6 +1662,7 @@ a.sk-stepper__link:focus-visible {
   border-block-end: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle);
 }
 .sk-command-palette__search > svg { flex: 0 0 auto; fill: var(--sk-color-text-tertiary); }
+.sk-command-palette__search > [data-sk-palette-close] { flex: 0 0 auto; white-space: nowrap; }
 
 .sk-command-palette__input {
   flex: 1 1 auto;
@@ -1633,6 +1706,13 @@ a.sk-stepper__link:focus-visible {
 .sk-command-palette__item > svg { flex: 0 0 auto; fill: var(--sk-color-text-secondary); }
 .sk-command-palette__label { flex: 0 1 auto; min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--sk-color-text-primary); }
 .sk-command-palette__context { flex: 0 1 auto; min-inline-size: 0; margin-inline-start: auto; font-size: var(--sk-font-size-body-xs); color: var(--sk-color-text-tertiary); white-space: nowrap; }
+
+@media (max-width: 40rem) {
+  .sk-command-palette__item { display: grid; grid-template-columns: 1.25rem minmax(0, 1fr); row-gap: var(--sk-space-4); padding-block: var(--sk-space-8); }
+  .sk-command-palette__item > svg { grid-column: 1; grid-row: 1; }
+  .sk-command-palette__label { grid-column: 2; white-space: normal; overflow-wrap: anywhere; }
+  .sk-command-palette__context { grid-column: 2; margin-inline-start: 0; white-space: normal; overflow-wrap: anywhere; }
+}
 
 .sk-command-palette__item[data-active] {
   background-color: var(--sk-color-surface-selected);

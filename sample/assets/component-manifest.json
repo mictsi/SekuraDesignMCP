@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "version": "3.0.3",
+  "version": "3.1.0",
   "base": [
     "tokens.css",
     "base.css"
@@ -1031,25 +1031,64 @@
           "createDrawer"
         ],
         "autoSelectors": [
-          "[data-sk-disclosure]"
+          "[data-sk-disclosure]",
+          ".sk-side-nav--drawer[data-sk-drawer]"
         ],
         "notes": [
           "The docs sidebar uses these same classes and createDisclosure: a rotating chevron, a 1px logical leading guide on expanded children, and a separate 4px leading rail only on the exact current link.",
-          "Links navigate. Separate named toggle buttons expand one indented child list; enhance() wires optional branches. Keep the exact current link aria-current=page and open its ancestor in application route state.",
+          "Links navigate. Separate named toggle buttons expand indented child lists at each level; enhance() wires branches. Keep the exact current link aria-current=page and open its full ancestor path in application route state.",
           "For router updates, call the owned disclosure.open() method or rerender the branch with matching aria-expanded and hidden state; changing aria-expanded alone does not update an existing controller.",
           "Static group headings are not interactive. Open documents belong in a labeled, divided sk-side-nav__open-items region. The host owns open-item state and close/navigation outcomes.",
           "The docs shell additionally owns route matching, scrolling the current link into view and its navigation trigger. These are not installed by enhance() on a plain sk-side-nav.",
-          "Navigation width controls and remembered width/collapse preferences are optional docs-site features, not required application UI. Use the layout width token without adding a resizing control unless the product requires one.",
-          "Workspace is example terminology, not a required menu item, heading, product name or workspace switcher. Use application-specific labels. Do not copy Navigation width or Workspace UI merely to match the docs sidebar.",
-          "For the responsive shell, initialize createDrawer(nav, { modal: \"(max-width: 63.999rem)\" }) once and wire its trigger; show it for the expanded desktop rail and let Escape restore focus on mobile. Do not also auto-initialize data-sk-drawer on that same nav."
+          "Navigation uses the system layout width token. There is no navigation width control, resize handle or remembered user width in the UI. Keep mobile drawer and open/close controls separate from sizing.",
+          "Workspace is example terminology, not a required menu item, heading, product name or workspace switcher. Use application-specific labels.",
+          "For the responsive primary shell, add sk-side-nav--drawer and initialize createDrawer(nav, { modal: \"(max-width: 63.999rem)\" }) once; wire its trigger, show it for the expanded desktop rail and let Escape restore focus on mobile. Do not also auto-initialize data-sk-drawer on that same nav. Plain local navigation requires no drawer."
         ],
-        "manualOnly": [
-          "createDrawer"
+        "manualOnly": [],
+        "purposes": [
+          "navigation",
+          "disclosure"
+        ],
+        "stateOwnership": {
+          "controller": [
+            "Branch expansion",
+            "Modal drawer focus and dismissal"
+          ],
+          "application": [
+            "Current route and active ancestors",
+            "Collapsed rail and its expand control",
+            "Open documents"
+          ]
+        },
+        "requirements": [
+          {
+            "controller": "createDisclosure",
+            "when": {
+              "className": "sk-side-nav__toggle"
+            },
+            "autoMarker": "data-sk-disclosure",
+            "description": "Each separate branch toggle requires disclosure behavior."
+          },
+          {
+            "controller": "createDrawer",
+            "when": {
+              "className": "sk-side-nav--drawer"
+            },
+            "autoMarker": "data-sk-drawer",
+            "description": "Only the explicit responsive drawer variant requires a drawer controller and a wired opener."
+          }
+        ],
+        "capabilities": [
+          "Nested link disclosures",
+          "Exact current route and ancestor presentation",
+          "Explicit responsive drawer variant",
+          "Application-owned collapsed rail expansion"
         ]
       },
       "rootClass": "sk-side-nav",
       "cssDependencies": [],
       "svgSymbols": [
+        "sk-icon-menu",
         "sk-icon-home",
         "sk-icon-globe",
         "sk-icon-chevron-down",
@@ -1212,19 +1251,60 @@
           "createMenu"
         ],
         "autoSelectors": [
-          "[data-sk-menu-trigger]"
+          "[data-sk-menu-trigger]:not([data-sk-submenu])"
         ],
-        "notes": [],
-        "manualOnly": []
+        "notes": [
+          "Initialize one root trigger and menu. Mark child triggers data-sk-submenu with aria-controls and aria-haspopup=menu; add a data-sk-menu-back row for mobile drilldown.",
+          "submenuMode supports auto, cascade and drilldown. Auto uses submenuMediaQuery, default (max-width: 40rem). One Escape closes the active level; Tab exits the chain.",
+          "Keep submenu DOM and portal containers inside their active modal dialog or drawer. Logical menu ownership does not override native inertness or modal focus trapping.",
+          "aria-disabled commands stay focusable but cannot execute. Selection closes the menu before the host callback/event so destination focus remains with the application."
+        ],
+        "manualOnly": [],
+        "purposes": [
+          "commands"
+        ],
+        "stateOwnership": {
+          "controller": [
+            "Owned menu items",
+            "Submenu expansion and focus",
+            "Dismissal and focus return"
+          ],
+          "application": [
+            "Command outcomes",
+            "Permissions and unavailable reasons",
+            "Destination focus after navigation"
+          ]
+        },
+        "requirements": [
+          {
+            "controller": "createMenu",
+            "when": {
+              "className": "sk-menu"
+            },
+            "description": "Initialize one root menu; data-sk-submenu items belong to that controller."
+          }
+        ],
+        "capabilities": [
+          "Nested command menus",
+          "Desktop cascade and mobile drilldown",
+          "One Escape per active layer",
+          "Focusable unavailable commands",
+          "Command focus handoff"
+        ]
       },
       "rootClass": "sk-menu",
       "cssDependencies": [
-        "icon-button"
+        "button",
+        "button-group",
+        "dialog"
       ],
       "svgSymbols": [
         "sk-icon-more",
         "sk-icon-edit",
         "sk-icon-copy",
+        "sk-icon-download",
+        "sk-icon-chevron-right",
+        "sk-icon-arrow-left",
         "sk-icon-trash"
       ],
       "controller": "createMenu",
@@ -1976,10 +2056,62 @@
         ],
         "notes": [
           "multiSelect or .sk-tree--multi enables aria-checked with tri-state parents. Disabled descendants are excluded from toggling.",
+          "navigation: true or presence of data-sk-tree-navigation opts into route activation and requires unique nonempty data-value IDs. Remove the marker to disable it; the string false still enables it. Navigation cannot also be multi-select.",
+          "Handle onActivate or sk:tree:activate once. With a manual controller, call setCurrent(id) after successful navigation; with automatic ownership, render aria-current=page from confirmed route state.",
+          "Use data-sk-custom-tree and retain the manual controller when calling filter, setCurrent or revealCurrent. Filtering searches loaded labels only. revealCurrent() preserves focus by default and never unhides author-hidden items; request focus explicitly for a user action.",
           "loadChildren(item, signal) returns rendered HTMLElement treeitems for data-sk-loadable parents. Collapse/unmount aborts pending work. Expand again to retry.",
           "Set data-sk-custom-tree when supplying a provider manually. refresh() reconciles dynamic children and roving focus."
         ],
-        "manualOnly": []
+        "manualOnly": [],
+        "purposes": [
+          "selection",
+          "navigation",
+          "disclosure"
+        ],
+        "stateOwnership": {
+          "controller": [
+            "Roving focus",
+            "Expansion and pending loads",
+            "Loaded-node filtering",
+            "Selection in selection mode"
+          ],
+          "application": [
+            "Route and current document",
+            "Stable node IDs",
+            "Child provider and permissions",
+            "Navigation outcomes"
+          ]
+        },
+        "requirements": [
+          {
+            "controller": "createTree",
+            "when": {
+              "className": "sk-tree"
+            },
+            "description": "Tree keyboard behavior is required in selection and navigation modes."
+          },
+          {
+            "controller": "createTree",
+            "when": {
+              "attribute": "data-sk-custom-tree"
+            },
+            "manualOnly": true,
+            "description": "A custom tree provider requires one manually owned controller."
+          }
+        ],
+        "identity": {
+          "attribute": "data-value",
+          "requiredFor": "Opt-in navigation mode",
+          "description": "Unique nonempty IDs remain stable when labels or paths change."
+        },
+        "capabilities": [
+          "Opt-in navigation activation",
+          "Separate current route and focus",
+          "Ancestor-preserving loaded-node filtering",
+          "Restore expansion and reveal current",
+          "Abortable lazy expansion",
+          "Tri-state selection"
+        ]
       },
       "rootClass": "sk-tree",
       "cssDependencies": [],
@@ -1995,6 +2127,7 @@
           "name": "sk:tree:select",
           "detail": {
             "item": "HTMLElement (DOM only)",
+            "id": "string | undefined",
             "value": "string | undefined",
             "checked": "\"true\" | \"false\" | \"mixed\" | undefined"
           },
@@ -2002,10 +2135,41 @@
           "applicationRequired": true
         },
         {
+          "name": "sk:tree:activate",
+          "detail": {
+            "item": "HTMLElement (DOM only)",
+            "id": "string",
+            "value": "string"
+          },
+          "source": "controller",
+          "applicationRequired": false
+        },
+        {
           "name": "sk:tree:expand",
           "detail": {
             "item": "HTMLElement (DOM only)",
+            "id": "string | undefined",
             "expanded": "boolean"
+          },
+          "source": "controller",
+          "applicationRequired": false
+        },
+        {
+          "name": "sk:tree:filter",
+          "detail": {
+            "query": "string",
+            "matched": "number",
+            "total": "number"
+          },
+          "source": "controller",
+          "applicationRequired": false
+        },
+        {
+          "name": "sk:tree:error",
+          "detail": {
+            "item": "HTMLElement (DOM only)",
+            "id": "string | undefined",
+            "error": "{ code: string; message: string }"
           },
           "source": "controller",
           "applicationRequired": false
@@ -2181,6 +2345,7 @@
         "icon-button",
         "button-group",
         "description-list",
+        "tree-view",
         "dialog"
       ],
       "svgSymbols": [
@@ -2312,6 +2477,7 @@
         "top-bar",
         "side-nav",
         "toast",
+        "tree-view",
         "drawer"
       ],
       "svgSymbols": [],
@@ -2632,7 +2798,7 @@
     "pages": 107,
     "components": 71,
     "foundations": 16,
-    "patterns": 15,
+    "patterns": 18,
     "layouts": 9,
     "tokens": 120
   }

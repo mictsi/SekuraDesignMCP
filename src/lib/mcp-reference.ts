@@ -2,12 +2,13 @@ import { readFileSync } from 'node:fs';
 import { z } from 'zod';
 import { components } from '../data/components/index.js';
 import { legacyGeometryCss } from '../data/compatibility.js';
-import { migrationChanges } from '../data/migration.js';
+import { migrationChanges, upgradePaths, MIGRATION_SOURCES, type MigrationSource } from '../data/migration.js';
 import { runtimeContract } from '../data/behavior-contracts.js';
 import { VERSION } from './version.js';
+import { runtimeContractSchema } from './runtime-contract.js';
 
 export const apiEntrySchema = z.object({ name: z.string(), exported: z.boolean(), runtime: z.boolean(), signature: z.string(), description: z.string(), source: z.string() });
-const referenceSchema = z.object({ schemaVersion: z.literal(1), version: z.string(), api: z.array(apiEntrySchema), migration: z.object({ markdown: z.string(), baseline: z.record(z.string(), z.unknown()) }) });
+const referenceSchema = z.object({ schemaVersion: z.literal(1), version: z.string(), api: z.array(apiEntrySchema), migration: z.object({ markdown: z.string(), baseline: z.record(z.string(), z.unknown()), baselines: z.record(z.string(), z.record(z.string(), z.unknown())).optional() }) });
 let cache: z.infer<typeof referenceSchema> | undefined;
 export function mcpReference() {
   cache ??= referenceSchema.parse(JSON.parse(readFileSync(new URL('../data/mcp-reference.json', import.meta.url), 'utf8')));
@@ -17,6 +18,7 @@ export function mcpReference() {
 
 export const behaviorSchema = z.object({
   schemaVersion: z.literal(1), version: z.string(), id: z.string().nullable(),
+  runtime: runtimeContractSchema.nullable().optional(),
   components: z.array(z.object({ id: z.string(), status: z.string(), controllers: z.array(z.string()), retrieveWith: z.string() })),
   api: z.array(apiEntrySchema), initialization: z.object({ automatic: z.array(z.string()), manualOnly: z.array(z.string()), example: z.string(), cleanup: z.string(), notes: z.array(z.string()) }),
   events: z.array(z.object({ name: z.string(), detail: z.record(z.string(), z.string()), source: z.enum(['native', 'controller']), applicationRequired: z.boolean() })),
@@ -50,7 +52,7 @@ export function behaviorReference(id?: string) {
       ? '// Native markup and CSS; no controller required.\n// Render application state and use native event listeners for actions.'
       : !component ? `import ${api.find(item => item.name === id)?.runtime ? '' : 'type '}{ ${id} } from '@sekura/behaviours';\n// Use the exact signature below. Cleanup applies only when this API returns an owned resource.`
       : '// Manual API: import the named factory from @sekura/behaviours.\n// Pass the native host elements and application callbacks defined below.\n// Keep the returned handle and call destroy() before unmounting.';
-  return behaviorSchema.parse({ schemaVersion: 1, version: VERSION, id: id ?? null, components: catalog,
+  return behaviorSchema.parse({ schemaVersion: 1, version: VERSION, id: id ?? null, runtime: contract, components: catalog,
     api: id ? apiFor(component ? contract!.controllers : [id]) : api,
     initialization: { automatic, manualOnly: manual, example,
       cleanup: 'Use one controller owner. enhance(root).destroy() releases its controllers; dispose(root) releases auto-owned handlers. Manual controllers require their own destroy() (guardAction returns a cleanup function). Framework recipes own enhancement; do not initialize them twice.',
@@ -61,15 +63,21 @@ export function behaviorReference(id?: string) {
 
 export const migrationSchema = z.object({
   schemaVersion: z.literal(1), version: z.string(), fromVersion: z.string(), componentId: z.string().nullable(), markdown: z.string(),
-  changes: z.array(z.object({ id: z.string(), components: z.array(z.string()), behavior: z.string(), action: z.string(), verify: z.array(z.string()) })),
+  changes: z.array(z.object({ id: z.string(), components: z.array(z.string()), behavior: z.string(), action: z.string(), verify: z.array(z.string()), fromVersions: z.array(z.enum(MIGRATION_SOURCES)).optional() })),
+  upgradePaths: z.array(z.object({ fromVersion: z.enum(MIGRATION_SOURCES), toVersion: z.string(), summary: z.string(), steps: z.array(z.string()) })).optional(),
   compatibility: z.object({ sourceCommit: z.string(), baseline: z.record(z.string(), z.unknown()), geometryCss: z.string(), limit: z.string() }),
 });
-export function migrationReference(componentId?: string) {
+export function migrationReference(componentId?: string, fromVersion?: MigrationSource) {
   if (componentId && !components.some(component => component.id === componentId)) return null;
   const reference = mcpReference().migration;
-  return migrationSchema.parse({ schemaVersion: 1, version: VERSION, fromVersion: String(reference.baseline.sourceVersion), componentId: componentId ?? null,
+  const baseline = fromVersion?.startsWith('3.') ? reference.baselines?.['3.0'] : reference.baseline;
+  if (!baseline) throw new Error('Migration baseline missing. Rebuild the package.');
+  const applies = (change: typeof migrationChanges[number]) => !fromVersion || (change.fromVersions ?? ['2.x']).includes(fromVersion)
+    || (fromVersion.startsWith('3.') && ['navigation-hierarchy', 'field-alignment'].includes(change.id));
+  return migrationSchema.parse({ schemaVersion: 1, version: VERSION, fromVersion: fromVersion ?? String(baseline.sourceVersion), componentId: componentId ?? null,
     markdown: reference.markdown,
-    changes: migrationChanges.filter(change => !componentId || !change.components.length || change.components.includes(componentId)),
-    compatibility: { sourceCommit: String(reference.baseline.sourceCommit), baseline: reference.baseline, geometryCss: legacyGeometryCss(), limit: 'The baseline protects public names, not arbitrary consumer overrides. The optional v2 geometry bridge preserves a documented subset; it does not recreate the old palette, markup or behavior. Roll back matching CSS and behavior artifacts together.' },
+    changes: migrationChanges.filter(change => applies(change) && (!componentId || !change.components.length || change.components.includes(componentId))),
+    upgradePaths: upgradePaths.filter(path => !fromVersion || path.fromVersion === fromVersion).map(path => ({ ...path, toVersion: VERSION })),
+    compatibility: { sourceCommit: String(baseline.sourceCommit), baseline, geometryCss: legacyGeometryCss(), limit: 'The selected baseline protects public names, not arbitrary consumer overrides or complete behavioral equivalence. The optional v2 geometry bridge preserves a documented subset and is not needed for a v3.0 upgrade; it does not recreate the old palette, markup or behavior. Roll back matching CSS and behavior artifacts together.' },
   });
 }

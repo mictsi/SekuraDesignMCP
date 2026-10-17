@@ -160,7 +160,7 @@ export {
 /* Auto-initialisation. */
 export { autoEnhance, dispose, enhance, getTheme, type EnhanceResult } from './auto.js';
 
-export { createTree, type TreeOptions } from './controllers/tree.js';
+export { createTree, TreeConfigurationError, type TreeOptions, type TreeController, type TreeFilterResult, type TreeRevealOptions } from './controllers/tree.js';
 export { createUpload, type UploadOptions } from './controllers/upload.js';
 
 export { createCommandPalette, type CommandPaletteOptions, type CommandItem } from './controllers/command-palette.js';

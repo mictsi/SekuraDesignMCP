@@ -53,7 +53,7 @@ export function referenceMarkup(spec: ComponentSpec): string {
       if (cls.includes('sk-disclosure__trigger')) set('data-sk-disclosure', attr('aria-controls'));
       if (attr('role') === 'tablist') set('data-sk-tabs');
       if (attr('role') === 'radiogroup' && (cls.includes('sk-segmented') || cls.includes('sk-button-group--segmented'))) set('data-sk-segmented');
-      if (attr('aria-haspopup') === 'menu' && attr('aria-controls')) set('data-sk-menu-trigger', attr('aria-controls'));
+      if (attr('aria-haspopup') === 'menu' && attr('aria-controls') && attr('data-sk-submenu') === undefined) set('data-sk-menu-trigger', attr('aria-controls'));
       if (node.tagName === 'input' && attr('role') === 'combobox' && attr('aria-controls') && !attr('data-sk-tag-input') && spec.id !== 'command-palette') set('data-sk-combobox', attr('aria-controls'));
       if (spec.id === 'command-palette' && cls.includes('sk-command-palette')) {
         set('data-sk-command-palette'); set('id', 'command-palette-example'); set('hidden');

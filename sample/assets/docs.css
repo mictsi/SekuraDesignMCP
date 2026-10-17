@@ -33,8 +33,13 @@
 
   .docs-topbar__version { flex: 0 0 auto; }
 
-  .docs-topbar__search { flex: 0 1 22rem; margin-inline: auto; }
-  @media (max-width: 63.999rem) { .docs-topbar__search { display: none; } }
+  .docs-topbar__search { flex: 0 1 22rem; margin-inline-start: auto; }
+  .docs-topbar__search-short { display: none; }
+  @media (max-width: 63.999rem) {
+    .docs-topbar__search { display: inline-flex; flex: 0 0 auto; min-block-size: var(--sk-layout-touch-target); }
+    .docs-topbar__search .sk-search__placeholder, .docs-topbar__search .sk-kbd { display: none; }
+    .docs-topbar__search-short { display: inline; font-size: var(--sk-font-size-body-sm); }
+  }
 
   /* The search field in the header is really a button that opens the palette,
      so it must not look like a text field a user can type into. */
@@ -59,11 +64,34 @@
     }
   }
 
-  .docs-nav { flex-basis: var(--sk-layout-nav-width); }
-  .docs-nav-preferences { padding: var(--sk-space-8) var(--sk-space-12); font-size: var(--sk-font-size-body-xs); color: var(--sk-color-text-secondary); }
-  .docs-nav-preferences summary { cursor: pointer; min-block-size: var(--sk-space-24); }
-  .docs-nav-preferences label, .docs-nav-preferences input { display: block; inline-size: 100%; margin-block: var(--sk-space-8); }
-  @media (max-width: 63.999rem) { .docs-nav-preferences { display: none; } }
+  .docs-nav { flex-basis: var(--sk-layout-nav-width); overflow: hidden; }
+  .docs-nav__header { display: none; }
+  .docs-nav__scroll { flex: 1 1 auto; min-block-size: 0; overflow-y: auto; overscroll-behavior: contain; }
+  .docs-nav__scroll > .sk-side-nav__group-label:first-child { margin-block-start: var(--sk-space-4); }
+  .docs-nav .sk-side-nav__children { margin-inline-start: var(--sk-space-8); padding-inline-start: var(--sk-space-8); }
+  .docs-nav-preferences { flex: 0 0 auto; margin-block-start: var(--sk-space-8); border-block-start: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle); padding: var(--sk-space-8) var(--sk-space-4) 0; font-size: var(--sk-font-size-body-xs); color: var(--sk-color-text-secondary); }
+  .docs-nav-preferences summary { display: flex; align-items: center; gap: var(--sk-space-8); cursor: pointer; min-block-size: 2rem; padding-inline: var(--sk-space-8); border-radius: var(--sk-radius-sm); list-style: none; }
+  .docs-nav-preferences summary::-webkit-details-marker { display: none; }
+  .docs-nav-preferences summary:hover { background: var(--sk-color-surface-hover); }
+  .docs-nav-preferences summary::after { content: '+'; margin-inline-start: auto; }
+  .docs-nav-preferences[open] summary::after { content: '−'; }
+  .docs-nav-preferences summary:focus-visible { outline: var(--sk-focus-ring-width) solid var(--sk-color-focus-ring); outline-offset: -2px; }
+  .docs-nav-preferences__theme { margin: var(--sk-space-12) 0; padding: 0; border: 0; min-inline-size: 0; }
+  .docs-nav-preferences__theme legend { margin-block-end: var(--sk-space-8); }
+  .docs-nav-preferences__theme .sk-button-group { display: flex; flex-wrap: wrap; inline-size: 100%; }
+  .docs-nav-preferences__theme .sk-button-group__segment { flex: 1 1 auto; gap: var(--sk-space-4); font-size: var(--sk-font-size-body-xs); }
+  .docs-nav-preferences__theme svg { display: none; }
+  @media (max-width: 63.999rem) {
+    .docs-nav__header { display: flex; align-items: center; justify-content: space-between; gap: var(--sk-space-8); padding-inline: var(--sk-space-8); padding-block-end: var(--sk-space-8); border-block-end: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle); }
+    .docs-nav__header h2 { margin: 0; font-size: var(--sk-font-size-label-md); }
+    .docs-nav-preferences summary { min-block-size: var(--sk-layout-touch-target); }
+  }
+
+  .docs-rail-preview { display: flex; align-items: stretch; min-block-size: 15rem; border: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle); border-radius: var(--sk-radius-md); }
+  .docs-rail-preview .sk-side-nav { max-inline-size: 100%; }
+  .docs-rail-preview__content { display: flex; flex: 1 1 0; min-inline-size: 0; flex-direction: column; align-items: flex-start; justify-content: center; gap: var(--sk-space-12); padding: var(--sk-space-16); }
+  .docs-rail-preview__content p { margin: 0; font-size: var(--sk-font-size-body-sm); }
+  @media (max-width: 30rem) { .docs-rail-preview { flex-wrap: wrap; } .docs-rail-preview .sk-side-nav:not(.sk-side-nav--collapsed) { flex-basis: 100%; border-inline-end: 0; } }
 
   /* Article and on-page contents are flex siblings, so the contents column
      simply disappears when there is no room rather than needing a breakpoint
@@ -124,12 +152,12 @@
   }
   .docs-toc__link:hover { color: var(--sk-color-text-primary); background-color: var(--sk-color-surface-hover); }
   /* The bar, not the tint, is what marks the current section on dark. */
-  .docs-toc__link[aria-current="true"] {
+  .docs-toc__link[aria-current="location"] {
     color: var(--sk-color-text-brand);
     background-color: var(--sk-color-surface-selected);
     font-weight: var(--sk-font-weight-medium);
   }
-  .docs-toc__link[aria-current="true"]::before {
+  .docs-toc__link[aria-current="location"]::before {
     content: "";
     position: absolute;
     inset-inline-start: 0;
@@ -139,8 +167,8 @@
     background-color: var(--sk-color-border-brand);
   }
   @media (forced-colors: active) {
-    .docs-toc__link[aria-current="true"] { background-color: Highlight; color: HighlightText; }
-    .docs-toc__link[aria-current="true"]::before { background-color: HighlightText; forced-color-adjust: none; }
+    .docs-toc__link[aria-current="location"] { background-color: Highlight; color: HighlightText; }
+    .docs-toc__link[aria-current="location"]::before { background-color: HighlightText; forced-color-adjust: none; }
   }
 
   /* ================================================================== *
@@ -320,6 +348,7 @@
     border-radius: var(--sk-radius-lg);
     overflow: hidden;
   }
+  .docs-demo:has(.sk-breadcrumbs__overflow[open]) { overflow: visible; }
   .docs-demo__label {
     margin: 0;
     padding: var(--sk-space-8) var(--sk-space-16);
@@ -946,6 +975,15 @@
     padding-block: var(--sk-space-12);
   }
 
+  /* Settings recipe styles; layout recipes are not in the component bundle. */
+  .sk-settings-layout { container-type: inline-size; }
+  .sk-settings-nav { background: transparent; border: 0; padding: 0; }
+  @container (max-width: 48rem) {
+    .sk-settings-nav { flex-basis: 100%; border-block-end: var(--sk-border-width-hairline) solid var(--sk-color-border-subtle); padding-block-end: var(--sk-space-8); }
+    .sk-settings-nav .sk-side-nav__list { flex-direction: row; flex-wrap: wrap; gap: var(--sk-space-4); }
+    .sk-settings-nav .sk-side-nav__item { min-block-size: var(--sk-layout-touch-target); }
+  }
+
   .sk-danger-zone {
     display: flex;
     flex-direction: column;
@@ -1079,9 +1117,17 @@
 @layer sk-components {
   .docs-workbench { padding: var(--sk-space-16); background: var(--sk-color-surface-base); color: var(--sk-color-text-primary); border: var(--sk-border-width-hairline) solid var(--sk-color-border-default); border-radius: var(--sk-radius-lg); }
   .docs-control-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sk-space-12); min-inline-size: 0; }
-  .docs-control-row > * { flex: 1 1 8rem; min-inline-size: 0; }
+  /* Wrap whole controls before the default large button label needs a second line. */
+  .docs-control-row > * { flex: 1 1 11rem; min-inline-size: 0; }
+  [data-sk-alignment-header] { container: docs-comparison / inline-size; }
+  /* When the heading and form share a row, reserve room for both full action
+     labels. The capped action track and the existing small-container grid keep
+     long translations and enlarged text free to wrap. */
+  @container docs-comparison (min-width: 69rem) {
+    [data-sk-alignment-compare] { grid-template-columns: repeat(2, minmax(0, 1fr)) fit-content(50%); }
+  }
   [data-sk-bench-preview] { color: var(--sk-color-text-primary); }
-  [data-sk-reduce-motion] *, [data-sk-reduce-motion] *::before, [data-sk-reduce-motion] *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  [data-sk-reduce-motion] *, [data-sk-reduce-motion] *::before, [data-sk-reduce-motion] *::after { animation-duration: 0.01ms !important; transition-duration: 0ms !important; }
   [data-sk-mono-ids] .sk-code, [data-sk-mono-ids] .sk-input--mono { font-family: var(--sk-font-family-mono); }
 }
 

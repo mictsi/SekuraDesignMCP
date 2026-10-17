@@ -401,6 +401,12 @@ export const formComponents: ComponentSpec[] = [
     background-color var(--sk-duration-fast) var(--sk-easing-standard);
 }
 
+/* Native single-line editors clamp their used line height to the font's normal
+   metrics. Let 1lh use those same metrics when calculating padding; a smaller
+   author line height otherwise adds extra intrinsic height in Firefox. Keep
+   automatic sizing so enlarged text can still grow the control. */
+input.sk-input { line-height: normal; }
+
 /* Native date editors otherwise add internal padding on top of field padding. */
 .sk-input:is([type="date"], [type="time"], [type="datetime-local"]) {
   block-size: max(var(--sk-control-size, var(--sk-control-height-md)), calc(1lh + 2 * var(--sk-border-width-hairline)));
@@ -1802,6 +1808,8 @@ export const formComponents: ComponentSpec[] = [
   line-height: 1.25;
   padding-block: max(0px, calc((var(--sk-control-size, var(--sk-control-height-md)) - 1lh - 2 * var(--sk-border-width-hairline)) / 2));
 }
+/* Match native single-line metrics without changing search-button placeholders. */
+input.sk-search__input { line-height: normal; }
 .sk-search__input:focus-visible { outline: none; }
 .sk-search__input::placeholder { color: var(--sk-color-text-placeholder); opacity: 1; }
 

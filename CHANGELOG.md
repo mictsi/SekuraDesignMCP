@@ -7,6 +7,55 @@ The version in `package.json` is the single source of truth — the server, the
 documentation site, the behaviours bundle and the container tag all derive from
 it, and `npm run check:version` fails the build if a literal drifts back in.
 
+## 3.1.0 — 2026-10-17
+
+### Navigation and samples
+
+- Group the documentation sidebar by the existing component categories, render
+  nested branches recursively, open the exact current path and retain visible
+  search with category context on mobile.
+- Remove navigation width inputs, reset controls and remembered-width behavior
+  entirely. Navigation uses the system width token; mobile drawer and navigation
+  open/close controls remain.
+- Scope responsive drawer CSS to `sk-side-nav--drawer`; keep local Settings
+  navigation in flow. Add working collapsed-rail expansion and breadcrumb
+  overflow recipes with native links.
+- Add opt-in owned submenus to `createMenu`, with desktop cascade, mobile
+  drilldown/Back, RTL keys, focusable `aria-disabled` commands, a shared active
+  dismissal stack and focus handoff before application command callbacks.
+- Add opt-in tree navigation with stable IDs, independent current-route state,
+  label activation, chevron disclosure, loaded-node filter/restore/reveal and
+  cancelable pending expansion. Preserve legacy selection and tri-state modes.
+- Update the workspace Pages drawer, detail Share/Export flow, Settings sections
+  and canonical component examples. Regenerate matching sample assets.
+- Use zero-duration transitions for reduced motion so submenu panel visibility
+  and focus return settle synchronously, including the mobile Back action.
+- Include the visible keyboard hint in the search button's accessible name.
+  Let sample comparison controls wrap as whole controls and reserve room for
+  complete action labels. Align native input line metrics with padding in
+  Firefox while preserving automatic height and enlarged-text growth.
+
+### MCP, compatibility and release tooling
+
+- Add `hierarchical-navigation`, `action-submenus` and `navigation-tree` patterns
+  through the existing MCP tools. Preserve reference-recipe framework output.
+- Expose optional runtime purpose, state ownership, conditional requirements,
+  identity and capabilities in parsed component/behavior responses. Validate
+  sidebar behavior only when its markup uses the relevant feature.
+- Add separate v2 and v3.0 upgrade paths, optional migration source selection,
+  new migration resources and a public-name baseline captured from the v3.0.0
+  tag. Preserve existing tools, required inputs and migration resource addresses.
+- Add navigation regression tests to npm verification, CI and `run.sh build`.
+- Refresh dependencies to verified LTS releases where a project provides an LTS
+  track, and latest stable releases otherwise; record the decision in
+  `DEPENDENCIES.md`. Pin the default Node runtime/container to 24.22.0 LTS.
+
+Migration actions: add the explicit primary-drawer modifier, remove width UI,
+update skip-disabled menu expectations and delayed command-focus workarounds.
+Submenus and route activation are additive opt-ins. Read `MIGRATION.md` before
+replacing application assets; public-name retention is not a claim that every
+consumer override or interaction assumption is unchanged.
+
 ## 3.0.3 — 2026-10-06
 
 - Explicitly make Navigation width controls, width/collapse preferences and Workspace UI optional in MCP prompts, foundations, sidebar contracts and migration guidance.

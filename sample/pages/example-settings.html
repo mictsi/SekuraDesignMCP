@@ -13,12 +13,11 @@
         </p>
       </header>
 
-      <div class="sk-sidebar-layout sk-sidebar-layout--narrow">
+      <div class="sk-sidebar-layout sk-sidebar-layout--narrow sk-settings-layout">
 
-        <nav class="sk-sidebar-layout__sidebar sk-side-nav" aria-label="Settings sections"
-             style="background:transparent;border:none;padding:0">
+        <nav class="sk-sidebar-layout__sidebar sk-side-nav sk-settings-nav" aria-label="Settings sections" data-sk-settings-nav>
           <ul class="sk-side-nav__list">
-            <li><a class="sk-side-nav__item" href="#appearance" aria-current="true"><span class="sk-side-nav__label">Appearance</span></a></li>
+            <li><a class="sk-side-nav__item" href="#appearance" aria-current="location"><span class="sk-side-nav__label">Appearance</span></a></li>
             <li><a class="sk-side-nav__item" href="#notifications"><span class="sk-side-nav__label">Notifications</span></a></li>
             <li><a class="sk-side-nav__item" href="#profile"><span class="sk-side-nav__label">Profile</span></a></li>
             <li><a class="sk-side-nav__item" href="#danger"><span class="sk-side-nav__label">Delete account</span></a></li>
@@ -28,7 +27,7 @@
         <div class="sk-sidebar-layout__content sk-stack sk-stack--gap-32">
 
           <!-- =============== Appearance =============== -->
-          <section aria-labelledby="appearance-h" id="appearance" class="sk-stack sk-stack--gap-24">
+          <section aria-labelledby="appearance-h" id="appearance" tabindex="-1" class="sk-stack sk-stack--gap-24">
             <div>
               <h2 class="sk-fieldset__legend" id="appearance-h">Appearance</h2>
               <p class="sk-field__hint">
@@ -136,6 +135,29 @@
               </div>
             </fieldset>
 
+            <fieldset class="sk-fieldset">
+              <legend class="sk-fieldset__legend">Collapsed navigation</legend>
+              <p class="sk-field__hint">A collapsed rail retains a visible expand control. Expand this preview to reach its child sections.</p>
+              <div class="docs-rail-preview">
+                <nav class="sk-side-nav sk-side-nav--collapsed" id="settings-nav-preview" aria-label="Navigation preview">
+                  <button class="sk-side-nav__expand" type="button" data-sk-nav-expand aria-expanded="false" aria-controls="settings-nav-preview" aria-label="Expand navigation preview"><svg aria-hidden="true" width="20" height="20"><use href="#sk-icon-menu"></use></svg></button>
+                  <ul class="sk-side-nav__list">
+                    <li>
+                      <div class="sk-side-nav__branch-row">
+                        <a class="sk-side-nav__item" href="#appearance" data-active-ancestor data-sk-tooltip="Settings"><svg aria-hidden="true" width="20" height="20"><use href="#sk-icon-settings"></use></svg><span class="sk-side-nav__label">Settings</span></a>
+                        <button class="sk-side-nav__toggle" type="button" data-sk-disclosure="settings-preview-children" aria-expanded="true" aria-controls="settings-preview-children" aria-label="Settings preview sections"><svg aria-hidden="true" width="16" height="16"><use href="#sk-icon-chevron-down"></use></svg></button>
+                      </div>
+                      <ul class="sk-side-nav__children" id="settings-preview-children">
+                        <li><a class="sk-side-nav__item" href="#appearance" aria-current="location"><span class="sk-side-nav__label">Appearance</span></a></li>
+                        <li><a class="sk-side-nav__item" href="#notifications"><span class="sk-side-nav__label">Notifications</span></a></li>
+                      </ul>
+                    </li>
+                  </ul>
+                </nav>
+                <div class="docs-rail-preview__content"><p>Parent links navigate. The separate chevron only expands or collapses children.</p><button class="sk-button sk-button--secondary sk-button--sm" type="button" data-sk-nav-collapse="settings-nav-preview">Collapse preview</button></div>
+              </div>
+            </fieldset>
+
             <ul class="sk-stack sk-stack--divided sk-stack--gap-0" role="list">
               <li class="sk-switch">
                 <span class="sk-switch__content">
@@ -165,7 +187,7 @@
           </section>
 
           <!-- =============== Notifications =============== -->
-          <section aria-labelledby="notifications-h" id="notifications" class="sk-stack sk-stack--gap-16">
+          <section aria-labelledby="notifications-h" id="notifications" tabindex="-1" class="sk-stack sk-stack--gap-16">
             <div>
               <h2 class="sk-fieldset__legend" id="notifications-h">Notifications</h2>
               <p class="sk-field__hint">
@@ -215,7 +237,7 @@
           </section>
 
           <!-- =============== Profile =============== -->
-          <section aria-labelledby="profile-h" id="profile" class="sk-stack sk-stack--gap-16">
+          <section aria-labelledby="profile-h" id="profile" tabindex="-1" class="sk-stack sk-stack--gap-16">
             <h2 class="sk-fieldset__legend" id="profile-h">Profile</h2>
 
             <div class="sk-cluster sk-cluster--gap-16">
@@ -248,7 +270,7 @@
           </section>
 
           <!-- =============== Danger zone =============== -->
-          <section class="sk-danger-zone" aria-labelledby="danger-h" id="danger">
+          <section class="sk-danger-zone" aria-labelledby="danger-h" id="danger" tabindex="-1">
             <h2 class="sk-fieldset__legend" id="danger-h" style="color:inherit">Delete account</h2>
             <p>
               Permanently removes your account and transfers the 4 projects you own to

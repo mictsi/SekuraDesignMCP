@@ -173,6 +173,26 @@
       $$('a').filter(function (a) { return a.getAttribute('href') === 'example-form.html'; }).forEach(function (a) { a.href = 'example-form.html?project=' + encodeURIComponent(project); });
     }
   }
+  function settingsNavigation() {
+    var nav = $('[data-sk-settings-nav]');
+    if (!nav) return;
+    var links = $$('a[href^="#"]', nav);
+    var sections = links.map(function (link) { return document.getElementById(link.hash.slice(1)); }).filter(Boolean);
+    function mark(id) { links.forEach(function (link) { if (link.hash === '#' + id) link.setAttribute('aria-current', 'location'); else link.removeAttribute('aria-current'); }); }
+    function fromHash() { var id = location.hash.slice(1); if (sections.some(function (section) { return section.id === id; })) mark(id); }
+    nav.addEventListener('click', function (event) { var link = event.target.closest('a[href^="#"]'); if (link) mark(link.hash.slice(1)); });
+    window.addEventListener('hashchange', fromHash);
+    fromHash();
+    if (!('IntersectionObserver' in window)) return;
+    var visible = new Set();
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) { if (entry.isIntersecting) visible.add(entry.target); else visible.delete(entry.target); });
+      var first = sections.find(function (section) { return visible.has(section); });
+      if (first) mark(first.id);
+    }, { root: $('.sk-app-shell__main'), rootMargin: '-16px 0px -65% 0px', threshold: 0 });
+    sections.forEach(function (section) { observer.observe(section); });
+    window.addEventListener('pagehide', function () { observer.disconnect(); }, { once: true });
+  }
   function workbench() {
     var preview = $('[data-sk-bench-preview]');
     if (!preview) return;
@@ -333,14 +353,21 @@
     }
     $('[data-sk-copy-link]').onclick = copyLink;
     $('#share-menu').addEventListener('sk:menu:select', function (event) {
-      var label = event.target.textContent.trim();
-      if (label === 'Copy link') { void copyLink(); return; }
-      if (label === 'Invite by email') { tell('Demo only: no invitations are sent. Use the onboarding example to review invitation choices.'); return; }
-      var lines = $$('tr', table).map(function (row) { return $$('th,td', row).slice(0, 4).map(function (cell) { return '"' + cell.textContent.trim().replace(/\s+/g, ' ').replace(/"/g, '""') + '"'; }).join(','); });
-      var url = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/csv' })); var link = document.createElement('a'); link.href = url; link.download = 'tasks.csv'; link.click(); setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      var value = event.detail.value;
+      if (value === 'copy-link') { void copyLink(); return; }
+      if (value === 'invite-email') { tell('Demo only: no invitations are sent. Use the onboarding example to review invitation choices.'); return; }
+      if (value !== 'export-csv' && value !== 'export-json') return;
+      var rows = $$('tr', table).map(function (row) { return $$('th,td', row).slice(0, 4).map(function (cell) { return cell.textContent.trim().replace(/\s+/g, ' '); }); });
+      var json = value === 'export-json';
+      var content = json ? JSON.stringify(rows.slice(1).map(function (row) { return Object.fromEntries(rows[0].map(function (key, index) { return [key, row[index]]; })); }), null, 2)
+        : rows.map(function (row) { return row.map(function (cell) { return '"' + cell.replace(/"/g, '""') + '"'; }).join(','); }).join('\n');
+      var url = URL.createObjectURL(new Blob([content], { type: json ? 'application/json' : 'text/csv' }));
+      var link = document.createElement('a'); link.href = url; link.download = json ? 'tasks.json' : 'tasks.csv'; link.click();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      Sekura.announce('Task export downloaded as ' + (json ? 'JSON.' : 'CSV.'));
     });
   }
 
-  function init() { list(); forms(); account(); workbench(); setup(); taskDetails(); }
+  function init() { list(); forms(); account(); settingsNavigation(); workbench(); setup(); taskDetails(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

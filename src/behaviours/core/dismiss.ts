@@ -1,74 +1,115 @@
-/**
- * Light dismiss: Escape, outside pointer, and focus leaving.
- *
- * Shared by every transient surface so the rules are identical everywhere — a
- * user who learns that Escape closes a menu should find it closes a popover too.
- */
+/** Light dismiss shared by menus, popovers and modal fallback surfaces. */
 
 import { combine, on, type Cleanup } from './dom.js';
 
 export interface DismissOptions {
-  /** Elements that must NOT count as "outside" — typically the trigger. */
+  /** Elements that count as inside, usually the trigger. */
   exclude?: Array<Element | null | undefined>;
-  /** Escape key. Default true. */
+  /** Logical parent surface, including when a child is portaled. */
+  parent?: Element | null;
+  /** False reserves Escape for the surface's own handler (for example a dialog). */
   escape?: boolean;
-  /** Pointer press outside the surface. Default true. */
   outsidePointer?: boolean;
-  /** Focus moving outside the surface. Default false — noisy for menus. */
   focusOut?: boolean;
-  /** Reason is passed through so callers can treat Escape differently. */
   onDismiss: (reason: 'escape' | 'pointer' | 'focus') => void;
 }
 
+interface Layer {
+  surface: Element;
+  options: DismissOptions;
+  parent: Layer | null;
+}
+
+interface DismissStack {
+  layers: Layer[];
+  destroy: Cleanup;
+}
+
+const stacks = new WeakMap<Document, DismissStack>();
+
+function contains(layer: Layer, node: Node): boolean {
+  return layer.surface.contains(node) || (layer.options.exclude ?? []).some(el => el?.contains(node));
+}
+
+/** A native modal above a registered surface owns its own Escape/backdrop. */
+function nativeDialogBoundary(event: Event, layer: Layer): boolean {
+  const dialog = event.composedPath().find((node): node is HTMLDialogElement => {
+    if (typeof HTMLDialogElement === 'undefined' || !(node instanceof HTMLDialogElement) || !node.open) return false;
+    // open also includes modeless show() dialogs, which do not own the top layer.
+    try { return node.matches(':modal'); }
+    catch {
+      // Older engines without :modal retain conservative native-dialog ownership.
+      return true;
+    }
+  });
+  if (!dialog || dialog.contains(layer.surface)) return false;
+  for (let parent = layer.parent; parent; parent = parent.parent) {
+    if (dialog.contains(parent.surface)) return false;
+  }
+  return true;
+}
+
+function createStack(doc: Document): DismissStack {
+  const layers: Layer[] = [];
+  const inside = (layer: Layer, event: Event): boolean => event.composedPath().some(node =>
+    node instanceof Node && contains(layer, node)
+  );
+
+  function dismissOutside(event: Event, reason: 'pointer' | 'focus'): void {
+    // Work from a snapshot: dismissal may remove an entire submenu chain.
+    for (const layer of [...layers].reverse()) {
+      if (!layers.includes(layer)) continue;
+      if (nativeDialogBoundary(event, layer) || inside(layer, event)) return;
+      // A logically nested/portaled child still belongs to its ancestor region.
+      if (layers.some(child => {
+        if (!inside(child, event)) return false;
+        for (let parent = child.parent; parent; parent = parent.parent) {
+          if (parent === layer) return true;
+        }
+        return false;
+      })) return;
+      const enabled = reason === 'pointer'
+        ? layer.options.outsidePointer !== false
+        : layer.options.focusOut === true;
+      if (!enabled) return;
+      layer.options.onDismiss(reason);
+      // A dirty/blocking dialog may veto dismissal; do not close beneath it.
+      if (layers.includes(layer)) return;
+    }
+  }
+
+  const destroy = combine(
+    on(doc, 'keydown', (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.defaultPrevented || event.isComposing) return;
+      const layer = layers[layers.length - 1];
+      if (!layer || nativeDialogBoundary(event, layer) || layer.options.escape === false) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      layer.options.onDismiss('escape');
+    }, true),
+    on(doc, 'pointerdown', (event: PointerEvent) => dismissOutside(event, 'pointer'), true),
+    on(doc, 'focusin', (event: FocusEvent) => dismissOutside(event, 'focus'))
+  );
+  return { layers, destroy };
+}
+
+/** Register an open surface. Only the top layer can consume an Escape key. */
 export function dismissable(surface: Element, options: DismissOptions): Cleanup {
-  const { escape = true, outsidePointer = true, focusOut = false } = options;
-
-  const isInside = (node: Node | null): boolean => {
-    if (!node) return false;
-    if (surface.contains(node)) return true;
-    return (options.exclude ?? []).some((el) => el?.contains(node));
+  const doc = surface.ownerDocument;
+  let stack = stacks.get(doc);
+  if (!stack) { stack = createStack(doc); stacks.set(doc, stack); }
+  const parent = [...stack.layers].reverse().find(layer => options.parent
+    ? layer.surface === options.parent
+    : layer.surface.contains(surface) || (options.exclude ?? []).some(el => el && contains(layer, el))
+  ) ?? null;
+  const layer: Layer = { surface, options, parent };
+  stack.layers.push(layer);
+  let disposed = false;
+  return () => {
+    if (disposed) return;
+    disposed = true;
+    const index = stack.layers.indexOf(layer);
+    if (index >= 0) stack.layers.splice(index, 1);
+    if (!stack.layers.length) { stack.destroy(); stacks.delete(doc); }
   };
-
-  const cleanups: Cleanup[] = [];
-
-  if (escape) {
-    // Capture phase, so a surface closes before an ancestor handler sees the
-    // key — nested overlays then dismiss innermost-first, which is what users
-    // expect.
-    cleanups.push(
-      on(
-        document,
-        'keydown',
-        (event: KeyboardEvent) => {
-          if (event.key !== 'Escape') return;
-          event.stopPropagation();
-          options.onDismiss('escape');
-        },
-        true
-      )
-    );
-  }
-
-  if (outsidePointer) {
-    // pointerdown rather than click: a click fires after mouseup, by which time
-    // the user may have dragged from inside the surface to outside, which should
-    // not dismiss.
-    cleanups.push(
-      on(document, 'pointerdown', (event: PointerEvent) => {
-        if (isInside(event.target as Node)) return;
-        options.onDismiss('pointer');
-      })
-    );
-  }
-
-  if (focusOut) {
-    cleanups.push(
-      on(document, 'focusin', (event: FocusEvent) => {
-        if (isInside(event.target as Node)) return;
-        options.onDismiss('focus');
-      })
-    );
-  }
-
-  return combine(...cleanups);
 }

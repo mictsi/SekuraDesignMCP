@@ -27,7 +27,8 @@ densities, custom brand tokens and long translated navigation labels. On mobile,
 open Details, follow a document heading, reopen and dismiss it, then confirm that
 focus and background interaction recover. Resize the open panel across its desktop
 breakpoint. Verify that a saved local note is announced as local and that blocked
-storage preserves the draft. Check navigation width and collapse after reload.
+storage preserves the draft. Check that navigation keeps the system width, exposes
+no width control, ignores an old saved width, and preserves collapse after reload.
 
 Automated acceptance also captures light, dark, mobile and modal screenshots in
 `.run/review/`. Treat them as review evidence, not human acceptance records.

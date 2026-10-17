@@ -323,6 +323,7 @@ cmd_build() {
     npm run --silent test:design
     npm run --silent test:redesign
     npm run --silent test:completion
+    npm run --silent test:navigation
   fi
 
   if have_docker; then

@@ -1465,12 +1465,14 @@ export const dataDisplayComponents: ComponentSpec[] = [
       { part: 'Tree', required: true, description: 'role="tree", a single tab stop.' },
       { part: 'Groups', required: true, description: 'role="group" for child levels.' },
       { part: 'Items', required: true, description: 'role="treeitem" with aria-expanded on parents.' },
-      { part: 'Expand control', required: true, description: 'A chevron, part of the item rather than a separate button.' },
+      { part: 'Expand control', required: true, description: 'A chevron inside sk-tree__toggle, an enlarged pointer hit area within the single treeitem tab stop.' },
       { part: 'Indent guides', required: false, description: 'Vertical rules showing depth.' },
+      { part: 'Find and reveal', required: false, description: 'A named search field and Reveal current button outside the tree. The host calls filter() and revealCurrent().' },
     ],
     variants: [
-      { name: 'Default', className: 'sk-tree', description: 'Single selection.', use: 'Navigation trees.' },
+      { name: 'Default', className: 'sk-tree', description: 'Legacy single selection; a parent click selects and expands.', use: 'Choosing one hierarchical entity.' },
       { name: 'Multi-select', className: 'sk-tree--multi', description: 'Checkboxes with tri-state parents.', use: 'Permission scope selection.' },
+      { name: 'Navigation', className: 'sk-tree', description: 'Opt in with data-sk-tree-navigation or navigation: true. Chevron disclosure and destination activation are independent.', use: 'Genuine document hierarchies with host-owned routing and aria-current.' },
     ],
     sizes: [
       { name: 'Compact', className: 'sk-tree--compact', height: '1.75rem rows', typeStyle: 'body-sm', description: 'Deep trees.' },
@@ -1482,11 +1484,20 @@ export const dataDisplayComponents: ComponentSpec[] = [
       { name: 'Selected', description: 'aria-selected="true" plus the selected surface and a brand bar.', trigger: '[aria-selected="true"]' },
       { name: 'Focused', description: 'Roving tabindex places focus on exactly one item.', trigger: ':focus' },
       { name: 'Loading children', description: 'aria-busy on the item while children load lazily.', trigger: '[aria-busy="true"]' },
+      { name: 'Current page', description: 'The host calls setCurrent(stableId) after navigation succeeds. Current state is separate from keyboard focus.', trigger: '[aria-current="page"]' },
+      { name: 'Filtered', description: 'Filter loaded labels locally; keep matching ancestors and restore expansion on clear. The host displays the result count and an empty-state message.', trigger: '[data-sk-tree-filtered]' },
+      { name: 'Load error', description: 'Keep the branch and previous content. Expand again to retry; sk:tree:error reports a structured failure.', trigger: '[data-load-error]' },
+      { name: 'Empty', description: 'An empty tree remains one tab stop. Render a visible explanation next to it. A loaded leaf has no disclosure affordance.', trigger: 'no treeitems or no filter matches' },
     ],
     props: [
-      { name: 'nodes', type: 'TreeNode[]', required: true, description: 'The hierarchy.' },
+      { name: 'nodes', type: 'TreeNode[]', required: true, description: 'Application-defined hierarchy rendered as treeitems. This specification input is not a universal framework prop. Navigation nodes require unique, stable data-value IDs.' },
       { name: 'multiSelect', type: 'boolean', default: 'false', description: 'Checkbox selection.' },
+      { name: 'navigation', type: 'boolean', default: 'false', description: 'Opt-in activation mode; also enabled by data-sk-tree-navigation. Combining it with multiSelect throws TreeConfigurationError before initialization.' },
+      { name: 'onActivate', type: '(item: HTMLElement, id: string) => void', description: 'Optional host navigation callback. Alternatively handle sk:tree:activate. After a successful outcome, call setCurrent(id); activation alone never changes the current page.' },
       { name: 'loadChildren', type: '(item, signal) => Promise<HTMLElement[]>', description: 'Render child treeitems for data-sk-loadable parents. The controller inserts children, cancels stale loads and supports expand-to-retry.' },
+      { name: 'filter', type: 'controller.filter(query: string): TreeFilterResult', description: 'Search loaded labels only, with matching ancestors retained. Clear with an empty string to restore expansion. Does not request unloaded data.' },
+      { name: 'setCurrent', type: 'controller.setCurrent(id: string | null): boolean', description: 'Acknowledge a loaded navigation destination. Unknown IDs leave the current item unchanged. Does not move keyboard focus.' },
+      { name: 'revealCurrent', type: 'controller.revealCurrent({ focus?, scroll? }): boolean', description: 'Clear filtering and open the loaded current item’s ancestors. Focus defaults to false and scrolling defaults to true. Pass focus:true for an explicit Reveal current action. The host loads an unloaded route path first.' },
     ],
     tokensUsed: ['color-surface-selected', 'color-border-brand', 'color-border-subtle', 'color-text-secondary', 'color-focus-ring'],
     darkMode: 'Indent guides use border-subtle and go darker on dark. Selection again pairs the tint with a leading brand bar, because a tint-only selected row is invisible on dark — this is the same rule as Side navigation, Table and Pagination, and it applies everywhere selection is shown.',
@@ -1500,35 +1511,34 @@ export const dataDisplayComponents: ComponentSpec[] = [
         { keys: 'Home / End', action: 'First or last visible item.' },
         { keys: 'A–Z', action: 'Type-ahead to the next matching visible item.' },
         { keys: '* (asterisk)', action: 'Expand all siblings at the current level.' },
-        { keys: 'Enter / Space', action: 'Select the item; multi-select toggles its enabled descendants.' },
+        { keys: 'Enter / Space', action: 'Select the item; multi-select toggles its enabled descendants. Navigation mode activates the destination without toggling its branch.' },
       ],
       aria: [
         'aria-expanded only on nodes that have children. Putting it on a leaf tells users there is more to find when there is not.',
         'aria-level, aria-setsize and aria-posinset when the DOM structure does not make position derivable.',
         'Use aria-selected for single selection. Multi-select uses aria-checked, including mixed parents, and aria-multiselectable on the tree.',
+        'Navigation mode uses aria-current="page" and removes selection attributes. The host chooses whether to keep focus in the tree or focus the destination heading after navigation.',
         'Roving tabindex: exactly one item has tabindex="0".',
+        'Initial entry and re-entry target the current or selected item. Disclosure hit areas are not additional tab stops. Give a navigation tree a named nav landmark.',
         'Implement the full keyboard contract or use a plain nested list instead. A partial tree is worse than no tree.',
       ],
       wcag: ['1.3.1 Info and Relationships.', '2.1.1 Keyboard.', '2.4.3 Focus Order.', '4.1.2 Name, Role, Value.'],
       screenReader: 'Announced as "tree, N items", then "<label>, tree item, level 2, 3 of 7, expanded".',
-      targetSize: 'Rows are at least 28px tall with the full row as the target.',
+      targetSize: 'Rows and disclosure hit areas are at least 28px; coarse-pointer rows and toggles grow to 44px. The visible chevron stays 16px.',
     },
-    content: ['Node labels are the entity name only.', 'Show child counts on collapsed parents.', 'Indicate lazily loaded children with a loading state, not an empty expansion.'],
+    content: ['Node labels are the full entity name; the controller adds a title for visually truncated labels.', 'Use stable data-value IDs, never labels or list indexes, for routes and persisted node state.', 'Show accurate child counts on collapsed parents.', 'Indicate lazily loaded children with a loading state, not an empty expansion.', 'Label local filtering as Find in loaded pages when some branches have not been loaded. Display no matches and a clear-filter action.'],
     dos: ['Implement the whole keyboard contract.', 'Use a roving tabindex.', 'Offer search alongside the tree.'],
     donts: ['Do not use a tree for two-level data.', 'Do not put aria-expanded on leaves.', 'Do not make every item a separate tab stop.'],
     html: `<ul class="sk-tree" role="tree" aria-label="Project hierarchy">
-  <li class="sk-tree__item" role="treeitem" aria-expanded="true" aria-selected="false" tabindex="0">
+  <li class="sk-tree__item" role="treeitem" data-value="project-website" aria-expanded="true" aria-selected="false" tabindex="-1">
     <span class="sk-tree__row">
-      <svg class="sk-tree__chevron" aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-chevron-down" /></svg>
+      <span class="sk-tree__toggle" aria-hidden="true"><svg class="sk-tree__chevron" focusable="false" width="16" height="16"><use href="#sk-icon-chevron-down" /></svg></span>
       <span class="sk-tree__label">Website redesign</span>
-      <span class="sk-tree__count">3</span>
     </span>
     <ul role="group">
-      <li class="sk-tree__item" role="treeitem" aria-selected="true" tabindex="-1">
-        <span class="sk-tree__row">
-          <span class="sk-tree__chevron-spacer" aria-hidden="true"></span>
-          <span class="sk-tree__label">website-redesign</span>
-        </span>
+      <li class="sk-tree__item" role="treeitem" data-value="design-system" aria-expanded="true" aria-selected="false" tabindex="-1">
+        <span class="sk-tree__row"><span class="sk-tree__toggle" aria-hidden="true"><svg class="sk-tree__chevron" focusable="false" width="16" height="16"><use href="#sk-icon-chevron-down" /></svg></span><span class="sk-tree__label">Design system</span></span>
+        <ul role="group"><li class="sk-tree__item" role="treeitem" data-value="navigation-guidelines" aria-selected="true" tabindex="0"><span class="sk-tree__row"><span class="sk-tree__chevron-spacer" aria-hidden="true"></span><span class="sk-tree__label">Navigation guidelines</span></span></li></ul>
       </li>
     </ul>
   </li>
@@ -1565,20 +1575,27 @@ export const dataDisplayComponents: ComponentSpec[] = [
   fill: currentColor;
   transition: rotate var(--sk-duration-fast) var(--sk-easing-standard);
 }
-.sk-tree__item[aria-expanded="false"] > .sk-tree__row > .sk-tree__chevron { rotate: -90deg; }
-[dir="rtl"] .sk-tree__item[aria-expanded="false"] > .sk-tree__row > .sk-tree__chevron { rotate: 90deg; }
-.sk-tree__chevron-spacer { flex: 0 0 auto; inline-size: 1rem; }
+.sk-tree__toggle { display: inline-flex; flex: 0 0 auto; align-self: stretch; align-items: center; justify-content: center; inline-size: 1.75rem; min-block-size: 1.75rem; }
+.sk-tree__item[aria-expanded="false"] > .sk-tree__row > .sk-tree__chevron,
+.sk-tree__item[aria-expanded="false"] > .sk-tree__row > .sk-tree__toggle > .sk-tree__chevron { rotate: -90deg; }
+[dir="rtl"] .sk-tree__item[aria-expanded="false"] > .sk-tree__row > .sk-tree__chevron,
+[dir="rtl"] .sk-tree__item[aria-expanded="false"] > .sk-tree__row > .sk-tree__toggle > .sk-tree__chevron { rotate: 90deg; }
+.sk-tree__item:not([aria-expanded]) > .sk-tree__row > .sk-tree__chevron,
+.sk-tree__item:not([aria-expanded]) > .sk-tree__row > .sk-tree__toggle > .sk-tree__chevron { visibility: hidden; }
+.sk-tree__chevron-spacer { flex: 0 0 auto; inline-size: 1.75rem; }
 
 .sk-tree__label { flex: 1 1 auto; min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sk-tree__count { flex: 0 0 auto; font-size: var(--sk-font-size-body-xs); color: var(--sk-color-text-tertiary); font-variant-numeric: tabular-nums; }
 
 .sk-tree__item[aria-selected="true"] > .sk-tree__row,
+.sk-tree__item[aria-current="page"] > .sk-tree__row,
 .sk-tree__item[aria-checked="true"] > .sk-tree__row {
   background-color: var(--sk-color-surface-selected);
   color: var(--sk-color-text-brand);
 }
 /* A straight leading accent, independent of the row corner radius. */
 .sk-tree__item[aria-selected="true"] > .sk-tree__row::before,
+.sk-tree__item[aria-current="page"] > .sk-tree__row::before,
 .sk-tree__item[aria-checked="true"] > .sk-tree__row::before {
   content: "";
   position: absolute;
@@ -1594,6 +1611,9 @@ export const dataDisplayComponents: ComponentSpec[] = [
   outline: var(--sk-focus-ring-width) solid var(--sk-color-focus-ring);
   outline-offset: -2px;
 }
+.sk-tree:focus-visible { outline: var(--sk-focus-ring-width) solid var(--sk-color-focus-ring); outline-offset: -2px; }
+.sk-tree__item[data-sk-tree-match] > .sk-tree__row .sk-tree__label { font-weight: var(--sk-font-weight-medium); }
+.sk-tree-panel.sk-drawer--inline[aria-modal="true"] { inline-size: 100%; max-inline-size: 100%; }
 
 .sk-tree--compact .sk-tree__row { min-block-size: 1.75rem; }
 .sk-tree__check { display: inline-flex; flex: 0 0 1rem; align-items: center; justify-content: center; inline-size: 1rem; block-size: 1rem; border: var(--sk-border-width-hairline) solid currentColor; border-radius: var(--sk-radius-xs); }
@@ -1602,7 +1622,11 @@ export const dataDisplayComponents: ComponentSpec[] = [
 .sk-tree__item[aria-disabled="true"] > .sk-tree__row { cursor: not-allowed; color: var(--sk-color-text-disabled); }
 .sk-tree__item[aria-busy="true"] > .sk-tree__row::after { content: "Loading…"; font-size: var(--sk-font-size-body-xs); }
 .sk-tree__item[data-load-error] > .sk-tree__row::after { content: "Expand to retry"; font-size: var(--sk-font-size-body-xs); color: var(--sk-color-status-danger-text); }
-@media (pointer: coarse) { .sk-tree .sk-tree__row { min-block-size: 2.75rem; } }
+@media (pointer: coarse) {
+  .sk-tree .sk-tree__row { min-block-size: 2.75rem; }
+  .sk-tree__toggle { inline-size: 2.75rem; min-block-size: 2.75rem; }
+  .sk-tree__chevron-spacer { inline-size: 2.75rem; }
+}
 
 @media (prefers-reduced-motion: reduce) { .sk-tree__chevron { transition: none; } }
 
@@ -1610,8 +1634,10 @@ export const dataDisplayComponents: ComponentSpec[] = [
    also vanish, and without them the hierarchy flattens. */
 @media (forced-colors: active) {
   .sk-tree__item[aria-selected="true"] > .sk-tree__row,
+  .sk-tree__item[aria-current="page"] > .sk-tree__row,
 .sk-tree__item[aria-checked="true"] > .sk-tree__row { background-color: Highlight; color: HighlightText; }
   .sk-tree__item[aria-selected="true"] > .sk-tree__row::before,
+  .sk-tree__item[aria-current="page"] > .sk-tree__row::before,
   .sk-tree__item[aria-checked="true"] > .sk-tree__row::before { background-color: HighlightText; forced-color-adjust: none; }
   .sk-tree ul[role="group"] { border-inline-start-color: CanvasText; }
   .sk-tree__item:focus-visible > .sk-tree__row { outline-color: Highlight; }

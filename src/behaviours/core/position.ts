@@ -46,7 +46,11 @@ export function position(
   const original = { maxWidth: surface.style.maxWidth, maxHeight: surface.style.maxHeight, overflow: surface.style.overflow };
 
   function update(): void {
-    // Measuring requires the surface to be laid out. Callers reveal it first.
+    // Callers reveal the surface first. Remove it from normal flow before any
+    // measurement: an in-flow surface can stretch to its container or move the
+    // anchor, making the first placement use geometry that disappears once fixed.
+    surface.style.position = 'fixed';
+    surface.style.insetInlineStart = 'auto';
     const vw = document.documentElement.clientWidth;
     const vh = document.documentElement.clientHeight;
     surface.style.maxWidth = `${Math.max(0, vw - padding * 2)}px`;
@@ -90,8 +94,6 @@ export function position(
     left = Math.max(padding, Math.min(left, vw - s.width - padding));
     top = Math.max(padding, Math.min(top, vh - s.height - padding));
 
-    surface.style.position = 'fixed';
-    surface.style.insetInlineStart = 'auto';
     surface.style.left = `${Math.round(left)}px`;
     surface.style.top = `${Math.round(top)}px`;
     surface.dataset.skSide = side;

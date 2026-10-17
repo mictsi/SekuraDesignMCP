@@ -33,6 +33,7 @@ api.sort((a, b) => a.name.localeCompare(b.name));
 const destination = resolve('dist/data/mcp-reference.json');
 mkdirSync(dirname(destination), { recursive: true });
 writeFileSync(destination, JSON.stringify({ schemaVersion: 1, version: VERSION, api,
-  migration: { markdown: readFileSync('MIGRATION.md', 'utf8'), baseline: JSON.parse(readFileSync('compatibility/v2-contract.json', 'utf8')) },
+  migration: { markdown: readFileSync('MIGRATION.md', 'utf8'), baseline: JSON.parse(readFileSync('compatibility/v2-contract.json', 'utf8')),
+    baselines: { '3.0': JSON.parse(readFileSync('compatibility/v3.0-contract.json', 'utf8')) } },
 }, null, 2) + '\n');
 console.log(`MCP reference: ${exports.size} public behavior exports, supporting types and complete migration guide embedded.`);

@@ -177,7 +177,10 @@ async function main(): Promise<void> {
   const pw = override
     ? await import(resolve(override))
     : ((await import('playwright-core')) as unknown as typeof import('playwright-core'));
-  const browser = await pw.chromium.launch({ args: ['--no-sandbox', '--disable-dev-shm-usage'] });
+  const browser = await pw.chromium.launch({
+    executablePath: process.env.SK_BROWSER || process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,
+    args: ['--no-sandbox', '--disable-dev-shm-usage'],
+  });
   const ctx = await browser.newContext();
 
   const active = (p: any) => p.evaluate(() => document.activeElement?.id ?? null);
@@ -202,9 +205,13 @@ async function main(): Promise<void> {
     await p.keyboard.press('ArrowDown');
     check('menu: ArrowDown moves focus', (await active(p)) === 'm2', `got ${await active(p)}`);
 
-    // Disabled items are skipped.
+    // Disabled items remain discoverable but cannot execute.
     await p.keyboard.press('ArrowDown');
-    check('menu: skips aria-disabled item', (await active(p)) === 'm4', `got ${await active(p)}`);
+    check('menu: focuses aria-disabled item', (await active(p)) === 'm3', `got ${await active(p)}`);
+    await p.keyboard.press('Enter');
+    check('menu: disabled item does not close or activate', (await attr(p, '#trigger', 'aria-expanded')) === 'true' && (await active(p)) === 'm3');
+    await p.keyboard.press('ArrowDown');
+    check('menu: moves beyond disabled item', (await active(p)) === 'm4', `got ${await active(p)}`);
 
     // Wraps.
     await p.keyboard.press('ArrowDown');
@@ -228,6 +235,11 @@ async function main(): Promise<void> {
     await p.keyboard.press('ArrowDown');
     await p.keyboard.press('Tab');
     check('menu: Tab closes rather than trapping', (await attr(p, '#trigger', 'aria-expanded')) === 'false');
+    check('menu: Tab reaches next page control', (await active(p)) === 'after', `got ${await active(p)}`);
+    await p.focus('#trigger');
+    await p.keyboard.press('ArrowDown');
+    await p.keyboard.press('Shift+Tab');
+    check('menu: Shift+Tab reaches previous page control', (await active(p)) === 'before', `got ${await active(p)}`);
 
     await p.close();
   }

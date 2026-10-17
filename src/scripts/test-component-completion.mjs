@@ -154,7 +154,7 @@ try {
       });
       await test('all six leading accents are 4px, mirror in RTL and survive forced colors', async () => {
         await page.evaluate(() => {
-          const host = document.createElement('div'); host.id = 'markers'; host.innerHTML = '<a href="#markers" class="docs-toc__link" aria-current="true">Section</a><a href="#markers" class="sk-side-nav__item" aria-current="page">Navigation</a><ul class="sk-tree" data-sk-custom-tree><li class="sk-tree__item" aria-selected="true"><span class="sk-tree__row">Tree</span></li></ul><div class="sk-table"><table><tbody><tr aria-selected="true"><td>Table</td><td>Value</td></tr></tbody></table></div><div class="sk-combobox__option" data-active>Option</div><div class="sk-command-palette__item" data-active>Command</div>';
+          const host = document.createElement('div'); host.id = 'markers'; host.innerHTML = '<a href="#markers" class="docs-toc__link" aria-current="location">Section</a><a href="#markers" class="sk-side-nav__item" aria-current="page">Navigation</a><ul class="sk-tree" data-sk-custom-tree><li class="sk-tree__item" aria-selected="true"><span class="sk-tree__row">Tree</span></li></ul><div class="sk-table"><table><tbody><tr aria-selected="true"><td>Table</td><td>Value</td></tr></tbody></table></div><div class="sk-combobox__option" data-active>Option</div><div class="sk-command-palette__item" data-active>Command</div>';
           document.querySelector('main').appendChild(host);
         });
         for (const forced of ['none', 'active']) {

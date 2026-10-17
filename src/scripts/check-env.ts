@@ -29,6 +29,9 @@ const ROOT = process.cwd();
  */
 const NOT_DEPLOYMENT_SETTINGS = new Map<string, string>([
   ['SEKURA_PLAYWRIGHT', 'test-only: selects the Playwright binary in CI'],
+  ['SK_BROWSER', 'test-only: explicit Chromium executable for navigation regression tests'],
+  ['PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH', 'test-only: alternate explicit Chromium executable'],
+  ['SEKURA_BEHAVIOUR_BUNDLE', 'test-only: independently built behavior fixture'],
   ['SEKURA_ENV_FILE', 'bootstrap: names the env file itself, so it cannot live inside it'],
   ['NO_COLOR', 'a de facto standard read by run.sh, not a Sekura setting'],
 ]);

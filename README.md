@@ -8,7 +8,7 @@ Agents and developers can inspect the same tokens, native markup and interaction
 Application behavior still needs implementation and accessibility verification.
 
 ```
-71 components · 16 foundations · 15 UX patterns · 9 layout recipes
+71 components · 16 foundations · 18 UX patterns · 9 layout recipes
 120 semantic tokens · 4 themes · 3 densities · 8 target frameworks
 Build-derived counts and support: sample/assets/component-manifest.json
 ```
@@ -21,10 +21,17 @@ explains it with live demos, a full colour guide and worked examples.
 
 ## Integration and migration
 
-**Sekura 3** adopts a compact neutral workspace and continuous document
-canvas. Read the [migration plan](./MIGRATION.md) for staged adoption, the optional
-v2 geometry bridge, compatibility checks and rollback. The previous main is
-preserved on `feature/2.1.0`; the redesign is on `main` and `3.0.0`.
+**Sekura 3.1** adds grouped documentation navigation, owned action submenus and
+opt-in tree navigation to the compact v3 workspace. Navigation has a fixed system
+width and no width control. Read the [migration plan](./MIGRATION.md) for separate
+v2 and v3.0.0 upgrade paths, the optional v2 geometry bridge, compatibility checks
+and rollback. Public-name checks cover the recorded v2.1 and v3.0.0 baselines.
+
+The updated samples include a Pages tree with filter/reveal/current-route state,
+a Share → Export submenu, local Settings section navigation and breadcrumb
+overflow. `npm run test:navigation` exercises their runtime contracts. The source
+patch targets the reviewed 3.0.3 commit; older source branches integrate that
+base before applying it.
 
 The [support matrix](./sample/support.html) distinguishes CSS, native behavior,
 controllers, and application-owned actions. The [workbench](./sample/workbench.html)
@@ -38,8 +45,9 @@ these contracts in Chromium, Firefox and WebKit. Human screen-reader and
 application acceptance remain documented separately in MANUAL-VALIDATION.md.
 
 Generated framework code is an **editable reference recipe**, preserving the native
-markup, unique IDs and controller cleanup. Except for the dedicated React Button,
-these are not general-purpose prop-driven components. Read the emitted API before
+markup, unique IDs and controller cleanup. The dedicated native React package
+exports Button, TextField, Textarea, Select, Checkbox and Switch; the other
+generated examples remain editable recipes. Read the emitted API before
 passing specification props. Keep one owner for controller state and wire your own
 permissions, network requests, persistence and navigation.
 
@@ -167,7 +175,7 @@ table:
 
 [mcp_servers.sekura-design]
 command = "docker"
-args = ["run", "-i", "--rm", "-e", "SEKURA_MCP_TRANSPORT=stdio", "sekura-design-mcp:3.0.3"]
+args = ["run", "-i", "--rm", "-e", "SEKURA_MCP_TRANSPORT=stdio", "sekura-design-mcp:3.1.0"]
 
 # The first call builds a 5,900-line overview, so allow a little headroom.
 startup_timeout_sec = 30
@@ -186,7 +194,7 @@ Recent Codex versions can add it for you:
 
 ```bash
 codex mcp add sekura-design -- docker run -i --rm \
-  -e SEKURA_MCP_TRANSPORT=stdio sekura-design-mcp:3.0.3
+  -e SEKURA_MCP_TRANSPORT=stdio sekura-design-mcp:3.1.0
 
 codex mcp list          # confirm it registered
 ```
@@ -221,7 +229,7 @@ to start, but these help:
     "sekura-design": {
       "command": "docker",
       "args": ["run", "-i", "--rm", "-e", "SEKURA_MCP_TRANSPORT=stdio",
-               "sekura-design-mcp:3.0.3"]
+               "sekura-design-mcp:3.1.0"]
     }
   }
 }
@@ -252,7 +260,7 @@ to start, but these help:
 | `list_components` | The catalogue, filterable by category and maturity. |
 | `get_component` | Full spec: anatomy, variants, sizes, states, props, tokens, dark-mode behaviour, complete accessibility contract, do/don't. |
 | `get_behavior` | Runtime declarations, events, initialization, cleanup and application ownership. |
-| `get_migration_guide` | Full v2-to-v3 plan, behavioral changes, compatibility baseline and geometry bridge. |
+| `get_migration_guide` | Upgrade paths from v2 and v3.0, behavior changes, source-specific compatibility baselines and the optional v2 geometry bridge. |
 | `get_component_code` | Paste-ready code in `html`, `css`, `react`, `vue`, `svelte`, `angular`, `blazor` or `web-component`. |
 | `get_layout` | A complete page blueprint with markup and CSS. |
 | `get_pattern` | A recurring UX problem, its solution, and the anti-patterns. |
@@ -417,7 +425,7 @@ Stable releases also publish a multi-arch image to GHCR, tagged `1.2.3`, `1.2`,
 `latest` or the stable documentation site. After publishing the release:
 
 ```bash
-docker run -d -p 8080:8080 ghcr.io/mictsi/sekuradesignmcp:3.0.3
+docker run -d -p 8080:8080 ghcr.io/mictsi/sekuradesignmcp:3.1.0
 ```
 
 Stable releases deploy the documentation site to GitHub Pages.
@@ -607,7 +615,7 @@ location /design-system/ {
 }
 ```
 ```bash
-docker run -d -p 8080:8080 -e SEKURA_BASE_PATH=/design-system sekura-design-mcp:3.0.3
+docker run -d -p 8080:8080 -e SEKURA_BASE_PATH=/design-system sekura-design-mcp:3.1.0
 ```
 
 **If the proxy strips the prefix**, the app still listens at the root but has no
@@ -623,7 +631,7 @@ location /design-system/ {
 ```bash
 docker run -d -p 8080:8080 \
   -e SEKURA_EXTERNAL_URL=https://example.com/design-system \
-  sekura-design-mcp:3.0.3
+  sekura-design-mcp:3.1.0
 ```
 
 **With Traefik or ingress-nginx, neither is needed.** `X-Forwarded-Prefix` is
@@ -784,9 +792,9 @@ Run `npm run test:integration` for structured MCP contracts and `npm run test:re
 - `get_component({ id })` returns the complete specification as text and structured data. `sekura://components` contains all 71 stable components.
 - `get_component_code({ id, framework })` includes CSS dependencies, primary controller, all runtime factories, automatic selectors, manual-only APIs, events and application responsibilities.
 - `get_behavior({ id })` accepts a component ID or any public behavior export name. It returns generated TypeScript declarations with supporting types, initialization and cleanup instructions. Omit `id` for the complete API catalogue; `sekura://behaviors` exposes the same catalogue as a resource.
-- `get_migration_guide({ componentId })` returns the complete canonical migration plan, relevant behavioral changes, the v2 compatibility baseline and optional geometry bridge CSS. Omit the filter for every change. The resource is `sekura://migration/v2-to-v3`.
+- `get_migration_guide({ componentId, fromVersion })` returns the complete canonical plan and source-specific steps. `fromVersion` accepts `2.x`, `3.0.0` or `3.0.x`; omitting it preserves the complete legacy response. Public-name baselines cover v2.1 and v3.0.0. The legacy `sekura://migration/v2-to-v3` resource remains available alongside `sekura://migration/v3.1` and `sekura://migration/v3.0-to-v3.1`.
 - `search` supports `behavior` and `migration` kinds as well as the existing design records.
 
 The build embeds declarations and migration content in `dist/data/mcp-reference.json`, so stdio and HTTP installations work without source files or the original working directory. Rebuild after changing behavior APIs or migration documentation. `npm run test:mcp` checks all component specifications, every recipe format, public APIs and resources through an MCP client.
 
-Dependency policy: use the newest supported LTS line when a project offers one (Node 24, Angular 21), otherwise its latest stable release. Angular packages validate generated recipes and are not runtime dependencies of Sekura. The package version is `3.0.3`; component maturity does not mean the manual acceptance record is complete.
+Dependency policy: use the newest supported LTS line when a project offers one (Node 24, Angular 21), otherwise its latest stable release. See [the release dependency record](./DEPENDENCIES.md) for verified versions and source links. Angular packages validate templates and wrapper code; a consuming Angular application must use its own supported Angular/TypeScript toolchain. These checks are not a complete `ngc` application build. The package version is `3.1.0`; component maturity does not mean the manual acceptance record is complete.

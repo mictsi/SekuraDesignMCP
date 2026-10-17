@@ -124,7 +124,7 @@
   function initShared() {
     $$('[role="tablist"]').forEach(function (el) { el.setAttribute('data-sk-tabs', ''); });
     $$('.sk-button-group--segmented[role="radiogroup"], .sk-segmented').forEach(function (el) { el.setAttribute('data-sk-segmented', ''); });
-    $$('[aria-haspopup="menu"][aria-controls]').forEach(function (el) { el.dataset.skMenuTrigger = el.getAttribute('aria-controls'); });
+    $$('[aria-haspopup="menu"][aria-controls]:not([data-sk-submenu])').forEach(function (el) { el.dataset.skMenuTrigger = el.getAttribute('aria-controls'); });
     $$('[data-sk-popover-target]').forEach(function (el) { el.dataset.skPopoverTrigger = el.dataset.skPopoverTarget; });
     $$('dialog.sk-dialog').forEach(function (el) { el.setAttribute('data-sk-dialog', ''); });
     $$('.sk-drawer').forEach(function (el) { el.setAttribute('data-sk-drawer', ''); if (!el.hasAttribute('data-sk-modal')) el.dataset.skModal = '(max-width: 63.999rem)'; });
@@ -147,30 +147,14 @@
     var trigger = $('.sk-top-bar__nav-trigger');
     var nav = $('#primary-nav');
     if (!trigger || !nav) return;
+    // Only the primary shell becomes a modal drawer; local side navigation
+    // remains in flow on narrow screens.
+    nav.classList.add('sk-side-nav--drawer');
     var query = matchMedia('(max-width: 63.999rem)');
     var desktopOpen = true;
-    var width = 272;
     try {
       desktopOpen = localStorage.getItem('sk-nav-collapsed') !== 'true';
-      var storedWidth = Number(localStorage.getItem('sk-nav-width'));
-      if (storedWidth >= 208 && storedWidth <= 400) width = storedWidth;
     } catch (e) {}
-    var range = $('[data-sk-nav-width]');
-    function resize(value) {
-      width = Math.max(208, Math.min(400, Number(value) || 272));
-      nav.style.setProperty('--sk-layout-nav-width', width / 16 + 'rem');
-      if (range) { range.value = String(width); range.setAttribute('aria-valuetext', width + ' pixels'); }
-    }
-    resize(width);
-    if (range) range.addEventListener('input', function () {
-      resize(range.value);
-      try { localStorage.setItem('sk-nav-width', String(width)); } catch (e) {}
-    });
-    var reset = $('[data-sk-nav-reset]');
-    if (reset) reset.addEventListener('click', function () {
-      resize(272);
-      try { localStorage.removeItem('sk-nav-width'); } catch (e) {}
-    });
     var controller = Sekura.createDrawer(nav, {
       modal: '(max-width: 63.999rem)',
       onOpenChange: function (open) { trigger.setAttribute('aria-expanded', String(open)); }
@@ -187,7 +171,52 @@
       }
       controller.open ? controller.close() : controller.show();
     });
+    var close = $('[data-docs-nav-close]', nav);
+    if (close) close.addEventListener('click', function () { controller.close(); });
     sync();
+  }
+
+  /* Collapse is application state. Expand hierarchical rails before exposing
+     their children; an icon-only parent is never the sole route to them. */
+  function initNavigationRecipes() {
+    $$('[data-sk-nav-expand]').forEach(function (button) {
+      var nav = button.closest('.sk-side-nav');
+      if (!nav) return;
+      button.addEventListener('click', function () {
+        nav.classList.remove('sk-side-nav--collapsed');
+        button.setAttribute('aria-expanded', 'true');
+        var current = $('[aria-current]', nav);
+        var parent = current && current.parentElement;
+        while (parent && parent !== nav) {
+          if (parent.classList.contains('sk-side-nav__children') && parent.hidden) {
+            var toggle = $$('[data-sk-disclosure]', nav).find(function (item) { return item.getAttribute('aria-controls') === parent.id; });
+            if (toggle) toggle.click();
+          }
+          parent = parent.parentElement;
+        }
+        var destination = current || $('.sk-side-nav__children a', nav) || $('a', nav);
+        if (destination) destination.focus();
+      });
+    });
+    $$('[data-sk-nav-collapse]').forEach(function (button) {
+      var nav = document.getElementById(button.dataset.skNavCollapse);
+      if (!nav) return;
+      button.addEventListener('click', function () {
+        nav.classList.add('sk-side-nav--collapsed');
+        var expand = $('[data-sk-nav-expand]', nav);
+        if (expand) { expand.setAttribute('aria-expanded', 'false'); expand.focus(); }
+      });
+    });
+    $$('[data-sk-breadcrumb-overflow]').forEach(function (details) {
+      details.addEventListener('keydown', function (event) {
+        if (event.key !== 'Escape' || !details.open) return;
+        event.preventDefault(); event.stopPropagation(); details.open = false;
+        $('summary', details).focus();
+      });
+      details.addEventListener('click', function (event) {
+        if (event.target.closest('a')) details.open = false;
+      });
+    });
   }
 
   /* ================================================================== *
@@ -649,6 +678,7 @@
     initShared();
     initDialogs();
     initDrawers();
+    initNavigationRecipes();
     initTables();
     initSearch();
     initForms();

@@ -37,7 +37,7 @@
             <div class="sk-split-button sk-split-button--secondary" role="group" aria-label="Share options">
               <button type="button" class="sk-split-button__action"
                       data-sk-copy-link>Copy link</button>
-              <button type="button" class="sk-split-button__trigger"
+              <button type="button" class="sk-split-button__trigger" id="project-share-trigger"
                       aria-haspopup="menu" aria-expanded="false" aria-controls="share-menu">
                 <svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#sk-icon-chevron-down"></use></svg>
                 <span class="sk-visually-hidden">More share options</span>
@@ -427,14 +427,23 @@
         </footer>
       </aside>
 
-      <div class="sk-menu" id="share-menu" role="menu" hidden>
-        <button type="button" class="sk-menu__item" role="menuitem">
+      <div class="sk-menu" id="share-menu" role="menu" aria-labelledby="project-share-trigger" hidden>
+        <button type="button" class="sk-menu__item" role="menuitem" data-value="copy-link">
           <span class="sk-menu__label">Copy link</span>
         </button>
-        <button type="button" class="sk-menu__item" role="menuitem">
+        <button type="button" class="sk-menu__item" role="menuitem" data-value="invite-email">
           <span class="sk-menu__label">Invite by email</span>
         </button>
-        <button type="button" class="sk-menu__item" role="menuitem">
-          <span class="sk-menu__label">Export as CSV</span>
+        <hr class="sk-menu__separator" role="separator" />
+        <button type="button" class="sk-menu__item" id="project-export-trigger" role="menuitem" data-sk-submenu aria-haspopup="menu" aria-expanded="false" aria-controls="project-export-menu">
+          <span class="sk-menu__label">Export</span>
+          <svg class="sk-menu__submenu-indicator" aria-hidden="true" width="16" height="16"><use href="#sk-icon-chevron-right"></use></svg>
         </button>
+        <div class="sk-menu" id="project-export-menu" role="menu" aria-labelledby="project-export-trigger" hidden>
+          <button class="sk-menu__item sk-menu__back" type="button" role="menuitem" data-sk-menu-back><svg class="sk-menu__back-icon" aria-hidden="true" width="16" height="16"><use href="#sk-icon-arrow-left"></use></svg><span class="sk-menu__label">Back to share options</span></button>
+          <div role="group" aria-label="Export format">
+            <button class="sk-menu__item" type="button" role="menuitem" data-value="export-csv"><span class="sk-menu__label">Export as CSV</span></button>
+            <button class="sk-menu__item" type="button" role="menuitem" data-value="export-json"><span class="sk-menu__label">Export as JSON</span></button>
+          </div>
+        </div>
       </div>

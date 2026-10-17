@@ -1,4 +1,239 @@
-# Migrating from Sekura 2.1 to 3.0
+# Upgrading to Sekura 3.1.0
+
+This guide covers consuming applications and the generated samples. Install CSS,
+behaviors, native React artifacts and MCP references from the same build. The
+source patch for this release is based on **3.0.3**, commit
+`0fff714a415293e473e2e7776f98ab6df771ac66`; it is not a patch that can be applied
+directly to arbitrary v2 or v3.0.0 source files. An older repository branch must
+first integrate that upstream base, resolving its own custom changes.
+
+## Choose the upgrade path
+
+| Starting version | Required work |
+|---|---|
+| v2.1, or an earlier v2 release | Follow **Path A**, the v3 foundation migration below, and the 3.1 navigation changes. The automated v2 name baseline is specifically v2.1. |
+| v3.0.0 | Follow **Path B**, including the intervening field-order and sidebar-hierarchy changes. The v2 geometry bridge is unnecessary. |
+| v3.0.1–v3.0.3 | Follow **Path B** and review the 3.1 navigation changes; retain already-adopted alignment/hierarchy markup. |
+
+Existing public component IDs, CSS classes, semantic tokens and behavior exports
+remain available. This protects integration names, not every old CSS override or
+interaction assumption. Navigation trees and submenus are opt-in. The disabled
+menu item correction, command focus handoff and explicit drawer styling require
+the checks below even when no new feature is adopted.
+
+### Path A — v2 to v3.1.0
+
+1. Retain the deployed v2 application build, lockfile, generated artifacts and
+   representative screenshots. The recorded baseline is v2.1 at `dc4d498`.
+   Earlier v2 consumers also review the v2.1 implementation/dependency metadata,
+   event and framework-recipe changes in `CHANGELOG.md` and `DESIGN-REVIEW.md`.
+2. Follow the **v2 foundation migration** later in this guide: fonts, colors,
+   density, field ordering, shared geometry and modal-background ownership.
+   Keep application data, services, routes and permission checks in the host.
+3. Build 3.1.0, install its complete matching asset set in an isolated application
+   branch and regenerate reference recipes selectively. Merge their changes into
+   application code; do not overwrite application handlers with generated demos.
+4. If necessary, use the existing `data-sk-geometry="v2"` bridge while replacing
+   fixed dimensions. It preserves a documented geometry subset, not v2 colors or
+   behavior. Never load both complete v2 and v3 stylesheets together.
+5. Apply the navigation changes below. Existing selection trees can remain in
+   selection mode; route navigation is an explicit adoption decision.
+6. Run repository compatibility checks and the consuming application's critical
+   workflows before rollout. Retain the old application and assets for rollback.
+
+### Path B — v3.0.0 or v3.0.x to v3.1.0
+
+1. Retain the deployed application, lockfile and matching v3.0 assets. Keep the v3
+   visual foundations; do not introduce the v2 geometry bridge for this upgrade.
+2. From the original v3.0.0 release, adopt the **3.0.1 alignment update** and
+   **Sidebar hierarchy in 3.0.1** sections below. Explanatory hints precede their
+   controls; errors remain after controls; parent links and toggles are separate.
+3. Add `.sk-side-nav--drawer` to primary navigation that uses a responsive drawer.
+   A plain `.sk-side-nav` now remains in the document flow, which is required for
+   local Settings navigation. Keep the existing drawer owner and opener wiring.
+4. Remove navigation width controls and their storage handlers. The UI uses
+   `--sk-layout-nav-width`, with no width input or drag handle. Old `sk-nav-width`
+   values are ignored by the updated samples. Mobile drawer and open/close
+   navigation controls remain available.
+5. Update menu expectations: `aria-disabled="true"` commands receive arrow-key
+   focus but never execute. Native `disabled` buttons remain unfocusable. A
+   command closes its menu before `onSelect` and `sk:menu:select`, so a new dialog
+   or destination can retain focus. Remove delayed-focus workarounds.
+6. Adopt submenus and navigation trees only where useful, using the contracts
+   below. Rebuild samples and MCP references, run `test:navigation`, and verify
+   the application's own route, permission and error handling.
+
+## Navigation contracts in 3.1
+
+### Fixed width and responsive navigation
+
+```html
+<!-- Primary navigation: one explicit drawer owner and a named opener. -->
+<button type="button" data-sk-drawer-open="app-nav" aria-controls="app-nav">
+  Open navigation
+</button>
+<nav id="app-nav" class="sk-side-nav sk-side-nav--drawer"
+     aria-label="Primary" data-sk-drawer
+     data-sk-modal="(max-width: 63.999rem)" hidden>
+  <!-- Native links and separate branch disclosure buttons. -->
+</nav>
+
+<!-- Local navigation: remains in the page, without a drawer controller. -->
+<nav class="sk-side-nav" aria-label="Settings sections">
+  <a class="sk-side-nav__item" href="#profile" aria-current="location">Profile</a>
+</nav>
+<section id="profile" aria-labelledby="profile-title">
+  <h2 id="profile-title">Profile</h2>
+</section>
+```
+
+The declarative example opens when its trigger is used. For a desktop shell that
+starts open, own `createDrawer` manually with the same media query, call `show()`
+for the expanded desktop state and wire the trigger. Do not also enhance that
+nav through `data-sk-drawer`. The application owns desktop collapse. A collapsed
+rail containing child destinations must expose a named expand control before
+those destinations can be browsed. It does not expose a width control.
+
+The documentation sidebar now groups components from the catalogue's categories,
+expands the current route's full ancestor path and keeps search visible on mobile.
+Search results include their category context. Breadcrumb overflow uses ordinary
+links in a disclosure; local fragment navigation uses valid section targets.
+
+### Action submenus
+
+Keep the existing `createMenu(trigger, menu, options)` API. Mark child triggers
+with `data-sk-submenu`, `aria-haspopup="menu"` and `aria-controls`; only the root
+receives automatic `data-sk-menu-trigger` initialization. Add a named
+`data-sk-menu-back` menuitem to the child panel for the mobile drilldown view.
+
+`submenuMode` accepts `auto` (default), `cascade` or `drilldown`.
+`submenuMediaQuery` controls the automatic breakpoint; its default is
+`(max-width: 40rem)`. `data-sk-menu-mode` on the root menu is the declarative
+equivalent of the mode option. Submenu targets are present at initialization;
+application-owned lazy command fetching is not implied.
+
+When a menu belongs to an active modal dialog or drawer, keep its submenu DOM
+and any portal container inside that modal. Logical menu ownership does not
+override native modal inertness or the modal controller's focus trap.
+
+One Escape closes one active level, forward/back arrows mirror in RTL, and Tab
+leaves the entire menu chain. Checkable items retain their existing stay-open
+behavior. Use stable `data-value` command IDs and wire permissions and command
+outcomes in the application. The `component-menu.html` reference and the
+`example-detail.html` Share → Export flow are working examples.
+
+### Opt-in navigation trees
+
+```js
+import { createTree } from '@sekura/behaviours';
+
+// root has data-sk-custom-tree so enhance() does not create a second owner.
+// Each role=treeitem has a unique, nonempty, stable data-value ID.
+const tree = createTree(root, {
+  navigation: true,
+  onActivate(item, id) {
+    // Open the route and render its content using the host application's APIs.
+    // Call tree.setCurrent(id) only after that navigation succeeds.
+  },
+});
+
+tree.filter('guidelines'); // Loaded labels only; matching ancestors stay visible.
+tree.filter('');           // Restore the previous expansion state.
+tree.revealCurrent();      // Reveal without moving focus by default.
+tree.revealCurrent({ focus: true }); // Explicit focus request from a user action.
+// Before replacing the view:
+tree.destroy();
+```
+
+For automatic ownership, use `data-sk-tree-navigation` on a `.sk-tree[role=tree]`,
+omit `data-sk-custom-tree`, and handle `sk:tree:activate` with `{ item, id, value }`.
+This is a presence marker: remove the attribute to disable it; assigning the
+string `"false"` still enables navigation. With automatic ownership, the host
+renders `aria-current="page"` from its successful route state. Use a manually
+owned controller when the host needs `setCurrent`, `filter` or `revealCurrent`.
+For a manually owned controller, the `onActivate` callback is an alternative to
+that event listener; avoid executing an outcome twice. `setCurrent(id)` returns
+false for an unknown or unloaded ID and leaves the current marker unchanged;
+`setCurrent(null)` clears it. A loaded author-hidden item can be current, but
+`revealCurrent()` never overrides author-hidden content and returns false when
+the current item cannot be shown. These methods update the tree, not the host route.
+
+`TreeConfigurationError` identifies invalid modes, missing/duplicate IDs, invalid
+lazy children or multiple current items. A navigation tree cannot also be a
+checkbox multi-select tree. Current-page state uses `aria-current="page"`; it is
+independent of keyboard focus. Decide whether successful navigation keeps tree
+focus or moves focus to the destination heading, and apply that policy consistently.
+
+Existing single-select and tri-state trees retain their default behavior and
+`sk:tree:select` events. `id` is additive; the existing `value` field remains.
+Lazy providers keep abort, retry and stale-response protection. A second
+disclosure action cancels a pending open. Filtering searches loaded nodes only;
+remote search providers must supply usable paths and a way to load them.
+
+## Build, verify and distribute matching artifacts
+
+Use the Node LTS version in `.nvmrc`. From the patched repository:
+
+```bash
+npm ci
+npm run build
+npm run build:behaviours
+npm run emit:css
+npm run site:build
+npm run verify:sample
+npm run test:compatibility
+npm run test:integration
+npm run test:mcp
+node node_modules/playwright-core/cli.js install --with-deps chromium firefox webkit
+npm run test:navigation
+```
+
+`npm run verify` is the full release gate, including generated framework recipes,
+all browser suites, accessibility checks and design-kit creation. It additionally
+requires the .NET 10 SDK for Razor validation and the browser system libraries.
+`npm run site:publish` creates a local portable `dist-site/` bundle; it does not
+upload a site. The tracked sample behavior bundle and manifest are regenerated
+from the same 3.1.0 build.
+
+For an application that consumes the generated behavior package, create a local
+tarball with `npm pack ./dist-js`, then install that tarball in the application.
+Do the same for `dist-react` after `npm run build:react` when native React exports
+are used. Copy the matching `dist-css` artifacts or serve them from the matching
+MCP deployment. A local build does not publish a registry package or Git tag.
+
+For Angular applications, keep the application's compiler/toolchain within the
+[official Angular compatibility matrix](https://angular.dev/reference/versions).
+The repository uses its own current TypeScript compiler for server and recipe
+checks; its Angular template checks are not a complete `ngc` application build.
+
+## MCP migration discovery
+
+`get_migration_guide({ fromVersion: "2.x" })` returns the v2 path and baseline.
+`get_migration_guide({ fromVersion: "3.0.0" })` or `"3.0.x"` returns the v3.0 path
+and recorded v3.0.0 baseline. `componentId` remains an optional filter. Omitting
+`fromVersion` preserves the complete guide and existing v2 baseline response.
+The existing `sekura://migration/v2-to-v3` resource remains available; new resource
+addresses are `sekura://migration/v3.1` and `sekura://migration/v3.0-to-v3.1`.
+
+Runtime metadata adds optional purposes, state ownership, conditional controller
+requirements, stable identity and supported capabilities. Keep unknown additive
+fields when forwarding structured responses. `validate_integration` now checks
+the features actually present in sidebar markup and stable IDs in opted-in tree
+navigation. Declare an `onActivate` or activation-event outcome using
+`tree-view:sk:tree:activate` in `handledEvents`; declarations still need runtime tests.
+
+## Rollback from 3.1
+
+Restore the previous application build, its lockfile and its complete matching
+Sekura asset set together. Do not serve new controllers with old CSS or overwrite
+application records. To reverse an uncommitted source patch, use `git apply -R`
+only after its reverse check succeeds and after preserving any later work. After
+a release commit has been shared, use a reviewed revert commit instead of
+rewriting shared history.
+
+---
+
+## V2 foundation migration retained for Path A
 
 The redesign changes presentation while retaining the existing `sk-*` class names,
 `--sk-*` token names, component IDs, behavior exports, themes, densities, and recipe
@@ -7,9 +242,11 @@ No application records, routes, permissions, or stored documents need migration.
 
 ## Branches and rollback baseline
 
-- `feature/2.1.0` preserves the previous `main` at `dc4d498`.
-- `3.0.0` contains the redesign; the current maintenance package version is `3.0.3`.
-- `main` includes the redesign merged from `3.0.0`.
+- The recorded v2.1 baseline is `dc4d498`; `compatibility/v2-contract.json`
+  preserves its public integration names.
+- The original v3.0.0 tag is `73d22913fa513d40926b5639096dd951d3d1fcbb`;
+  `compatibility/v3.0-contract.json` preserves its public names as well.
+- The current target is 3.1.0, based on the reviewed v3.0.3 source.
 - `compatibility/v2-contract.json` records the public names from that baseline.
   `npm run test:compatibility` rejects removals. This is an API-name check, not a
   guarantee that every application-specific override still looks correct.
@@ -95,7 +332,8 @@ Exit: the application's existing workflows work using the matching release asset
   model unless the product actually implements those features.
 - Keep one owner for controller state and call cleanup before replacing a view.
   Modal drawers now prevent background interaction; test nested surfaces and
-  return focus. Desktop collapse and navigation width are demo preferences.
+  return focus. Desktop collapse is a demo preference; navigation uses the system
+  width and has no width control.
 
 Exit: new composition is accepted without removing application functionality.
 
@@ -127,7 +365,7 @@ at least one stable application release has passed.
 Rollback by selecting the previous application build or restoring its pinned
 Sekura packages and generated assets together. Do not revert application data or
 clear unrelated preferences. Version 3 introduces only optional demo-local keys:
-`sk-nav-collapsed`, `sk-nav-width`, `sk-demo-workspace-note`, and
+`sk-nav-collapsed`, `sk-demo-workspace-note`, and
 `sk-demo-workspace-star`. They do not modify an application's domain data.
 
 ## Guidance for developers and AI agents
@@ -170,7 +408,7 @@ The multi-tree selection event adds `checked`; range sliders emit
 
 Review the advanced [workbench](sample/workbench.html) and
 [support contracts](sample/support.html). Search providers, file transport,
-command execution and persistence remain application-owned. All 71 components are marked stable. The current package version is 3.0.3.
+command execution and persistence remain application-owned. All 71 components are marked stable. The current package version is 3.1.0.
 Implementation completion and automated checks do not substitute for the
 application and screen-reader review documented in MANUAL-VALIDATION.md.
 
@@ -230,14 +468,10 @@ trigger to `show()`/`close()`. Do not also auto-initialize that same nav using
 or rerender with matching `aria-expanded` and `hidden` state; changing only
 `aria-expanded` cannot synchronize an already initialized controller.
 
-Navigation width controls and remembered width/collapse preferences are optional
-docs-site features, not application requirements. Use the sidebar width token
-without adding a resizing UI unless the product requires one. Likewise,
-Workspace is example terminology: do not add a Workspace heading, destination,
-product name or workspace switcher merely to match the examples. Use the
-application’s own names. Preserve intentional existing features when upgrading;
-this guidance does not require removing a product’s sidebar resizing or workspace
-functionality.
+Navigation uses the fixed system width token. Remove width inputs, drag handles
+and remembered-width behavior when adopting the 3.1 shell. Keep navigation
+open/close and mobile drawer controls. Workspace is example terminology: use the
+application’s own names and preserve its intentional workspace functionality.
 
 Use a divided, labeled `sk-side-nav__open-items` section for application-owned
 open documents. Do not render them as children of the preceding menu item.

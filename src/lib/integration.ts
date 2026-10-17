@@ -5,10 +5,11 @@ import { type ComponentSpec } from '../data/components/types.js';
 import { FRAMEWORKS, generateCode, type Framework } from './codegen.js';
 import { validateMarkup, type Finding } from './validate.js';
 import { VERSION } from './version.js';
+import { runtimeContractSchema } from './runtime-contract.js';
 
 const eventSchema = z.object({ name: z.string(), detail: z.record(z.string(), z.string()), source: z.enum(['native', 'controller']), applicationRequired: z.boolean() });
 export const implementationSchema = z.object({
-  runtime: z.object({ controllers: z.array(z.string()), autoSelectors: z.array(z.string()), manualOnly: z.array(z.string()), notes: z.array(z.string()) }),
+  runtime: runtimeContractSchema,
   rootClass: z.string(), cssDependencies: z.array(z.string()), svgSymbols: z.array(z.string()),
   controller: z.string().nullable(), behavior: z.enum(['native', 'controller', 'application']),
   frameworkOutput: z.literal('reference-recipe'), applicationResponsibilities: z.array(z.string()),
@@ -67,6 +68,23 @@ export function validateIntegration(input: z.input<typeof integrationInput>) {
   }
   visit(parseFragment(args.markup));
   const attr = (node: Element, name: string) => node.attrs.find(a => a.name === name)?.value;
+  const hasClass = (node: Element, name: string) => attr(node, 'class')?.split(/\s+/).includes(name) ?? false;
+  const within = (node: Element, roots: Element[]): boolean => {
+    let current: DefaultTreeAdapterMap['node'] | undefined | null = node;
+    while (current) {
+      if ('tagName' in current && roots.includes(current)) return true;
+      current = 'parentNode' in current ? current.parentNode : null;
+    }
+    return false;
+  };
+  const nearestTree = (node: Element): Element | undefined => {
+    let current = node.parentNode;
+    while (current) {
+      if ('tagName' in current && attr(current, 'role') === 'tree') return current;
+      current = 'parentNode' in current ? current.parentNode : null;
+    }
+    return undefined;
+  };
   const ids = new Set(args.externalIds);
   for (const node of nodes) {
     const id = attr(node, 'id'); if (!id) continue;
@@ -94,14 +112,48 @@ export function validateIntegration(input: z.input<typeof integrationInput>) {
     const roots = nodes.filter(n => attr(n, 'class')?.split(/\s+/).includes(impl.rootClass));
     if (!roots.length) issue('missing-root', `${id} requires .${impl.rootClass}.`, 'Use its reference markup and actual root class.');
     if (native[id] && roots.some(n => !native[id]!.includes(n.tagName))) issue('wrong-element', `${id} uses an incompatible native element.`, `Use ${native[id]!.join(' or ')} for .${impl.rootClass}.`);
-    if (impl.controller) {
+    if (impl.runtime.requirements) {
+      for (const requirement of impl.runtime.requirements) {
+        const matched = nodes.filter(node => within(node, roots)
+          && (!requirement.when.className || hasClass(node, requirement.when.className))
+          && (!requirement.when.attribute || (requirement.when.value === undefined
+            ? attr(node, requirement.when.attribute) !== undefined
+            : attr(node, requirement.when.attribute) === requirement.when.value)));
+        if (!matched.length) continue;
+        controllers.add(requirement.controller);
+        if (args.initialization === 'none') issue('missing-behavior', `${id} needs ${requirement.controller} for the supplied markup.`, requirement.description);
+        if (args.initialization === 'manual' && !args.controllers.includes(requirement.controller)) issue('missing-controller', `${requirement.controller} was not declared.`, requirement.description);
+        if (args.initialization === 'auto') {
+          if (requirement.manualOnly) issue('manual-controller-required', `${id} opts out of automatic enhancement.`, `Initialize ${requirement.controller} once and declare manual initialization.`);
+          else if (requirement.autoMarker && matched.some(node => attr(node, requirement.autoMarker!) === undefined)) issue('missing-marker', `${id} needs ${requirement.autoMarker} on each matching control for automatic enhancement.`, requirement.description);
+          else if (requirement.controller === 'createMenu') {
+            const rootMenus = matched.filter(menu => !nodes.some(node => attr(node, 'data-sk-submenu') !== undefined && attr(node, 'aria-controls') === attr(menu, 'id')));
+            if (rootMenus.some(menu => !nodes.some(node => attr(node, 'data-sk-menu-trigger') !== undefined && attr(node, 'data-sk-submenu') === undefined && attr(menu, 'id') === attr(node, 'data-sk-menu-trigger')?.replace(/^#/, '')))) issue('missing-marker', `${id} needs a root data-sk-menu-trigger referencing each root menu.`, 'Keep submenu items marked data-sk-submenu and initialize only the root trigger.');
+          }
+        }
+      }
+    } else if (impl.controller) {
       controllers.add(impl.controller);
       // A switch is natively operable; async persistence is an explicit controller choice.
       if (args.initialization === 'none' && id !== 'switch') issue('missing-behavior', `${id} needs ${impl.controller}.`, 'Initialize the controller or use a lifecycle-aware framework component.');
       if (args.initialization === 'manual' && !args.controllers.includes(impl.controller)) issue('missing-controller', `${impl.controller} was not declared.`, 'Attach the controller to its required native element and declare it.');
       if (args.initialization === 'auto' && impl.autoMarker && !nodes.some(n => attr(n, impl.autoMarker!) !== undefined)) issue('missing-marker', `${id} needs ${impl.autoMarker} for automatic enhancement.`, 'Preserve the reference initialization marker.');
     }
+    if (id === 'tree-view') for (const root of roots.filter(root => attr(root, 'data-sk-tree-navigation') !== undefined)) {
+      if (!args.handledEvents.includes('tree-view:sk:tree:activate')) issue('unhandled-tree-navigation', 'Navigation tree activation has no declared application outcome.', 'Wire onActivate or sk:tree:activate to navigation and declare tree-view:sk:tree:activate in handledEvents. Set current only after success.', 'warning');
+      if (hasClass(root, 'sk-tree--multi') || attr(root, 'aria-multiselectable') === 'true') issue('tree-mode-conflict', 'Navigation mode cannot also be a checkbox selection tree.', 'Use separate navigation and multi-select trees.');
+      const values = new Set<string>();
+      const items = nodes.filter(node => attr(node, 'role') === 'treeitem' && nearestTree(node) === root);
+      for (const item of items) {
+        const value = attr(item, 'data-value');
+        if (!value?.trim()) issue('missing-tree-id', 'Navigation tree items require stable data-value IDs.', 'Assign a nonempty ID independent of the displayed label.');
+        else if (values.has(value)) issue('duplicate-tree-id', `Duplicate navigation tree ID: ${value}.`, 'Use unique data-value IDs within this tree.');
+        else values.add(value);
+      }
+      if (items.filter(item => attr(item, 'aria-current') === 'page').length > 1) issue('multiple-current-tree-items', 'A navigation tree has more than one current page.', 'Set aria-current="page" only on the active destination.');
+    }
     for (const event of impl.events.filter(event => event.applicationRequired)) {
+      if (id === 'tree-view' && event.name === 'sk:tree:select' && roots.length > 0 && roots.every(root => attr(root, 'data-sk-tree-navigation') !== undefined)) continue;
       if (!args.handledEvents.includes(`${id}:${event.name}`)) issue('unhandled-action', `${id}:${event.name} has no declared application handler.`, 'Wire an outcome, or explicitly document why local/native state is sufficient.', 'warning');
     }
   }

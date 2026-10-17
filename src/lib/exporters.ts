@@ -233,7 +233,10 @@ export function exportCss(): string {
   lines.push('  *, *::before, *::after {');
   lines.push('    animation-duration: 0.01ms !important;');
   lines.push('    animation-iteration-count: 1 !important;');
-  lines.push('    transition-duration: 0.01ms !important;');
+  // A positive global duration creates transitions for default property:all,
+  // including inherited visibility. Reduced motion must make focusability
+  // changes immediate (for example returning from a drilldown submenu).
+  lines.push('    transition-duration: 0ms !important;');
   lines.push('    scroll-behavior: auto !important;');
   lines.push('  }');
   lines.push('}');

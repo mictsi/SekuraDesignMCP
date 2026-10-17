@@ -92,7 +92,7 @@ jobs:
       - name: Build behaviour package
         run: npm run build:behaviours && npm run test:compatibility
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
 
@@ -129,7 +129,7 @@ jobs:
         run: npm run build:design-kit && npm run build:react && npm run test:browsers
 
       - name: Design and example regressions
-        run: npm run test:design && npm run test:redesign && npm run test:completion
+        run: npm run test:design && npm run test:redesign && npm run test:completion && npm run test:navigation
 
       - name: RTL regression
         # Logical properties are claimed to make RTL work with no extra CSS.
