@@ -114,7 +114,7 @@ for (const page of pages) {
      NOT to do, and linting that as live markup would be nonsense. */
   const withoutCode = html.replace(/<pre[\s\S]*?<\/pre>/gi, '<pre></pre>');
   const findings = validateMarkup(withoutCode)
-    .filter((f) => f.severity === 'error')
+    .filter((f) => f.severity === 'error' || f.rule === 'default-workspace-label')
     // Same reasoning as above: the linter cannot see that a swatch is content.
     .filter((f) => !(f.rule === 'hard-coded-color' && /data-swatch/.test(html)));
   for (const f of findings) {

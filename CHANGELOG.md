@@ -7,6 +7,13 @@ The version in `package.json` is the single source of truth — the server, the
 documentation site, the behaviours bundle and the container tag all derive from
 it, and `npm run check:version` fails the build if a literal drifts back in.
 
+## [3.2.1] — 2026-10-18
+
+- Remove default Workspace identity from example navigation, headings, breadcrumbs, onboarding and runtime updates; retain compatible URLs, IDs and saved-data keys.
+- Strengthen MCP identity guidance and warn when old Workspace labels appear in markup. Add coverage for generated examples and runtime navigation.
+
+- Add identity cleanup to the upgrade documentation and every MCP migration path, including runtime checks and compatibility guidance for existing applications.
+
 ## [3.2.0] — 2026-10-17
 
 ### Reliability and interaction

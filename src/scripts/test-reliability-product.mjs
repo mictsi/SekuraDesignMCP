@@ -1,6 +1,6 @@
 /** Product acceptance against the actual generated documentation and samples. */
 import assert from 'node:assert/strict';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readdirSync } from 'node:fs';
 import { chromium, firefox, webkit } from 'playwright-core';
 import { createDemoServer } from './demo-server.mjs';
 
@@ -10,6 +10,13 @@ const base = `http://127.0.0.1:${server.address().port}`;
 mkdirSync('.run/review', { recursive: true });
 const failures = [];
 let passed = 0;
+
+async function assertApplicationLabels(page) {
+  assert.doesNotMatch(await page.title(), /\bworkspaces?\b/i, 'browser title must use application-specific identity');
+  assert.doesNotMatch(await page.locator('body').innerText(), /\bworkspaces?\b/i, 'rendered example copy must not restore Workspace identity');
+  const named = await page.locator('[aria-label], [title], [placeholder]').evaluateAll(elements => elements.flatMap(el => ['aria-label', 'title', 'placeholder'].map(name => el.getAttribute(name) || '')).filter(value => /\bworkspaces?\b/i.test(value)));
+  assert.deepEqual(named, [], 'accessible labels and tooltips must match the corrected identity');
+}
 
 try {
   for (const [engineName, engine] of Object.entries({ chromium, firefox, webkit })) {
@@ -31,6 +38,12 @@ try {
     }
 
     try {
+      await test('all application examples omit default Workspace identity', async page => {
+        for (const file of readdirSync('sample/pages').filter(name => /^example-.*\.html$/.test(name))) {
+          await page.goto(base + '/' + file);
+          await assertApplicationLabels(page);
+        }
+      });
       await test('blocked storage preserves theme choice and explains its lifetime', async page => {
         await page.addInitScript(() => {
           Storage.prototype.getItem = function () { throw new DOMException('Blocked', 'SecurityError'); };
@@ -98,13 +111,14 @@ try {
           Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async value => { window.copiedLink = value; } } });
         });
         await page.goto(base + '/example-workspace.html');
+        await assertApplicationLabels(page);
         assert.equal(await page.locator('main').count(), 1);
         assert.equal(await page.locator('#primary-nav, #command-palette, .sk-top-bar').count(), 0);
         assert.equal(await page.getByRole('link', { name: 'Back to documentation', exact: true }).isVisible(), true);
         assert.equal(await page.locator('#workspace-pages').isVisible(), true);
         assert.equal(Math.round((await page.locator('#workspace-pages').boundingBox()).width), 272);
         assert.equal(await page.locator('#nav-width, [data-sk-nav-width], [data-sk-nav-reset]').count(), 0);
-        assert.equal(await page.getByRole('searchbox', { name: 'Search workspace pages', exact: true }).isVisible(), true);
+        assert.equal(await page.getByRole('searchbox', { name: 'Search pages', exact: true }).isVisible(), true);
         await page.screenshot({ path: `.run/review/${engineName}-v320-workspace-desktop.png`, animations: 'disabled' });
         await page.locator('[data-sk-workspace-pages-toggle]').click();
         assert.equal(await page.locator('#workspace-pages').isVisible(), false);
@@ -112,6 +126,9 @@ try {
         assert.equal(await page.locator('#workspace-pages').isVisible(), true);
         await page.locator('[data-value="navigation-guidelines"] > .sk-tree__row .sk-tree__label').click();
         assert.match(page.url(), /page=navigation-guidelines/);
+        await assertApplicationLabels(page);
+        await page.locator('#workspace-tree [data-value="engineering"] > .sk-tree__row .sk-tree__label').click();
+        await assertApplicationLabels(page); // Root pages exercise the breadcrumb/eyebrow fallback.
         await page.getByRole('button', { name: 'Copy link', exact: true }).click();
         assert.equal(await page.evaluate(() => window.copiedLink), page.url());
       });

@@ -1,4 +1,4 @@
-# Upgrading to Sekura 3.2.0
+# Upgrading to Sekura 3.2.1
 
 This guide covers consuming applications and the generated samples. Install CSS,
 behaviors, native React artifacts and MCP references from the same build. The
@@ -15,6 +15,10 @@ first integrate that upstream base, resolving its own custom changes.
 | v3.0.0 | Follow **Path B**, including the intervening field-order and sidebar-hierarchy changes. Then follow **Path C**. The v2 geometry bridge is unnecessary. |
 | v3.0.1–v3.0.3 | Follow **Path B** and review the 3.1 navigation changes; retain already-adopted alignment/hierarchy markup, then follow **Path C**. |
 | v3.1.0 or v3.1.x | Follow **Path C**. Navigation width remains fixed; no width UI is introduced. |
+| Already using v3.2.0 or code generated from earlier examples | Apply **Remove inherited example identity** below to the consuming application as well as its examples. Updating the MCP alone does not rewrite existing UI. |
+
+Every upgrade path includes the [identity cleanup](#remove-inherited-example-identity),
+even if alignment and navigation behavior were already migrated.
 
 Existing public component IDs, CSS classes, semantic tokens and behavior exports
 remain available. This protects integration names, not every old CSS override or
@@ -22,7 +26,7 @@ interaction assumption. Navigation trees and submenus are opt-in. The disabled
 menu item correction, command focus handoff and explicit drawer styling require
 the checks below even when no new feature is adopted.
 
-### Path A — v2 to v3.2.0
+### Path A — v2 to v3.2.1
 
 1. Retain the deployed v2 application build, lockfile, generated artifacts and
    representative screenshots. The recorded baseline is v2.1 at `dc4d498`.
@@ -31,7 +35,7 @@ the checks below even when no new feature is adopted.
 2. Follow the **v2 foundation migration** later in this guide: fonts, colors,
    density, field ordering, shared geometry and modal-background ownership.
    Keep application data, services, routes and permission checks in the host.
-3. Build 3.2.0, install its complete matching asset set in an isolated application
+3. Build 3.2.1, install its complete matching asset set in an isolated application
    branch and regenerate reference recipes selectively. Merge their changes into
    application code; do not overwrite application handlers with generated demos.
 4. If necessary, use the existing `data-sk-geometry="v2"` bridge while replacing
@@ -42,7 +46,7 @@ the checks below even when no new feature is adopted.
 6. Follow **Path C**, then run repository compatibility checks and the consuming application's critical
    workflows before rollout. Retain the old application and assets for rollback.
 
-### Path B — v3.0.0 or v3.0.x to v3.2.0
+### Path B — v3.0.0 or v3.0.x to v3.2.1
 
 1. Retain the deployed application, lockfile and matching v3.0 assets. Keep the v3
    visual foundations; do not introduce the v2 geometry bridge for this upgrade.
@@ -65,11 +69,11 @@ the checks below even when no new feature is adopted.
    the application's own route, permission and error handling. Follow **Path C**
    for the additional reliability and deployment changes.
 
-### Path C — v3.1.0 or v3.1.x to v3.2.0
+### Path C — v3.1.0 or v3.1.x to v3.2.1
 
 1. Retain the deployed application, lockfile, configuration and complete asset
    set. The recorded 3.1.0 public-name baseline is commit `115375177e0a`.
-2. Install matching 3.2.0 CSS, behavior and framework artifacts. Review **Input
+2. Install matching 3.2.1 CSS, behavior and framework artifacts. Review **Input
    and overlay contracts** below and remove workarounds for duplicate events,
    invalid committed values, toast eviction and nested Escape handling.
 3. Merge the updated Angular, Blazor or Web Component recipes into the host if
@@ -85,6 +89,55 @@ the checks below even when no new feature is adopted.
    checks public-name baselines for v2.1, v3.0.0 and v3.1.0, plus focused behavior,
    server, product, framework and release-policy regressions. Complete the
    application-specific manual checks in `MANUAL-VALIDATION.md` before rollout.
+
+## Remove inherited example identity
+
+Do not render Workspace, Your workspace or Sekura Workspace as default UI text.
+Earlier guidance described these labels as optional, but examples and runtime
+fallbacks still supplied them. A consuming application may therefore contain
+them even after updating its CSS and behavior packages.
+
+1. Audit application templates, navigation configuration, translations, generated
+   framework recipes and runtime strings. Include menu group captions, headings,
+   breadcrumbs, search labels, browser titles, accessible names, onboarding
+   steps, summaries and save confirmations.
+2. Remove redundant identity captions. Where a label is useful, use the actual
+   destination, task or application domain. Do not replace every occurrence with
+   another generic product name or add a new menu group just to fill the space.
+3. Update route handlers, root-page fallbacks and onboarding transitions as well
+   as initial HTML. A corrected label must not revert after opening a document,
+   refreshing, navigating back/forward or completing a step.
+4. Keep compatibility identifiers unchanged. This is a copy/markup migration,
+   not a route, storage or database migration. Preserve component IDs such as
+   `workspace-design`, URLs such as `example-workspace.html`, existing DOM IDs,
+   `data-sk-*` hooks, form values, event wiring and saved-data keys. Do not perform
+   a repository-wide replacement of the word in identifiers.
+5. Rebuild the design-system artifacts and MCP references, then restart/redeploy
+   the running MCP process or container. Merge corrected recipes and strings into
+   consuming applications and rebuild/deploy them separately. The new MCP
+   guidance prevents new default labels; it cannot edit previously generated
+   application code or replace an already running bundle.
+
+| Inherited text | Upgrade action |
+|---|---|
+| “Your workspace” above “Sign in” or “New project” | Remove the redundant caption. |
+| “Workspace” menu group or breadcrumb | Use the real destination, such as “Documents” or “Projects”, or omit a group that adds no meaning. |
+| “Workspace pages” / “Search workspace pages” | Use “Pages” / “Search pages” when those are the actual controls. |
+| “Workspace preferences” | Use “Preferences”, or the actual settings scope. |
+| “Name your workspace” / “Create workspace” | Use the entity actually being created; the team-setup example uses “Name your team” / “Create team”. |
+| A browser-title suffix or routing fallback containing “Workspace” | Remove the generic identity or use the actual application/document context. |
+
+Run `validate_markup` or `validate_integration` on the updated markup and resolve
+`default-workspace-label` warnings. These are advisory content checks, not an
+automatic rewrite; URLs and technical identifiers alone do not trigger them.
+Repository example verification treats the warning as a failure so examples
+cannot quietly restore the old labels.
+
+For acceptance, check visible and accessible names on initial load, root and
+nested routes, Back/Forward, reload, mobile drawers, and every onboarding step
+including completion. Confirm that navigation, saved notes and preferences still
+work with their original IDs and keys. A static markup check alone cannot verify
+text written later by application code.
 
 ## Reliability contracts in 3.2
 
@@ -327,7 +380,7 @@ all browser suites, accessibility checks and design-kit creation. It additionall
 requires the .NET 10 SDK for Razor validation and the browser system libraries.
 `npm run site:publish` creates a local portable `dist-site/` bundle; it does not
 upload a site. The tracked sample behavior bundle and manifest are regenerated
-from the same 3.2.0 build.
+from the same 3.2.1 build.
 
 For an application that consumes the generated behavior package, create a local
 tarball with `npm pack ./dist-js`, then install that tarball in the application.
@@ -383,7 +436,7 @@ No application records, routes, permissions, or stored documents need migration.
   preserves its public integration names.
 - The original v3.0.0 tag is `73d22913fa513d40926b5639096dd951d3d1fcbb`;
   `compatibility/v3.0-contract.json` preserves its public names as well.
-- The current target is 3.2.0, based on the reviewed 3.1.0 source.
+- The current target is 3.2.1, based on the reviewed 3.1.0 source.
 - `compatibility/v2-contract.json` records the public names from that baseline.
   `npm run test:compatibility` rejects removals. This is an API-name check, not a
   guarantee that every application-specific override still looks correct.
@@ -545,7 +598,7 @@ The multi-tree selection event adds `checked`; range sliders emit
 
 Review the advanced [workbench](sample/workbench.html) and
 [support contracts](sample/support.html). Search providers, file transport,
-command execution and persistence remain application-owned. All 71 components are marked stable. The current package version is 3.2.0.
+command execution and persistence remain application-owned. All 71 components are marked stable. The current package version is 3.2.1.
 Implementation completion and automated checks do not substitute for the
 application and screen-reader review documented in MANUAL-VALIDATION.md.
 
@@ -607,8 +660,14 @@ or rerender with matching `aria-expanded` and `hidden` state; changing only
 
 Navigation uses the fixed system width token. Remove width inputs, drag handles
 and remembered-width behavior when adopting the 3.1 shell. Keep navigation
-open/close and mobile drawer controls. Workspace is example terminology: use the
-application’s own names and preserve its intentional workspace functionality.
+open/close and mobile drawer controls. Do not render Workspace, Your workspace or
+Sekura Workspace as default UI text, menu groups, headers, breadcrumbs or a
+generic switcher. Use the application's actual domain names where useful and
+omit redundant identity captions. Apply this to static markup and text written
+by routing, onboarding and other runtime updates. Keep existing IDs, example
+URLs and saved-data keys unchanged; those compatibility identifiers are not
+labels. The markup validator reports default-workspace-label warnings when this
+example terminology appears in UI labels.
 
 Use a divided, labeled `sk-side-nav__open-items` section for application-owned
 open documents. Do not render them as children of the preceding menu item.

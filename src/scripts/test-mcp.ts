@@ -25,6 +25,15 @@ try {
   await Promise.all([server.connect(a), client.connect(b)]);
   const listed = await client.listTools();
   for (const name of ['get_behavior', 'get_migration_guide']) assert.ok(listed.tools.find(t => t.name === name)?.outputSchema, name);
+  const pagePrompt = await client.getPrompt({ name: 'build-page', arguments: { description: 'A project list' } });
+  assert.match(JSON.stringify(pagePrompt), /Do not render Workspace/);
+  for (const [name, args] of [['get_foundation', { id: 'workspace-design' }], ['get_behavior', { id: 'side-nav' }], ['get_migration_guide', {}]] as const) {
+    const guidance = await client.callTool({ name, arguments: args });
+    assert.ok(!guidance.isError, name);
+    assert.match(JSON.stringify(guidance), /Do not render Workspace/, name);
+  }
+  const identityWarning = await client.callTool({ name: 'validate_markup', arguments: { markup: '<h2>WORKSPACE</h2>' } });
+  assert.match(JSON.stringify(identityWarning), /default-workspace-label/);
   for (const component of components) {
     assert.equal(component.status, 'stable', component.id);
     const spec = await client.callTool({ name: 'get_component', arguments: { id: component.id } });
@@ -51,6 +60,7 @@ try {
   for (const name of ['ComboboxOptions', 'ComboboxItem', 'PositionOptions', 'Cleanup']) assert.ok(combo.api.some(a => a.name === name), name);
   const full = migrationSchema.parse((await client.callTool({ name: 'get_migration_guide', arguments: {} })).structuredContent);
   assert.equal(full.markdown, migration);
+  assert.ok(full.changes.some(change => change.id === 'application-identity'));
   assert.deepEqual(full.compatibility.baseline, baseline);
   assert.ok(full.compatibility.geometryCss.includes('--sk-'));
   const filtered = migrationSchema.parse((await client.callTool({ name: 'get_migration_guide', arguments: { componentId: 'combobox' } })).structuredContent);
@@ -72,6 +82,8 @@ try {
     assert.deepEqual(result.compatibility.baseline, expectedBaseline);
     assert.equal(result.compatibility.sourceCommit, expectedBaseline.sourceCommit);
     const ids = new Set(result.changes.map(change => change.id));
+    assert.ok(ids.has('application-identity'), `${fromVersion}: identity cleanup applies to every upgrade source`);
+    assert.ok(result.upgradePaths![0]!.steps.some(step => step.includes('Remove inherited Workspace UI labels')), `${fromVersion}: identity cleanup is an explicit upgrade step`);
     for (const id of reliabilityChanges) assert.ok(ids.has(id), `${fromVersion}: missing ${id}`);
     for (const id of navigation31Changes) assert.equal(ids.has(id), !fromVersion.startsWith('3.1'), `${fromVersion}: intervening 3.1 change ${id}`);
     if (fromVersion.startsWith('3.')) assert.ok(!ids.has('shared-geometry'), `${fromVersion}: v2 geometry is not required`);
@@ -85,6 +97,7 @@ try {
         assert.deepEqual(scoped.changes, result.changes.filter(change => !change.components.length || change.components.includes(componentId)));
         assert.ok(scoped.changes.some(change => change.id === 'http-deployment-boundary'));
         assert.ok(scoped.changes.some(change => change.id === 'validation-and-token-export-contract'));
+        assert.ok(scoped.changes.some(change => change.id === 'application-identity'), 'identity cleanup is global, including component-scoped migrations');
         assert.equal(scoped.changes.some(change => change.id === 'input-commit-contract'), componentId === 'date-picker');
         assert.ok(!scoped.changes.some(change => navigation31Changes.includes(change.id)));
       }

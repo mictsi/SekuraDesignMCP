@@ -160,12 +160,12 @@
       });
       body.replaceChildren(prose);
     }
-    currentPage = id; title.textContent = page.title; document.title = page.title + ' — Workspace — Sekura';
-    var locationText = page.path.map(function (part) { return pages[part].title; }).join(' / ') || 'Workspace';
+    currentPage = id; title.textContent = page.title; document.title = page.title + ' — Documents — Sekura';
+    var locationText = page.path.map(function (part) { return pages[part].title; }).join(' / ') || 'Documents';
     document.querySelector('.sk-document__eyebrow').textContent = locationText;
     var locations = details.querySelectorAll('.sk-dl__detail'); locations[1].textContent = locationText;
     var crumbs = document.querySelector('.sk-content-header__context ol');
-    var first = node('li', 'sk-breadcrumbs__item'); var home = node('a', 'sk-link', 'Workspace'); home.href = '#page=engineering'; first.appendChild(home);
+    var first = node('li', 'sk-breadcrumbs__item'); var home = node('a', 'sk-link', 'Documents'); home.href = '#page=engineering'; first.appendChild(home);
     crumbs.replaceChildren(first);
     page.path.forEach(function (part) {
       var entry = node('li', 'sk-breadcrumbs__item'); var link = node('a', 'sk-link', pages[part].title); link.href = '#page=' + encodeURIComponent(part); entry.appendChild(link); crumbs.appendChild(entry);

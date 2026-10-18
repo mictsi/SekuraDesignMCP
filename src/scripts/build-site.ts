@@ -85,7 +85,7 @@ interface ExampleSpec {
 }
 
 const EXAMPLES: ExampleSpec[] = [
-  { file: 'example-workspace.html', title: 'Document workspace', description: 'A continuous reading canvas, context header, details panel, and notes saved on this device.' },
+  { file: 'example-workspace.html', title: 'Documents', description: 'A continuous reading canvas, context header, details panel, and notes saved on this device.' },
   {
     file: 'example-dashboard.html',
     title: 'Dashboard',

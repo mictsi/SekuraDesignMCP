@@ -199,11 +199,11 @@ export function overviewPage(): Page {
   });
 
   p.section('Start with your task', `<div class="docs-cardgrid">
-    <a class="docs-card" href="workbench.html"><span class="docs-card__title">Design a screen</span><span class="docs-card__body">Compare states, themes and control sizes, then explore the document workspace.</span></a>
+    <a class="docs-card" href="workbench.html"><span class="docs-card__title">Design a screen</span><span class="docs-card__body">Compare states, themes and control sizes, then explore the document example.</span></a>
     <a class="docs-card" href="support.html"><span class="docs-card__title">Build with a framework</span><span class="docs-card__body">Choose a native package or editable recipe and check its integration responsibilities.</span></a>
     <a class="docs-card" href="develop.html"><span class="docs-card__title">Connect MCP</span><span class="docs-card__body">Set up the server, discover components and retrieve implementation guidance.</span></a>
     <a class="docs-card" href="migration.html"><span class="docs-card__title">Upgrade to ${VERSION}</span><span class="docs-card__body">Choose the path from v2, v3.0 or v3.1. Install a matching set of artifacts.</span></a>
-    </div><p class="docs-para"><a class="sk-link" href="example-workspace.html">Explore the workspace example</a> or <a class="sk-link" href="components.html">browse the component catalog</a>.</p>`);
+    </div><p class="docs-para"><a class="sk-link" href="example-workspace.html">Explore the document example</a> or <a class="sk-link" href="components.html">browse the component catalog</a>.</p>`);
 
   const stats = [
     { value: String(components.length), label: 'components' },

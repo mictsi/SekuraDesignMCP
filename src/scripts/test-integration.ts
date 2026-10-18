@@ -11,6 +11,11 @@ assert.ok(validateMarkup(oldField).some(f => f.rule === 'field-hint-order'));
 const orderedField = '<div class="sk-field"><label class="sk-field__label" for="test-field">Project</label><p class="sk-field__hint" id="test-hint">An exact key.</p><input id="test-field" class="sk-input sk-field__control" aria-describedby="test-hint"/><p class="sk-field__error">Try again.</p></div>';
 assert.ok(!validateMarkup(orderedField).some(f => f.rule === 'field-hint-order'));
 
+for (const markup of ['<h2>WORKSPACE</h2>', '<nav aria-label="Workspace pages"></nav>', '<p class="sk-document__eyebrow">Your workspace</p>', '<a href="/projects">Sekura Workspace</a>', '<label for="name">Workspace name</label><input id="name" />']) {
+  assert.ok(validateMarkup(markup).some(f => f.rule === 'default-workspace-label'), markup);
+}
+assert.ok(!validateMarkup('<nav id="workspace" aria-label="Documents"><a href="example-workspace.html" data-sk-workspace-pages-toggle>Documents</a></nav><pre><code>workspace</code></pre>').some(f => f.rule === 'default-workspace-label'), 'technical identifiers and code examples are not UI identity');
+
 for (const component of components) recipeSchema.parse(componentRecipe(component, 'html'));
 const valid = { componentIds: ['button'], markup: '<button class="sk-button" type="button">Save</button>', stylesheets: ['assets/sekura.css'], initialization: 'auto' as const, handledEvents: ['button:click'] };
 assert.equal(validateIntegration(valid).valid, true);

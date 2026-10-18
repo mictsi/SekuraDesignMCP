@@ -289,7 +289,7 @@ try {
         await toggle.click();
         await nav.locator('#bench-project-pages').waitFor({ state: 'visible' });
         await nav.screenshot({ path: `.run/review/${name}-open-documents.png` });
-        await openItems.getByRole('link', { name: 'Document workspace' }).click();
+        await openItems.getByRole('link', { name: 'Documents' }).click();
         assert.ok(page.url().endsWith('/example-workspace.html'));
       });
       await test('touch input expands every peer in the filter row consistently', async () => {

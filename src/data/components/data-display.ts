@@ -1941,7 +1941,7 @@ export const dataDisplayComponents: ComponentSpec[] = [
       </button>
     </h3>
     <div class="sk-accordion__panel" id="acc-1-panel" aria-labelledby="acc-1">
-      <p>The workspace becomes read-only and export stays enabled indefinitely.</p>
+      <p>The account becomes read-only and export stays enabled indefinitely.</p>
     </div>
   </div>
 
@@ -1954,7 +1954,7 @@ export const dataDisplayComponents: ComponentSpec[] = [
       </button>
     </h3>
     <div class="sk-accordion__panel" id="acc-2-panel" aria-labelledby="acc-2" hidden>
-      <p>No. The price is per workspace.</p>
+      <p>No. The price is per team.</p>
     </div>
   </div>
 </div>`,

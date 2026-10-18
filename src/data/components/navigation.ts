@@ -362,7 +362,7 @@ export const navigationComponents: ComponentSpec[] = [
       'Keep destination lists shallow: at most two child levels. Use Tree view for deeper structures that need tree keyboard navigation.',
       'Do not use colour alone for the current item.',
       'Do not default new users into collapsed mode.',
-      'Do not expose navigation width controls. Do not add Workspace labels or a workspace switcher just because an example contains them; use the application’s own names.',
+      'Do not expose navigation width controls. Do not render Workspace, Your workspace or Sekura Workspace as default UI text, menu groups, headings or breadcrumbs. Do not add a generic workspace switcher. Use the application’s actual domain names and omit redundant identity captions.',
     ],
     html: `<nav class="sk-side-nav" aria-label="Primary" id="primary-nav">
   <!-- Shell-owned: reveal the rail before offering its child destinations. -->

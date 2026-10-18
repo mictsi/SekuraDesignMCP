@@ -38,7 +38,7 @@ export const workspaceComponents: ComponentSpec[] = [
     html: `<article class="sk-document" aria-labelledby="document-title">
   <header class="sk-document__header">
     <p class="sk-document__eyebrow">Engineering / Handbook</p>
-    <h1 class="sk-document__title" id="document-title">Designing a useful workspace</h1>
+    <h1 class="sk-document__title" id="document-title">Designing a useful handbook</h1>
     <p class="sk-document__meta">Design team · Updated 2 October</p>
   </header>
   <div class="sk-prose"><p>A calm canvas keeps the content in focus. Use compact controls around the document and comfortable text within it.</p><h2>Start with the reader</h2><p>Keep navigation, current location and the next useful action easy to find.</p></div>

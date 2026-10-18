@@ -62,10 +62,10 @@ export const patterns: Pattern[] = [
   },
   {
     id: 'navigation-tree',
-    name: 'Navigating a workspace tree',
+    name: 'Navigating a document tree',
     summary: 'Opt into tree navigation with stable identity, deliberate activation and recoverable filtering.',
     problem: 'Selection, expansion and the current document are often conflated, so browsing a branch changes content or filtering loses the user’s location.',
-    solution: 'Create a manually owned tree with navigation: true and data-sk-custom-tree when the host needs setCurrent, filter or revealCurrent. Every treeitem has a unique nonempty data-value ID. Chevron activation expands; label activation emits sk:tree:activate. The host opens the destination, updates its breadcrumb and heading, then calls setCurrent(id). With automatic data-sk-tree-navigation ownership instead, handle the activation event and render aria-current=page from confirmed route state. See the working document workspace sample.',
+    solution: 'Create a manually owned tree with navigation: true and data-sk-custom-tree when the host needs setCurrent, filter or revealCurrent. Every treeitem has a unique nonempty data-value ID. Chevron activation expands; label activation emits sk:tree:activate. The host opens the destination, updates its breadcrumb and heading, then calls setCurrent(id). With automatic data-sk-tree-navigation ownership instead, handle the activation event and render aria-current=page from confirmed route state. See the working document sample.',
     rules: [
       'Keep legacy selection mode when the task is choosing items. Navigation and checkbox multi-selection are separate modes.',
       'Keep data-value stable across rename and reparent operations; a label is not an identity.',

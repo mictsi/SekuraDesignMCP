@@ -1,16 +1,23 @@
-# Sekura 3.2.0 design handoff
+# Sekura 3.2.1 design handoff
 
-Use this guide with the matching 3.2.0 web assets, component manifest and generated
+Use this guide with the matching 3.2.1 web assets, component manifest and generated
 Figma starter. Record the package version in the design file before reviewing or
 sharing changes. This release keeps 71 web component specifications, six native
 React controls and six Figma component sets; these are different coverage levels.
 
 ## Start from the user's task
 
-Use the dedicated Workspace example to review reading, finding a page, revealing
+Use the dedicated Documents example to review reading, finding a page, revealing
 the current page, opening details and saving a local note. It has one application
 frame and a separate link back to documentation. Page search covers the loaded
-workspace pages; it does not imply a global or remote content search.
+document pages; it does not imply a global or remote content search.
+
+When updating existing screens, remove inherited Workspace captions, menu groups
+and headers. Use the actual destination/task name only where it adds useful
+context. Review breadcrumbs, search labels, browser titles and onboarding states
+alongside the initial screen; runtime updates must not restore the old copy.
+Follow [the identity migration steps](./MIGRATION.md#remove-inherited-example-identity),
+including preservation of routes, IDs and saved-data keys.
 
 Review navigation as four independent states: keyboard focus, expanded branch,
 current route and application-owned open documents. Keep destination links and
@@ -28,7 +35,7 @@ document actions live in an ordinary disclosure.
 | Native React package | Button, TextField, Textarea, Select, Checkbox and Switch | The other framework outputs are editable reference recipes. |
 | Figma starter | The same six control families, 216 variants across theme/density/relevant state | Native editable layers and API-shaped generator tests; actual Figma import and visual review are required. |
 | DTCG/token exports | Semantic token aliases, structured DTCG 2025.10 values and documented projections | Read emitted coverage metadata; fluid CSS typography and partial native exports need target-specific decisions. |
-| Workspace/Form lab | Working navigation, local persistence and simulated save recovery | Host authentication, authorization, durable storage and merge policy remain application responsibilities. |
+| Documents/Form lab | Working navigation, local persistence and simulated save recovery | Host authentication, authorization, durable storage and merge policy remain application responsibilities. |
 
 The source component manifest supplies design-kit coverage. The generated
 `dist-design-kit/components.json` records version, coverage, field order and

@@ -21,7 +21,9 @@ explains it with live demos, a full colour guide and worked examples.
 
 ## Integration and migration
 
-**Sekura 3.2.0** addresses the reliability and product issues found in the
+**Sekura 3.2.1** removes inherited Workspace labels from examples and runtime
+UI, strengthens MCP guidance and adds upgrade checks for existing applications.
+It includes the 3.2.0 changes, which address the reliability and product issues found in the
 3.1 review: locale-aware input commitment, shared date validation, keyboard
 suggestions, predictable overlay and toast cleanup, safer HTTP boundaries,
 correct token exports, framework lifecycle integration and consistent release
@@ -29,7 +31,7 @@ artifacts. The [3.2 review record](./SYSTEM-REVIEW-3.2.0.md) maps each finding t
 its implementation and verification scope.
 
 Navigation keeps the fixed system width with **no width control in the UI**.
-The Workspace sample has its own app frame, scoped page search and mobile
+The Documents sample has its own app frame, scoped page search and mobile
 Document actions. Component pages lead with an interactive example and separate
 API maturity, native framework support, design-kit coverage and verification.
 The Form integration lab demonstrates draft retention and revision comparison
@@ -41,6 +43,10 @@ recorded v2.1, v3.0.0 and v3.1.0 baselines. The source patch targets **3.1.0**
 commit `115375177e0aff5e8dbadf39bdb55d0b10948f2c`; older source branches must
 first integrate that upstream base. New design files use the versioned
 [handoff guide](./DESIGN-HANDOFF.md).
+
+Existing applications also need the [example-identity cleanup](./MIGRATION.md#remove-inherited-example-identity):
+remove inherited Workspace labels from markup and runtime updates while keeping
+routes, IDs and saved data intact. Updating the MCP does not rewrite an existing app.
 
 The [support matrix](./sample/support.html) distinguishes CSS, native behavior,
 controllers, and application-owned actions. The [workbench](./sample/workbench.html)
@@ -187,7 +193,7 @@ table:
 
 [mcp_servers.sekura-design]
 command = "docker"
-args = ["run", "-i", "--rm", "-e", "SEKURA_MCP_TRANSPORT=stdio", "sekura-design-mcp:3.2.0"]
+args = ["run", "-i", "--rm", "-e", "SEKURA_MCP_TRANSPORT=stdio", "sekura-design-mcp:3.2.1"]
 
 # The first call builds a 5,900-line overview, so allow a little headroom.
 startup_timeout_sec = 30
@@ -206,7 +212,7 @@ Recent Codex versions can add it for you:
 
 ```bash
 codex mcp add sekura-design -- docker run -i --rm \
-  -e SEKURA_MCP_TRANSPORT=stdio sekura-design-mcp:3.2.0
+  -e SEKURA_MCP_TRANSPORT=stdio sekura-design-mcp:3.2.1
 
 codex mcp list          # confirm it registered
 ```
@@ -241,7 +247,7 @@ to start, but these help:
     "sekura-design": {
       "command": "docker",
       "args": ["run", "-i", "--rm", "-e", "SEKURA_MCP_TRANSPORT=stdio",
-               "sekura-design-mcp:3.2.0"]
+               "sekura-design-mcp:3.2.1"]
     }
   }
 }
@@ -418,7 +424,7 @@ non-zero, so a change that breaks a promise cannot merge green:
 
 **`release.yml`** runs on a `v*` tag and publishes artifacts.
 
-The 3.2.0 source patch already sets the release version. Commit and push the
+The 3.2.1 source patch already sets the release version. Commit and push the
 reviewed source on `main` first. When ready to publish that committed version,
 tag it without running another version bump:
 
@@ -448,7 +454,7 @@ Stable releases also publish a multi-arch image to GHCR, tagged `1.2.3`, `1.2`,
 `latest` or the stable documentation site. After publishing the release:
 
 ```bash
-docker run -d -p 8080:8080 ghcr.io/mictsi/sekuradesignmcp:3.2.0
+docker run -d -p 8080:8080 ghcr.io/mictsi/sekuradesignmcp:3.2.1
 ```
 
 Stable releases deploy the documentation site to GitHub Pages.
@@ -562,7 +568,7 @@ so the host toolchain is never involved:
 ./run.sh build --image      # or plain: docker build -t sekura-design-mcp .
 ```
 
-The source-build path is self-contained. For 3.2.0, local checks cover the
+The source-build path is self-contained. For 3.2.1, local checks cover the
 Docker/release policy and the HTTP readiness contract; an actual image build,
 container probe and live workflow run remain release acceptance steps.
 
@@ -642,7 +648,7 @@ location /design-system/ {
 docker run -d -p 127.0.0.1:8080:8080 \
   -e SEKURA_BASE_PATH=/design-system \
   -e SEKURA_EXTERNAL_URL=https://example.com/design-system \
-  sekura-design-mcp:3.2.0
+  sekura-design-mcp:3.2.1
 ```
 
 **If the proxy strips the prefix**, the app still listens at the root but has no
@@ -658,7 +664,7 @@ location /design-system/ {
 ```bash
 docker run -d -p 8080:8080 \
   -e SEKURA_EXTERNAL_URL=https://example.com/design-system \
-  sekura-design-mcp:3.2.0
+  sekura-design-mcp:3.2.1
 ```
 
 **With Traefik or ingress-nginx**, pin `SEKURA_EXTERNAL_URL` when the public URL
@@ -836,4 +842,4 @@ Run `npm run test:integration` for structured MCP contracts and `npm run test:re
 
 The build embeds declarations and migration content in `dist/data/mcp-reference.json`, so stdio and HTTP installations work without source files or the original working directory. Rebuild after changing behavior APIs or migration documentation. `npm run test:mcp` checks all component specifications, every recipe format, public APIs and resources through an MCP client.
 
-Dependency policy: use the newest supported LTS line when a project offers one (Node 24, Angular 21), otherwise its latest stable release. See [the release dependency record](./DEPENDENCIES.md) for verified versions and source links. Angular packages validate templates, wrapper code and an actual server-render/hydration fixture; a consuming Angular application must use its own supported Angular/TypeScript toolchain. These checks are not a complete `ngc` application build. The package version is `3.2.0`; component maturity does not mean the manual acceptance record is complete.
+Dependency policy: use the newest supported LTS line when a project offers one (Node 24, Angular 21), otherwise its latest stable release. See [the release dependency record](./DEPENDENCIES.md) for verified versions and source links. Angular packages validate templates, wrapper code and an actual server-render/hydration fixture; a consuming Angular application must use its own supported Angular/TypeScript toolchain. These checks are not a complete `ngc` application build. The package version is `3.2.1`; component maturity does not mean the manual acceptance record is complete.

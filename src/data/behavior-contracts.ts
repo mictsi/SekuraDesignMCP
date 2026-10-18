@@ -31,7 +31,7 @@ export const runtimeContracts: Record<string, RuntimeContract> = {
     'Static group headings are not interactive. Open documents belong in a labeled, divided sk-side-nav__open-items region. The host owns open-item state and close/navigation outcomes.',
     'The docs shell additionally owns route matching, scrolling the current link into view and its navigation trigger. These are not installed by enhance() on a plain sk-side-nav.',
     'Navigation uses the system layout width token. There is no navigation width control, resize handle or remembered user width in the UI. Keep mobile drawer and open/close controls separate from sizing.',
-    'Workspace is example terminology, not a required menu item, heading, product name or workspace switcher. Use application-specific labels.',
+    'Do not render Workspace, Your workspace or Sekura Workspace as default UI text. Do not add a generic workspace menu group, header, breadcrumb or switcher. Use the application’s actual domain names and omit redundant identity captions; preserve internal IDs and routes independently of visible labels.',
     'For the responsive primary shell, add sk-side-nav--drawer and initialize createDrawer(nav, { modal: "(max-width: 63.999rem)" }) once; wire its trigger, show it for the expanded desktop rail and let Escape restore focus on mobile. Do not also auto-initialize data-sk-drawer on that same nav. Plain local navigation requires no drawer.',
   ]),
   menu: entry(['createMenu'], ['[data-sk-menu-trigger]:not([data-sk-submenu])'], [

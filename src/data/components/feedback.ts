@@ -1265,7 +1265,7 @@ export const feedbackComponents: ComponentSpec[] = [
     },
     content: [
       'Name what is loading: "Loading your projects", not "Loading" and never "Please wait".',
-      'The slow notice acknowledges rather than apologises: "Still working — larger workspaces take longer." A cheerful message on a long wait reads as mockery.',
+      'The slow notice acknowledges rather than apologises: "Still working — larger requests take longer." A cheerful message on a long wait reads as mockery.',
       'Never promise a time you cannot keep. "Almost done" that lasts a minute destroys trust in every later estimate.',
     ],
     dos: [
@@ -1288,7 +1288,7 @@ export const feedbackComponents: ComponentSpec[] = [
 
   <!-- Appears after ~5s. Silence past that point reads as a hang. -->
   <div class="sk-loading__slow" hidden data-slow-notice>
-    <p class="sk-loading__slow-text">Still working — larger workspaces take longer.</p>
+    <p class="sk-loading__slow-text">Still working — larger requests take longer.</p>
     <button type="button" class="sk-button sk-button--secondary sk-button--sm">Cancel</button>
   </div>
 </div>`,

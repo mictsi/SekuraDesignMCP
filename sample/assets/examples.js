@@ -288,9 +288,9 @@
     var form = $('form[data-sk-validate]'), host = form.parentElement;
     var steps = $$('.sk-stepper__step'), progress = $('[role=status]', host);
     var workspace = document.createElement('section'); workspace.id = 'step-workspace'; workspace.className = 'sk-stack sk-stack--gap-16';
-    workspace.innerHTML = '<h2 tabindex="-1">Name your workspace</h2><div class="sk-field"><label class="sk-field__label" for="setup-name">Workspace name</label><input class="sk-input" id="setup-name" value="Product team" required /></div><button class="sk-button sk-button--primary" type="button">Continue to invitations</button>';
+    workspace.innerHTML = '<h2 tabindex="-1">Name your team</h2><div class="sk-field"><label class="sk-field__label" for="setup-name">Team name</label><input class="sk-input" id="setup-name" value="Product team" required /></div><button class="sk-button sk-button--primary" type="button">Continue to invitations</button>';
     var review = document.createElement('section'); review.id = 'step-review'; review.className = 'sk-stack sk-stack--gap-16';
-    review.innerHTML = '<h2 tabindex="-1">Review your workspace</h2><p data-sk-setup-summary></p><p>This demo stores your choices on this device. No emails are sent.</p><div class="sk-cluster sk-cluster--gap-8"><a class="sk-button sk-button--secondary" href="#step-invites">Back to invitations</a><button class="sk-button sk-button--primary" type="button" data-sk-setup-confirm>Create workspace</button></div><p role="status" data-sk-setup-result></p>';
+    review.innerHTML = '<h2 tabindex="-1">Review your team</h2><p data-sk-setup-summary></p><p>This demo stores your choices on this device. No emails are sent.</p><div class="sk-cluster sk-cluster--gap-8"><a class="sk-button sk-button--secondary" href="#step-invites">Back to invitations</a><button class="sk-button sk-button--primary" type="button" data-sk-setup-confirm>Create team</button></div><p role="status" data-sk-setup-result></p>';
     host.insertBefore(workspace, form); form.id = 'step-invites'; form.after(review);
     var name = $('#setup-name'), emails = $('#invite-emails'), skipped = false;
     workspace.querySelector('button').onclick = function () { if (name.reportValidity()) location.hash = 'step-invites'; };
@@ -298,15 +298,15 @@
       var index = ['#step-workspace', '#step-invites', '#step-review'].indexOf(location.hash); if (index < 0) index = 0;
       [workspace, form, review].forEach(function (section, i) { section.hidden = i !== index; });
       steps.forEach(function (step, i) { step.toggleAttribute('data-complete', i < index); if (i === index) step.setAttribute('aria-current', 'step'); else step.removeAttribute('aria-current'); $('.sk-stepper__indicator', step).textContent = i < index ? '✓' : String(i + 1); var extra = $('.sk-visually-hidden', step); if (extra) extra.textContent = i < index ? ', completed' : i === index ? ', current step' : ', not started'; });
-      progress.textContent = 'Step ' + (index + 1) + ' of 3 — ' + ['Workspace', 'Invite people', 'Review'][index];
-      $('[data-sk-setup-summary]').textContent = 'Workspace: ' + name.value + '. Invitations: ' + (skipped || !emails.value.trim() ? 'none' : emails.value.trim()) + '.';
+      progress.textContent = 'Step ' + (index + 1) + ' of 3 — ' + ['Team', 'Invite people', 'Review'][index];
+      $('[data-sk-setup-summary]').textContent = 'Team: ' + name.value + '. Invitations: ' + (skipped || !emails.value.trim() ? 'none' : emails.value.trim()) + '.';
       var target = index === 1 ? emails : $('h2', index === 0 ? workspace : review); target.focus();
     }
     form.addEventListener('sk:demo:submit', function () { skipped = false; location.hash = 'step-review'; });
     $('[data-sk-setup-skip]').onclick = function () { skipped = true; location.hash = 'step-review'; };
     $('[data-sk-setup-confirm]').onclick = function () {
       if (!name.value.trim()) { location.hash = 'step-workspace'; return; }
-      try { localStorage.setItem('sk-demo-workspace', JSON.stringify({ name: name.value, invitations: skipped ? '' : emails.value })); $('[data-sk-setup-result]').textContent = 'Workspace saved on this device. No invitations were sent.'; }
+      try { localStorage.setItem('sk-demo-workspace', JSON.stringify({ name: name.value, invitations: skipped ? '' : emails.value })); $('[data-sk-setup-result]').textContent = 'Team saved on this device. No invitations were sent.'; }
       catch (_) { $('[data-sk-setup-result]').textContent = 'Could not save on this device. Your choices are preserved; try again.'; }
     };
     window.addEventListener('hashchange', render); render();

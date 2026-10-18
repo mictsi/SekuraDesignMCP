@@ -18,7 +18,7 @@ export interface Finding {
 
 export const MARKUP_LIMITS = { codeUnits: 524288, nodes: 20000, depth: 128, nameVisits: 100000 } as const;
 export const MARKUP_CHECK_SCOPE = {
-  checked: ['Parsed label/ID associations', 'Static accessible names for links, buttons and form controls', 'Inline/HTML hidden content', 'Token names and the documented structural/CSS patterns'],
+  checked: ['Parsed label/ID associations', 'Static accessible names for links, buttons and form controls', 'Default application identity in UI labels', 'Inline/HTML hidden content', 'Token names and the documented structural/CSS patterns'],
   skipped: ['External stylesheet visibility', 'Pseudo-element content', 'Runtime state and shadow DOM', 'Full accessible-name computation', 'Keyboard and screen-reader behavior'],
 };
 class ValidationLimit extends Error {}
@@ -147,6 +147,22 @@ function validateWithinBudget(html: string, componentId?: string): Finding[] {
     if (explicit !== undefined) return explicit.length > 0;
     return (contents && textAlternative(node).length > 0) || !!attr(node, 'title')?.trim();
   };
+
+  // Inspect displayed/accessibility labels, never IDs, URLs or storage keys.
+  // This is an advisory content rule: application-specific terminology can be
+  // intentional, but copying the old example identity must not pass silently.
+  for (const node of elements) {
+    if (hiddenByAncestor(node)) continue;
+    const contentLabel = /^(h[1-6]|label|legend|title|a|button)$/.test(node.tagName) ||
+      /(?:^|\s)sk-(?:document__eyebrow|side-nav__group-label|top-bar__product)(?:\s|$)/.test(attr(node, 'class') ?? '') ||
+      /^(heading|menuitem|treeitem)$/.test(attr(node, 'role') ?? '');
+    const label = [explicitName(node) ?? '', attr(node, 'title') ?? '', contentLabel ? textAlternative(node) : ''].join(' ');
+    if (/\bworkspaces?\b/i.test(label)) add({
+      severity: 'warning', rule: 'default-workspace-label',
+      message: 'A UI label uses Workspace terminology from the old examples.', snippet: snip(markupOf(node)),
+      fix: 'Do not use Workspace as default UI identity. Use the application’s actual domain name or remove a redundant caption. Keep internal IDs and routes unchanged; retain this wording only when explicitly required by the product.',
+    });
+  }
 
   for (const node of elements) {
     if (!['button', 'a', 'input', 'select', 'textarea'].includes(node.tagName) || hiddenByAncestor(node, false)) continue;

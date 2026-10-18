@@ -85,7 +85,7 @@ export const NAV: NavGroup[] = [
       { file: 'examples.html', label: 'All examples' },
       { file: 'workbench.html', label: 'Component workbench' },
       { file: 'form-lab.html', label: 'Forms under real conditions' },
-      { file: 'example-workspace.html', label: 'Document workspace' },
+      { file: 'example-workspace.html', label: 'Documents' },
       { file: 'example-dashboard.html', label: 'Dashboard' },
       { file: 'example-list.html', label: 'List page' },
       { file: 'example-detail.html', label: 'Detail page' },

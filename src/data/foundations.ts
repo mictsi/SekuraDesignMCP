@@ -19,7 +19,7 @@ export interface Foundation {
 
 export const foundations: Foundation[] = [
   {
-    id: 'workspace-design', title: 'Workspace design and migration',
+    id: 'workspace-design', title: 'Application design and migration',
     summary: 'Sekura 3 uses a compact neutral shell and continuous reading canvas, with compatible integration names.',
     rules: ['Keep existing sk-* classes, semantic token names and behavior exports when upgrading.', 'Use a 48px global header, 272px navigation and 760px reading column through layout tokens.', 'Reserve elevation for floating surfaces; avoid a card around the whole document.', 'Use platform fonts; no proprietary font is bundled.', 'Application permissions, publication, structured editing and collaboration remain application-owned.', 'Use data-sk-geometry="v2" only as a temporary geometry bridge; validate and remove it during migration.'],
     body: `## Visual direction
@@ -35,7 +35,7 @@ Badges and tag tokens use compact rectangles with 4px corners, not capsules. Dar
 ## Application boundary
 The reference contains a complete knowledge-workspace product. Sekura adopts its visual language and reusable interaction contracts, not its database, ACLs, publication state machine or collaborative editor. Save state describes acknowledged work at an explicit boundary. Local-only state must say so.
 
-Reuse navigation styling and behavior without copying example identity. Navigation uses the fixed system layout width token; the UI has no navigation width input, resize handle or remembered user width. Preserve the mobile drawer and navigation open/close controls. Workspace is example terminology, not a required label, menu destination, product name or workspace switcher; use application-specific names and preserve intentional workspace features during migration.
+Reuse navigation styling and behavior without copying example identity. Navigation uses the fixed system layout width token; the UI has no navigation width input, resize handle or remembered user width. Preserve the mobile drawer and navigation open/close controls. Do not render Workspace, Your workspace or Sekura Workspace as default UI text. Do not add a generic workspace menu group, header, breadcrumb or switcher. Use application-specific domain names, such as Documents, Projects or the actual team name, only where useful; omit redundant identity captions. Preserve existing IDs, routes and saved-data keys independently of visible labels. The stable foundation ID workspace-design names this guidance, not a label to put in the application.
 
 ## Acceptance
 Review every example at mobile and desktop widths, light/dark and high-contrast themes, RTL, increased text and keyboard focus. Preserve input on failure and never report a failed action as successful.`,

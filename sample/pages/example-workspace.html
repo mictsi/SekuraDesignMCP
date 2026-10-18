@@ -1,5 +1,5 @@
 <header class="sk-content-header sk-content-header--sticky">
-  <nav class="sk-breadcrumbs sk-content-header__context" aria-label="Document location"><ol class="sk-breadcrumbs__list"><li class="sk-breadcrumbs__item"><a class="sk-link" href="#page=engineering">Workspace</a></li><li class="sk-breadcrumbs__item"><span aria-current="page">Working together</span></li></ol></nav>
+  <nav class="sk-breadcrumbs sk-content-header__context" aria-label="Document location"><ol class="sk-breadcrumbs__list"><li class="sk-breadcrumbs__item"><a class="sk-link" href="#page=engineering">Documents</a></li><li class="sk-breadcrumbs__item"><span aria-current="page">Working together</span></li></ol></nav>
   <div class="sk-content-header__actions">
     <button type="button" class="sk-button sk-button--secondary sk-button--sm" data-sk-workspace-pages-toggle aria-controls="workspace-pages" aria-expanded="false">Pages</button>
     <details class="docs-workspace-more" open><summary class="sk-button sk-button--secondary sk-button--sm" hidden>Document actions</summary><div class="docs-workspace-more__items">
@@ -11,13 +11,13 @@
 </header>
 <div class="docs-workspace">
   <aside class="sk-drawer sk-drawer--inline sk-tree-panel" id="workspace-pages" data-sk-custom-drawer aria-labelledby="workspace-pages-title" hidden>
-    <header class="sk-drawer__header"><h2 class="sk-drawer__title" id="workspace-pages-title">Workspace pages</h2><button type="button" class="sk-icon-button sk-icon-button--sm" data-sk-drawer-close aria-label="Close workspace pages"><svg aria-hidden="true" width="16" height="16"><use href="#sk-icon-close"></use></svg></button></header>
+    <header class="sk-drawer__header"><h2 class="sk-drawer__title" id="workspace-pages-title">Pages</h2><button type="button" class="sk-icon-button sk-icon-button--sm" data-sk-drawer-close aria-label="Close pages"><svg aria-hidden="true" width="16" height="16"><use href="#sk-icon-close"></use></svg></button></header>
     <div class="sk-drawer__body sk-stack sk-stack--gap-16">
-      <div class="sk-field"><label class="sk-field__label" for="workspace-page-filter">Search workspace pages</label><p class="sk-field__hint" id="workspace-page-filter-hint">Search page titles in this workspace.</p><input class="sk-input" id="workspace-page-filter" type="search" aria-describedby="workspace-page-filter-hint" autocomplete="off"></div>
+      <div class="sk-field"><label class="sk-field__label" for="workspace-page-filter">Search pages</label><p class="sk-field__hint" id="workspace-page-filter-hint">Search document titles.</p><input class="sk-input" id="workspace-page-filter" type="search" aria-describedby="workspace-page-filter-hint" autocomplete="off"></div>
       <div class="sk-cluster sk-cluster--gap-8"><button type="button" class="sk-button sk-button--secondary sk-button--sm" id="workspace-reveal-current">Reveal current</button><button type="button" class="sk-button sk-button--ghost sk-button--sm" id="workspace-clear-filter" disabled>Clear filter</button></div>
       <p class="sk-field__hint" id="workspace-tree-status" role="status">9 pages loaded.</p>
-      <nav aria-label="Workspace page hierarchy">
-        <ul class="sk-tree" id="workspace-tree" role="tree" aria-label="Workspace pages" data-sk-custom-tree data-sk-tree-navigation>
+      <nav aria-label="Page hierarchy">
+        <ul class="sk-tree" id="workspace-tree" role="tree" aria-label="Pages" data-sk-custom-tree data-sk-tree-navigation>
           <li class="sk-tree__item" role="treeitem" data-value="engineering" aria-expanded="true" tabindex="-1">
             <span class="sk-tree__row"><span class="sk-tree__toggle" aria-hidden="true"><svg class="sk-tree__chevron" focusable="false" width="16" height="16"><use href="#sk-icon-chevron-down"></use></svg></span><span class="sk-tree__label">Engineering</span></span>
             <ul role="group">
@@ -54,7 +54,7 @@
     </header>
     <div data-sk-workspace-document>
     <div class="sk-prose">
-      <p>This is our shared starting point for clear decisions, useful documentation and a workspace that everyone can navigate.</p>
+      <p>This is our shared starting point for clear decisions, useful documentation and documents that everyone can navigate.</p>
       <h2 id="make-work-visible">Make work easy to find</h2>
       <p>Give each project one home. Keep its purpose, owner and next decision together. Link to the source instead of keeping competing copies.</p>
       <ul><li>Use a short title that describes the work.</li><li>Keep the latest decision near the top.</li><li>Write down the context someone joining tomorrow will need.</li></ul>
@@ -65,7 +65,7 @@
       <table><thead><tr><th scope="col">When</th><th scope="col">Activity</th><th scope="col">Outcome</th></tr></thead><tbody><tr><th scope="row">Monday</th><td>Plan the week</td><td>Owners and next steps</td></tr><tr><th scope="row">Wednesday</th><td>Review decisions</td><td>Recorded tradeoffs</td></tr><tr><th scope="row">Friday</th><td>Share progress</td><td>A useful written update</td></tr></tbody></table>
     </div>
     </div>
-    <div class="sk-prose"><h2 id="notes">Your working notes</h2><p>Keep a workspace note while browsing pages. This demonstration saves notes and stars on this device only.</p></div>
+    <div class="sk-prose"><h2 id="notes">Your working notes</h2><p>Keep a private note while browsing pages. This demonstration saves notes and stars on this device only.</p></div>
     <form class="docs-workspace-note sk-stack sk-stack--gap-12" data-sk-workspace-note>
       <div class="sk-field"><label class="sk-field__label" for="workspace-note">Private note on this device</label>
       <p class="sk-field__hint" id="workspace-note-hint">Saving this note does not edit or publish the document.</p><textarea class="sk-textarea" id="workspace-note" rows="4" aria-describedby="workspace-note-hint" placeholder="What would you like to follow up on?"></textarea></div>

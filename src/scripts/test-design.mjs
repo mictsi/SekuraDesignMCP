@@ -206,17 +206,20 @@ await test('keyboard choices apply theme and density', async () => {
 });
 await test('onboarding advances, preserves choices and saves only on confirmation', async () => {
   await go('example-onboarding'); await page.locator('#setup-name').fill('Design team');
+  assert.doesNotMatch(await page.locator('body').innerText(), /\bworkspaces?\b/i);
   await page.getByRole('button', { name: 'Continue to invitations' }).click();
   await page.locator('#invite-emails').fill('designer@example.com');
   await page.getByRole('button', { name: 'Continue to review' }).click();
   await page.locator('#step-review').waitFor({ state: 'visible' });
+  assert.doesNotMatch(await page.locator('body').innerText(), /\bworkspaces?\b/i);
   assert.match(await page.locator('[data-sk-setup-summary]').textContent(), /Design team.*designer@example.com/);
   assert.equal(await page.evaluate(() => localStorage.getItem('sk-demo-workspace')), null);
   await page.getByRole('link', { name: 'Back to invitations' }).click();
   assert.equal(await page.locator('#invite-emails').inputValue(), 'designer@example.com');
   await page.getByRole('button', { name: 'Skip for now' }).click();
-  await page.getByRole('button', { name: 'Create workspace', exact: true }).click();
+  await page.getByRole('button', { name: 'Create team', exact: true }).click();
   assert.match(await page.locator('[data-sk-setup-result]').textContent(), /saved on this device/);
+  assert.doesNotMatch(await page.locator('body').innerText(), /\bworkspaces?\b/i);
   assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('sk-demo-workspace')).invitations), '');
 });
 await test('task details support create, edit, delete and undo', async () => {
