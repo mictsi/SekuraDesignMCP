@@ -7,7 +7,7 @@ promise that an unbounded future install will select the same versions.
 ## Selection policy
 
 - Use the newest supported **LTS line** where upstream publishes an LTS policy.
-  Node uses 24.22.0; Angular uses the latest patch on its LTS 21 line.
+  Node uses 24.22.1 after the security update below; Angular uses the latest patch on its LTS 21 line.
 - Use the newest **stable release** for packages without a separate LTS channel.
   Exclude alpha, beta, RC, canary, experimental and nightly releases.
 - Keep related runtime/compiler packages aligned: React with React DOM, Vue
@@ -15,11 +15,33 @@ promise that an unbounded future install will select the same versions.
 - Update compatible transitive dependencies through their parents' supported
   ranges. Do not force unrelated transitive major versions with overrides.
 
-Node 24.22.0 is pinned in `.nvmrc` and all Docker stages. Node 22 remains a
+Node 24.22.1 is pinned in `.nvmrc` and all Docker stages. Node 22 remains a
 supported maintenance-LTS runtime in the existing CI matrix; `@types/node`
 tracks the build's Node 24 API. Node 26 was still Current on the review date.
 See the [Node release schedule](https://nodejs.org/en/about/previous-releases)
-and [24.22.0 release](https://nodejs.org/en/blog/release/v24.22.0).
+and [24.22.1 release](https://nodejs.org/en/blog/release/v24.22.1).
+
+### Node security update — 25 October 2026
+
+Updated all Docker stages and `.nvmrc` from Node 24.22.0 to **24.22.1**, the
+latest Node 24 LTS patch verified on this date. It fixes the Brotli decoder
+out-of-bounds write **CVE-2026-111497**. See the
+[official security advisory](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases)
+and [release notes](https://nodejs.org/en/blog/release/v24.22.1).
+Node 22 consumers need at least **22.23.4**; the CI major selectors obtain the
+latest patch on their respective lines.
+
+Compose refreshes base images during builds. Existing containers must be rebuilt
+and recreated to adopt the patched Node binary:
+
+```bash
+docker compose build --pull
+docker compose up -d --force-recreate
+docker compose exec sekura-design-mcp node --version
+```
+
+The final command should report `v24.22.1`. When using a published application
+image instead of a local build, deploy an image rebuilt with this patched base.
 
 Angular 21 is LTS while Angular 22 is in active support on the review date.
 The LTS choice is intentional even though npm's general `latest` tag points to

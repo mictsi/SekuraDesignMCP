@@ -7,6 +7,10 @@ The version in `package.json` is the single source of truth — the server, the
 documentation site, the behaviours bundle and the container tag all derive from
 it, and `npm run check:version` fails the build if a literal drifts back in.
 
+## Unreleased
+
+- Update all Docker stages and `.nvmrc` to Node 24.22.1 LTS to fix CVE-2026-111497. Refresh pinned base images during Compose builds and document rebuilding existing containers.
+
 ## [3.2.1] — 2026-10-18
 
 - Remove default Workspace identity from example navigation, headings, breadcrumbs, onboarding and runtime updates; retain compatible URLs, IDs and saved-data keys.

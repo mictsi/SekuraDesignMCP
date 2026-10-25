@@ -3,6 +3,8 @@ services:
     build:
       context: .
       target: runtime
+      # Refresh the Dockerfile's pinned Node base image when rebuilding.
+      pull: true
     # Tag follows package.json; override with SEKURA_VERSION.
     image: ${SEKURA_IMAGE:-sekura-design-mcp}:${SEKURA_VERSION:-latest}
     container_name: ${SEKURA_CONTAINER:-sekura-design-mcp}
