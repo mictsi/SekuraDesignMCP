@@ -8,7 +8,7 @@ ARG SEKURA_ARTIFACT_STAGE=build
 # Node 24 "Krypton" LTS; 24.22.1 fixes CVE-2026-111497.
 # Review the official release schedule before changing major versions;
 # `npm run check:deps` enforces the supported window.
-FROM node:24.22.1-alpine AS build
+FROM node:24.22.2-alpine AS build
 
 WORKDIR /app
 
@@ -48,7 +48,7 @@ RUN npm prune --omit=dev
 
 # ---------- Already verified release artifacts ----------
 # This stage uses the isolated release-runtime context, without .dockerignore.
-FROM node:24.22.1-alpine AS verified
+FROM node:24.22.2-alpine AS verified
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
@@ -61,7 +61,7 @@ FROM ${SEKURA_ARTIFACT_STAGE} AS artifacts
 
 
 # ---------- Runtime ----------
-FROM node:24.22.1-alpine AS runtime
+FROM node:24.22.2-alpine AS runtime
 
 # dumb-init gives us correct signal forwarding, so SIGTERM reaches Node and the
 # graceful shutdown handler actually runs.
