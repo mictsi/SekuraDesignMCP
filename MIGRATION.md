@@ -1,4 +1,4 @@
-# Upgrading to Sekura 3.2.1
+# Upgrading to Sekura 3.2.2
 
 This guide covers consuming applications and the generated samples. Install CSS,
 behaviors, native React artifacts and MCP references from the same build. The
@@ -26,7 +26,7 @@ interaction assumption. Navigation trees and submenus are opt-in. The disabled
 menu item correction, command focus handoff and explicit drawer styling require
 the checks below even when no new feature is adopted.
 
-### Path A — v2 to v3.2.1
+### Path A — v2 to v3.2.2
 
 1. Retain the deployed v2 application build, lockfile, generated artifacts and
    representative screenshots. The recorded baseline is v2.1 at `dc4d498`.
@@ -35,7 +35,7 @@ the checks below even when no new feature is adopted.
 2. Follow the **v2 foundation migration** later in this guide: fonts, colors,
    density, field ordering, shared geometry and modal-background ownership.
    Keep application data, services, routes and permission checks in the host.
-3. Build 3.2.1, install its complete matching asset set in an isolated application
+3. Build 3.2.2, install its complete matching asset set in an isolated application
    branch and regenerate reference recipes selectively. Merge their changes into
    application code; do not overwrite application handlers with generated demos.
 4. If necessary, use the existing `data-sk-geometry="v2"` bridge while replacing
@@ -46,7 +46,7 @@ the checks below even when no new feature is adopted.
 6. Follow **Path C**, then run repository compatibility checks and the consuming application's critical
    workflows before rollout. Retain the old application and assets for rollback.
 
-### Path B — v3.0.0 or v3.0.x to v3.2.1
+### Path B — v3.0.0 or v3.0.x to v3.2.2
 
 1. Retain the deployed application, lockfile and matching v3.0 assets. Keep the v3
    visual foundations; do not introduce the v2 geometry bridge for this upgrade.
@@ -69,11 +69,11 @@ the checks below even when no new feature is adopted.
    the application's own route, permission and error handling. Follow **Path C**
    for the additional reliability and deployment changes.
 
-### Path C — v3.1.0 or v3.1.x to v3.2.1
+### Path C — v3.1.0 or v3.1.x to v3.2.2
 
 1. Retain the deployed application, lockfile, configuration and complete asset
    set. The recorded 3.1.0 public-name baseline is commit `115375177e0a`.
-2. Install matching 3.2.1 CSS, behavior and framework artifacts. Review **Input
+2. Install matching 3.2.2 CSS, behavior and framework artifacts. Review **Input
    and overlay contracts** below and remove workarounds for duplicate events,
    invalid committed values, toast eviction and nested Escape handling.
 3. Merge the updated Angular, Blazor or Web Component recipes into the host if
@@ -89,6 +89,16 @@ the checks below even when no new feature is adopted.
    checks public-name baselines for v2.1, v3.0.0 and v3.1.0, plus focused behavior,
    server, product, framework and release-policy regressions. Complete the
    application-specific manual checks in `MANUAL-VALIDATION.md` before rollout.
+
+## Security maintenance from 3.2.0 or 3.2.1
+
+Install the matching 3.2.2 artifacts together and rebuild/recreate Docker
+containers to obtain Node 24.22.2. This release updates dependencies within their
+supported lines, including body-parser 2.4.0 and fast-uri 3.1.9 security fixes.
+Use the checked-in lockfile with `npm ci`; do not copy only the top-level package
+ranges into an older dependency tree. See [the dependency record](./DEPENDENCIES.md)
+for advisories, verification scope and container commands. Existing application
+markup and data require no additional migration for these dependency updates.
 
 ## Remove inherited example identity
 
@@ -380,7 +390,7 @@ all browser suites, accessibility checks and design-kit creation. It additionall
 requires the .NET 10 SDK for Razor validation and the browser system libraries.
 `npm run site:publish` creates a local portable `dist-site/` bundle; it does not
 upload a site. The tracked sample behavior bundle and manifest are regenerated
-from the same 3.2.1 build.
+from the same 3.2.2 build.
 
 For an application that consumes the generated behavior package, create a local
 tarball with `npm pack ./dist-js`, then install that tarball in the application.
@@ -436,7 +446,7 @@ No application records, routes, permissions, or stored documents need migration.
   preserves its public integration names.
 - The original v3.0.0 tag is `73d22913fa513d40926b5639096dd951d3d1fcbb`;
   `compatibility/v3.0-contract.json` preserves its public names as well.
-- The current target is 3.2.1, based on the reviewed 3.1.0 source.
+- The current target is 3.2.2, based on the reviewed 3.1.0 source.
 - `compatibility/v2-contract.json` records the public names from that baseline.
   `npm run test:compatibility` rejects removals. This is an API-name check, not a
   guarantee that every application-specific override still looks correct.
@@ -598,7 +608,7 @@ The multi-tree selection event adds `checked`; range sliders emit
 
 Review the advanced [workbench](sample/workbench.html) and
 [support contracts](sample/support.html). Search providers, file transport,
-command execution and persistence remain application-owned. All 71 components are marked stable. The current package version is 3.2.1.
+command execution and persistence remain application-owned. All 71 components are marked stable. The current package version is 3.2.2.
 Implementation completion and automated checks do not substitute for the
 application and screen-reader review documented in MANUAL-VALIDATION.md.
 

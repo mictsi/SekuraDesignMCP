@@ -7,9 +7,12 @@ The version in `package.json` is the single source of truth — the server, the
 documentation site, the behaviours bundle and the container tag all derive from
 it, and `npm run check:version` fails the build if a literal drifts back in.
 
-## Unreleased
+## [3.2.2] — 2026-11-06
 
-- Update all Docker stages and `.nvmrc` to Node 24.22.1 LTS to fix CVE-2026-111497. Refresh pinned base images during Compose builds and document rebuilding existing containers.
+- Refresh all npm dependencies within the supported release lines, including the MCP SDK, parse5, Angular 21 LTS, Vue, Svelte and Playwright. Keep related compiler/runtime declarations aligned.
+- Resolve the body-parser denial-of-service advisory with 2.4.0 and four fast-uri advisories with 3.1.9 through supported parent ranges; no overrides required.
+- Update all Docker stages and `.nvmrc` to Node 24.22.2 LTS, retaining the CVE-2026-111497 fix introduced in 24.22.1. Compose refreshes pinned base images during builds.
+- Update dependency and migration documentation for the security maintenance release.
 
 ## [3.2.1] — 2026-10-18
 

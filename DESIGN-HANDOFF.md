@@ -1,6 +1,6 @@
-# Sekura 3.2.1 design handoff
+# Sekura 3.2.2 design handoff
 
-Use this guide with the matching 3.2.1 web assets, component manifest and generated
+Use this guide with the matching 3.2.2 web assets, component manifest and generated
 Figma starter. Record the package version in the design file before reviewing or
 sharing changes. This release keeps 71 web component specifications, six native
 React controls and six Figma component sets; these are different coverage levels.

@@ -21,8 +21,10 @@ explains it with live demos, a full colour guide and worked examples.
 
 ## Integration and migration
 
-**Sekura 3.2.1** removes inherited Workspace labels from examples and runtime
-UI, strengthens MCP guidance and adds upgrade checks for existing applications.
+**Sekura 3.2.2** updates the dependency tree and Node 24 runtime, including
+security fixes for body-parser and fast-uri. It includes the 3.2.1 changes,
+which remove inherited Workspace labels from examples and runtime
+UI, strengthen MCP guidance and add upgrade checks for existing applications.
 It includes the 3.2.0 changes, which address the reliability and product issues found in the
 3.1 review: locale-aware input commitment, shared date validation, keyboard
 suggestions, predictable overlay and toast cleanup, safer HTTP boundaries,
@@ -193,7 +195,7 @@ table:
 
 [mcp_servers.sekura-design]
 command = "docker"
-args = ["run", "-i", "--rm", "-e", "SEKURA_MCP_TRANSPORT=stdio", "sekura-design-mcp:3.2.1"]
+args = ["run", "-i", "--rm", "-e", "SEKURA_MCP_TRANSPORT=stdio", "sekura-design-mcp:3.2.2"]
 
 # The first call builds a 5,900-line overview, so allow a little headroom.
 startup_timeout_sec = 30
@@ -212,7 +214,7 @@ Recent Codex versions can add it for you:
 
 ```bash
 codex mcp add sekura-design -- docker run -i --rm \
-  -e SEKURA_MCP_TRANSPORT=stdio sekura-design-mcp:3.2.1
+  -e SEKURA_MCP_TRANSPORT=stdio sekura-design-mcp:3.2.2
 
 codex mcp list          # confirm it registered
 ```
@@ -247,7 +249,7 @@ to start, but these help:
     "sekura-design": {
       "command": "docker",
       "args": ["run", "-i", "--rm", "-e", "SEKURA_MCP_TRANSPORT=stdio",
-               "sekura-design-mcp:3.2.1"]
+               "sekura-design-mcp:3.2.2"]
     }
   }
 }
@@ -424,7 +426,7 @@ non-zero, so a change that breaks a promise cannot merge green:
 
 **`release.yml`** runs on a `v*` tag and publishes artifacts.
 
-The 3.2.1 source patch already sets the release version. Commit and push the
+The 3.2.2 source patch already sets the release version. Commit and push the
 reviewed source on `main` first. When ready to publish that committed version,
 tag it without running another version bump:
 
@@ -454,7 +456,7 @@ Stable releases also publish a multi-arch image to GHCR, tagged `1.2.3`, `1.2`,
 `latest` or the stable documentation site. After publishing the release:
 
 ```bash
-docker run -d -p 8080:8080 ghcr.io/mictsi/sekuradesignmcp:3.2.1
+docker run -d -p 8080:8080 ghcr.io/mictsi/sekuradesignmcp:3.2.2
 ```
 
 Stable releases deploy the documentation site to GitHub Pages.
@@ -568,7 +570,7 @@ so the host toolchain is never involved:
 ./run.sh build --image      # or plain: docker build -t sekura-design-mcp .
 ```
 
-The source-build path is self-contained. For 3.2.1, local checks cover the
+The source-build path is self-contained. For 3.2.2, local checks cover the
 Docker/release policy and the HTTP readiness contract; an actual image build,
 container probe and live workflow run remain release acceptance steps.
 
@@ -648,7 +650,7 @@ location /design-system/ {
 docker run -d -p 127.0.0.1:8080:8080 \
   -e SEKURA_BASE_PATH=/design-system \
   -e SEKURA_EXTERNAL_URL=https://example.com/design-system \
-  sekura-design-mcp:3.2.1
+  sekura-design-mcp:3.2.2
 ```
 
 **If the proxy strips the prefix**, the app still listens at the root but has no
@@ -664,7 +666,7 @@ location /design-system/ {
 ```bash
 docker run -d -p 8080:8080 \
   -e SEKURA_EXTERNAL_URL=https://example.com/design-system \
-  sekura-design-mcp:3.2.1
+  sekura-design-mcp:3.2.2
 ```
 
 **With Traefik or ingress-nginx**, pin `SEKURA_EXTERNAL_URL` when the public URL
@@ -842,4 +844,4 @@ Run `npm run test:integration` for structured MCP contracts and `npm run test:re
 
 The build embeds declarations and migration content in `dist/data/mcp-reference.json`, so stdio and HTTP installations work without source files or the original working directory. Rebuild after changing behavior APIs or migration documentation. `npm run test:mcp` checks all component specifications, every recipe format, public APIs and resources through an MCP client.
 
-Dependency policy: use the newest supported LTS line when a project offers one (Node 24, Angular 21), otherwise its latest stable release. See [the release dependency record](./DEPENDENCIES.md) for verified versions and source links. Angular packages validate templates, wrapper code and an actual server-render/hydration fixture; a consuming Angular application must use its own supported Angular/TypeScript toolchain. These checks are not a complete `ngc` application build. The package version is `3.2.1`; component maturity does not mean the manual acceptance record is complete.
+Dependency policy: maintain the reviewed Node 24 LTS runtime and Angular 21 LTS on their latest patches; use the latest supported stable releases for other packages. See [the release dependency record](./DEPENDENCIES.md) for verified versions and source links. Angular packages validate templates, wrapper code and an actual server-render/hydration fixture; a consuming Angular application must use its own supported Angular/TypeScript toolchain. These checks are not a complete `ngc` application build. The package version is `3.2.2`; component maturity does not mean the manual acceptance record is complete.
