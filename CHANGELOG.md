@@ -7,6 +7,10 @@ The version in `package.json` is the single source of truth — the server, the
 documentation site, the behaviours bundle and the container tag all derive from
 it, and `npm run check:version` fails the build if a literal drifts back in.
 
+## Unreleased
+
+- Remove GitHub Pages deployment and its dedicated site upload from the release workflow. Keep the verified documentation archive and container-served documentation.
+
 ## [3.2.2] — 2026-11-06
 
 - Refresh all npm dependencies within the supported release lines, including the MCP SDK, parse5, Angular 21 LTS, Vue, Svelte and Playwright. Keep related compiler/runtime declarations aligned.

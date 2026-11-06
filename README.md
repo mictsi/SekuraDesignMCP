@@ -453,13 +453,20 @@ runs the full gate chain again (a release cannot skip checks) and publishes:
 
 Stable releases also publish a multi-arch image to GHCR, tagged `1.2.3`, `1.2`,
 `1` and `latest`. Alpha releases use their exact version tag and do not update
-`latest` or the stable documentation site. After publishing the release:
+`latest`. After publishing the release:
 
 ```bash
 docker run -d -p 8080:8080 ghcr.io/mictsi/sekuradesignmcp:3.2.2
 ```
 
-Stable releases deploy the documentation site to GitHub Pages.
+Releases package the documentation as a downloadable archive and serve it in the
+container. The release workflow does not deploy to GitHub Pages.
+
+For an existing release whose tagged workflow still contains the removed Pages
+job, start **Actions → Release → Run workflow**, select **main**, and enter the
+existing tag (for example `v3.2.2`). This uses the current workflow while resolving
+and verifying the original tagged source. Re-running the old tag-triggered run
+uses its original workflow and retains the blocked Pages job.
 
 ### Versioning
 

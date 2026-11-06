@@ -54,10 +54,10 @@ try {
   assert.ok(jobs.image.indexOf('run: node src/scripts/test-release-image.mjs') < jobs.image.indexOf('Promote the verified digest'));
   assert.match(jobs.image, /build-args: SEKURA_ARTIFACT_STAGE=verified/);
   assert.match(jobs.verify, /cd dist-site && zip/);
-  assert.match(jobs.pages, /name: release-site/);
-  assert.doesNotMatch(jobs.pages, /npm (?:ci|run)|actions\/checkout/);
+  assert.equal(jobs.pages, undefined, 'Releases must not deploy to GitHub Pages');
+  assert.doesNotMatch(workflow, /github-pages|pages: write|id-token: write|actions\/(?:configure-pages|upload-pages-artifact|deploy-pages)|name: release-site/);
   const dockerfile = readFileSync('Dockerfile', 'utf8');
   assert.match(dockerfile, /FROM \$\{SEKURA_ARTIFACT_STAGE\} AS artifacts/);
   assert.match(dockerfile, /COPY --from=artifacts/);
-  console.log('PASS release workflow policy: one SHA, explicit release tag, verified site/runtime reuse, digest probe before promotion');
+  console.log('PASS release workflow policy: one SHA, explicit release tag, verified documentation/runtime packaging, digest probe before promotion, no Pages deployment');
 } finally { rmSync(fixture, { recursive: true, force: true }); }

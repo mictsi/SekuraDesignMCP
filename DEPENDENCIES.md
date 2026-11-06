@@ -116,7 +116,7 @@ keeps its existing supported React peer range; its build and browser checks use
 the selected React release above. Both artifacts take their package version from
 the root 3.2.2 manifest.
 
-The 14 GitHub Actions used by CI and release workflows were checked against
+The 11 remaining GitHub Actions used by CI and release workflows were checked against
 their upstream releases on 6 November 2026. Existing major-version references
 already select the current stable major; no workflow changes were required.
 The 3.1 update moved `actions/setup-dotnet` from v4 to
